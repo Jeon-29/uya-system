@@ -237,17 +237,45 @@
                     <i class="fa-regular fa-user fa-xs text-white"></i>
                 </a>
 
-                <!-- Logout Icon -->
-                <a href="{{ route('login') }}"
-                    class="text-white-50 text-decoration-none p-2 rounded-circle hover-danger" title="Logout">
+                <!-- Logout -->
+                <button type="button"
+                    class="btn text-white-50 text-decoration-none p-2 rounded-circle hover-danger border-0 bg-transparent"
+                    title="Logout" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">
                     <i class="fa-solid fa-arrow-right-from-bracket fa-md"></i>
-                </a>
+                </button>
+                <form id="logoutForm" method="POST" action="{{ route('logout') }}" class="d-none">
+                    @csrf
+                </form>
 
             </div>
 
         </div>
     </div>
 </nav>
+
+<!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-body text-center p-4">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width: 56px; height: 56px; background-color: rgba(220, 53, 69, 0.1);">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-danger fa-lg"></i>
+                </div>
+                <h5 class="fw-bold mb-2" id="logoutConfirmModalLabel">Log out of UYA Connect?</h5>
+                <p class="text-muted small mb-4">You'll need to sign in again to access your account.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="logoutForm" class="btn btn-danger rounded-pill px-4 fw-semibold">
+                        Yes, Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
     :root {

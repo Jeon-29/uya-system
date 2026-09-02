@@ -90,7 +90,7 @@
         <!-- Welcome Header Section -->
         <div class="row mb-3">
             <div class="col-12">
-                <h2 class="fw-bold mb-1 text-brand">Welcome back, Momo!</h2>
+                <h2 class="fw-bold mb-1 text-brand">Welcome back, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
                 <p class="text-muted small">Here's what's happening in your community today[cite: 1].</p>
             </div>
         </div>
