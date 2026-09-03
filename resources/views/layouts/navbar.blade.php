@@ -1,7 +1,8 @@
 <!-- Floating Modern Navbar -->
+@php $stats = $stats ?? ['notifications' => 0]; @endphp
 <nav class="navbar navbar-expand-lg fixed-top my-2 mx-3 rounded-4 shadow-sm px-4 py-2"
     style="background-color: var(--uya-dark-teal); border: 1px solid rgba(255, 255, 255, 0.1);">
-    <div class="container-fluid px-0">
+    <div class="container-fluid" style="padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important;">
 
         <!-- Brand / Logo Section -->
         <a class="navbar-brand d-flex align-items-center text-white fw-bold gap-2 text-decoration-none flex-shrink-0"
@@ -15,9 +16,12 @@
         </a>
 
         <!-- Mobile Toggle -->
-        <button class="navbar-toggler border-0 text-white shadow-none" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav">
-            <i class="fa-solid fa-bars"></i>
+        <button id="hamburgerBtn" class="navbar-toggler hamburger-btn border-0 text-white shadow-none" type="button"
+            aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobileMenu"
+            onclick="toggleMobileMenu()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
         </button>
 
         <!-- Navbar Contents -->
@@ -113,7 +117,7 @@
                         <span
                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark fw-bold"
                             style="font-size: 0.55rem;">
-                            3
+                            {{ $stats['notifications'] ?? 0 }}
                         </span>
                     </button>
 
@@ -253,6 +257,70 @@
     </div>
 </nav>
 
+<!-- Mobile Slide-In Menu -->
+<div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+    <div class="mobile-menu-inner">
+        <div class="mobile-menu-header">
+            <span class="mobile-menu-title">Menu</span>
+            <button class="mobile-menu-close" type="button" aria-label="Close menu" onclick="closeMobileMenu()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <ul class="mobile-nav-list">
+            <li style="--i: 0;">
+                <a class="mobile-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" @if (request()->routeIs('dashboard')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-solid fa-border-all"></i><span>Dashboard</span>
+                </a>
+            </li>
+            <li style="--i: 1;">
+                <a class="mobile-nav-link {{ request()->routeIs('activities') ? 'active' : '' }}" href="{{ route('activities') }}" @if (request()->routeIs('activities')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-regular fa-calendar"></i><span>Activities</span>
+                </a>
+            </li>
+            <li style="--i: 2;">
+                <a class="mobile-nav-link {{ request()->routeIs('calendar*') ? 'active' : '' }}" href="{{ route('calendar') }}" @if (request()->routeIs('calendar*')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-solid fa-lightbulb"></i><span>Calendar</span>
+                </a>
+            </li>
+            <li style="--i: 3;">
+                <a class="mobile-nav-link {{ request()->routeIs('proposals*') ? 'active' : '' }}" href="{{ route('proposals') }}" @if (request()->routeIs('proposals*')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-regular fa-clipboard"></i><span>Proposals</span>
+                </a>
+            </li>
+            <li style="--i: 4;">
+                <a class="mobile-nav-link {{ request()->routeIs('certificates*') ? 'active' : '' }}" href="{{ route('certificates') }}" @if (request()->routeIs('certificates*')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-solid fa-ribbon"></i><span>Certificates</span>
+                </a>
+            </li>
+            <li style="--i: 5;">
+                <a class="mobile-nav-link {{ request()->routeIs('announcements*') ? 'active' : '' }}" href="{{ route('announcements') }}" @if (request()->routeIs('announcements*')) style="background-color: var(--uya-gold); color: var(--uya-dark-teal) !important;" @endif onclick="closeMobileMenu()">
+                    <i class="fa-solid fa-bullhorn"></i><span>Announcements</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="mobile-menu-divider"></div>
+
+        <div class="mobile-menu-actions">
+            <a href="#" class="mobile-action-link" onclick="closeMobileMenu()">
+                <div class="mobile-action-icon"><i class="fa-regular fa-bell"></i><span class="mobile-badge">{{ $stats['notifications'] ?? 0 }}</span></div>
+                <span>Notifications</span>
+            </a>
+            <a href="{{ route('profile') }}" class="mobile-action-link" onclick="closeMobileMenu()">
+                <div class="mobile-action-icon"><i class="fa-regular fa-user"></i></div>
+                <span>Profile</span>
+            </a>
+            <a href="#" class="mobile-action-link text-danger" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" onclick="closeMobileMenu()">
+                <div class="mobile-action-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="mobileBackdrop" class="mobile-backdrop" onclick="closeMobileMenu()"></div>
+
 <!-- Logout Confirmation Modal -->
 <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel"
     aria-hidden="true">
@@ -298,6 +366,40 @@
         color: var(--uya-gold) !important;
     }
 
+    .navbar-brand {
+        padding-left: 0 !important;
+    }
+
+    .navbar-toggler {
+        padding-right: 0 !important;
+    }
+
+    .hamburger-line {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background-color: #ffffff;
+        border-radius: 2px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.3s ease;
+        transform-origin: center;
+    }
+
+    .hamburger-line:nth-child(2) { margin: 5px 0; }
+
+    .hamburger-btn[aria-expanded="true"] .hamburger-line:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger-btn[aria-expanded="true"] .hamburger-line:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+    }
+
+    .hamburger-btn[aria-expanded="true"] .hamburger-line:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+    }
+
     .inner-popup-item {
         background-color: #f3f7f9;
         border: 1px solid #dce5e8;
@@ -311,13 +413,229 @@
     body {
         padding-top: 85px;
     }
+
+    .mobile-menu, .mobile-backdrop { display: none; }
+
+    /* =============================================
+       MOBILE (< 992px)
+       ============================================= */
+
+    @media (max-width: 991.98px) {
+
+        body { padding-top: 75px; }
+
+        .navbar-brand { padding-left: 0 !important; }
+        .navbar-toggler { padding-right: 0 !important; }
+
+        .navbar-collapse { display: none !important; }
+
+        /* Slide-in menu */
+        .mobile-menu {
+            display: block !important;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1050;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .mobile-menu-inner {
+            position: absolute;
+            top: 0; right: 0;
+            width: min(320px, 85vw);
+            height: 100%;
+            background-color: var(--uya-dark-teal);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 16px 24px;
+        }
+
+        .mobile-menu.is-open { pointer-events: auto; }
+        .mobile-menu.is-open .mobile-menu-inner { transform: translateX(0); }
+
+        .mobile-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 4px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 12px;
+            position: sticky;
+            top: 0;
+            background-color: var(--uya-dark-teal);
+            z-index: 1;
+        }
+
+        .mobile-menu-title {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .mobile-menu-close {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .mobile-menu-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: rotate(90deg);
+        }
+
+        .mobile-menu-close:focus { outline: 2px solid var(--uya-gold); outline-offset: 2px; }
+
+        .mobile-nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mobile-nav-list li {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.15s ease;
+            transition-delay: calc(var(--i) * 40ms + 0.1s);
+        }
+
+        .mobile-menu.is-open .mobile-nav-list li {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .mobile-nav-link:hover { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        .mobile-nav-link.active { background-color: var(--uya-gold); color: var(--uya-dark-teal) !important; }
+        .mobile-nav-link i { font-size: 1.1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+        .mobile-menu-divider { height: 1px; background: rgba(255, 255, 255, 0.12); margin: 16px 0; }
+
+        .mobile-menu-actions { display: flex; flex-direction: column; gap: 4px; }
+
+        .mobile-action-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .mobile-action-link:hover { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        .mobile-action-link.text-danger:hover { background-color: rgba(220, 53, 69, 0.15); color: #ff6b7a !important; }
+
+        .mobile-action-icon { position: relative; width: 20px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
+
+        .mobile-badge {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background-color: var(--uya-gold);
+            color: var(--uya-dark-teal);
+            font-size: 0.6rem;
+            font-weight: 700;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .mobile-backdrop {
+            display: block !important;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(34, 77, 91, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 1049;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    }
 </style>
 
 <script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        const backdrop = document.getElementById('mobileBackdrop');
+        const btn = document.getElementById('hamburgerBtn');
+        const isOpen = menu.classList.contains('is-open');
+
+        if (isOpen) {
+            closeMobileMenu();
+        } else {
+            menu.classList.add('is-open');
+            backdrop.classList.add('is-open');
+            btn.setAttribute('aria-expanded', 'true');
+            menu.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        const backdrop = document.getElementById('mobileBackdrop');
+        const btn = document.getElementById('hamburgerBtn');
+
+        menu.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMobileMenu();
+            document.getElementById('notifPopup').classList.add('d-none');
+        }
+    });
+
     function toggleNotifications() {
         const popup = document.getElementById('notifPopup');
         popup.classList.toggle('d-none');
     }
+
     window.addEventListener('click', function(e) {
         const popup = document.getElementById('notifPopup');
         const btn = document.getElementById('notifBtn');

@@ -40,7 +40,16 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('dashboard', [
+            'stats' => [
+                'myActivities' => 0,
+                'upcoming' => 0,
+                'notifications' => 0,
+                'attendanceRate' => 0,
+            ],
+            'announcements' => collect([]),
+            'upcomingActivities' => collect([]),
+        ]);
     })->name('dashboard');
 
     Route::get('/activities', function () {
