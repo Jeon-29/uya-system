@@ -51,16 +51,181 @@
             border-color: var(--uya-light-blue) !important;
         }
 
-        /* Distinct Inner Sub-cards for Upcoming Activities */
-        .activity-item {
-            background-color: #f3f7f9;
-            border: 1px solid #dce5e8 !important;
-            transition: all 0.2s ease;
+        /* =============================================
+           ACTIVITY CARD (compact — dashboard preview)
+           ============================================= */
+        .activity-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            height: 100%;
+            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
+            border: 1px solid rgba(131, 182, 190, 0.25);
+            overflow: hidden;
         }
-        .activity-item:hover {
-            background-color: #ebf3f6;
-            border-color: var(--uya-light-blue) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+
+        .activity-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.85rem 1rem 0.4rem;
+        }
+        .activity-card__icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--card-gradient);
+            color: var(--icon-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .activity-card__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.25rem 0.55rem;
+            border-radius: 50rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .activity-card__badge--gold      { background-color: var(--uya-gold); color: #2a2a2a; }
+        .activity-card__badge--primary   { background-color: rgba(13,110,253,0.12); color: #0d6efd; }
+        .activity-card__badge--success    { background-color: rgba(25,135,84,0.12); color: #198754; }
+        .activity-card__badge--muted      { background-color: rgba(108,117,125,0.12); color: #6c757d; }
+        .activity-card__badge--secondary  { background-color: rgba(108,117,125,0.12); color: #6c757d; }
+        .activity-card__badge--pulse {
+            background-color: rgba(13,110,253,0.12);
+            color: #0d6efd;
+        }
+        .activity-card__pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            animation: dash-pulse 1.6s infinite;
+        }
+        @keyframes dash-pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(13,110,253,0.6); }
+            70%  { box-shadow: 0 0 0 6px rgba(13,110,253,0); }
+            100% { box-shadow: 0 0 0 0 rgba(13,110,253,0); }
+        }
+
+        .activity-card__body {
+            padding: 0 1rem 0.6rem;
+            flex-shrink: 0;
+        }
+        .activity-card__title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--uya-dark-teal);
+            margin: 0 0 0.4rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .activity-card__chip {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.12rem 0.45rem;
+            border-radius: 50rem;
+            background-color: rgba(34,77,91,0.08);
+            color: var(--uya-dark-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 0.4rem;
+        }
+        .activity-card__meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 0.75rem;
+            padding: 0.5rem 1rem;
+            background-color: #f8fbfc;
+            border-top: 1px solid rgba(131,182,190,0.18);
+        }
+        .activity-card__meta-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+        }
+        .activity-card__meta-item i {
+            color: var(--uya-light-blue);
+            margin-top: 0.12rem;
+            width: 13px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .activity-card__meta-label {
+            font-size: 0.58rem;
+            color: #9aa8ad;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 600;
+        }
+        .activity-card__meta-value {
+            font-size: 0.75rem;
+            color: #2c3e44;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .activity-card__actions {
+            padding: 0.4rem 1rem 1rem;
+            display: flex;
+            gap: 0.4rem;
+            margin-top: auto;
+        }
+        .activity-card__btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.5rem 0.65rem;
+            border-radius: 50rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .activity-card__btn--ghost {
+            background-color: #ffffff;
+            color: var(--uya-dark-teal);
+            border-color: var(--uya-dark-teal);
+        }
+        .activity-card__btn--ghost:hover {
+            background-color: var(--uya-dark-teal);
+            color: #fff;
+        }
+        .activity-card__btn--primary {
+            background-color: var(--uya-dark-teal);
+            color: #fff;
+            border-color: var(--uya-dark-teal);
+        }
+        .activity-card__btn--primary:hover { filter: brightness(0.92); }
+        .activity-card__btn--blue {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .activity-card__btn--disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
         }
 
         .custom-btn-outline {
@@ -71,6 +236,70 @@
         .custom-btn-outline:hover {
             background-color: var(--uya-dark-teal);
             color: #fff;
+        }
+
+        /* =============================================
+           COMPACT MOBILE LAYOUT
+           ============================================= */
+        @media (max-width: 575.98px) {
+            .activity-card {
+                border-radius: 0.85rem;
+            }
+            .activity-card__header {
+                padding: 0.6rem 0.75rem 0.25rem;
+            }
+            .activity-card__icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+            }
+            .activity-card__badge {
+                font-size: 0.55rem;
+                padding: 0.18rem 0.4rem;
+            }
+            .activity-card__body {
+                padding: 0.1rem 0.75rem 0.4rem;
+            }
+            .activity-card__title {
+                font-size: 0.88rem;
+                margin-bottom: 0.2rem;
+                -webkit-line-clamp: 1;
+            }
+            .activity-card__chip {
+                font-size: 0.55rem;
+                padding: 0.08rem 0.4rem;
+                margin-bottom: 0.25rem;
+            }
+            .activity-card__desc {
+                font-size: 0.7rem;
+                -webkit-line-clamp: 1;
+            }
+            .activity-card__meta {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 0.25rem 0.4rem;
+                padding: 0.35rem 0.75rem;
+                overflow: hidden;
+            }
+            .activity-card__meta-item {
+                font-size: 0.62rem;
+                gap: 0.25rem;
+                align-items: center;
+            }
+            .activity-card__meta-label {
+                display: none;
+            }
+            .activity-card__meta-value {
+                font-size: 0.62rem;
+            }
+            .activity-card__actions {
+                padding: 0.3rem 0.75rem 0.7rem;
+                gap: 0.3rem;
+            }
+            .activity-card__btn {
+                font-size: 0.68rem;
+                padding: 0.4rem 0.5rem;
+            }
         }
     </style>
 </head>
@@ -173,7 +402,7 @@
                     </div>
 
                     <div class="mt-3 text-end">
-                        <a href="{{ route('announcements') }}" class="text-decoration-none small fw-bold text-brand">View all announcements &rarr;</a>
+                        <a href="{{ route('announcements') }}" class="text-decoration-none small fw-bold text-brand">View all announcements <i class="fa-solid fa-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
@@ -185,25 +414,17 @@
                         <h5 class="fw-bold mb-0 text-brand">Upcoming Activities</h5>
                     </div>
 
-                    <div class="d-flex flex-column gap-3">
-
+                    <div class="row g-3">
                         @forelse ($upcomingActivities as $activity)
-                            <div class="card rounded-3 p-3 activity-item shadow-sm">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h6 class="fw-bold mb-0 text-brand">{{ $activity->title }}</h6>
-                                    <span class="badge rounded-pill px-2 py-1" style="background-color: var(--uya-gold); color: #fff; font-size: 0.65rem;">{{ strtoupper($activity->status) }}</span>
-                                </div>
-                                <div class="text-muted small d-flex flex-column gap-1 mb-3">
-                                    <div><i class="fa-regular fa-calendar me-2 text-secondary"></i> {{ $activity->date->format('D, M j, Y') }}</div>
-                                    <div><i class="fa-solid fa-location-dot me-2 text-secondary"></i> {{ $activity->location }}</div>
-                                    <div><i class="fa-solid fa-users me-2 text-secondary"></i> {{ $activity->participants_count ?? 0 }} participants</div>
-                                </div>
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-1 fw-semibold custom-btn-outline">View Activity</a>
+                            <div class="col-12">
+                                @include('partials.activity-card', ['activity' => $activity, 'context' => 'dashboard'])
                             </div>
                         @empty
-                            <p class="text-muted small text-center py-3">No upcoming activities.</p>
+                            <div class="col-12 text-center py-4">
+                                <i class="fa-regular fa-calendar-xmark fa-2x text-muted mb-2"></i>
+                                <p class="text-muted small mb-0">No upcoming activities.</p>
+                            </div>
                         @endforelse
-
                     </div>
                 </div>
             </div>
@@ -214,5 +435,15 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Register button handler
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action="register"]');
+            if (!btn) return;
+            const activityId = btn.getAttribute('data-activity-id');
+            // TODO: wire to backend register endpoint
+            console.log('Register for activity', activityId);
+        });
+    </script>
 </body>
 </html>
