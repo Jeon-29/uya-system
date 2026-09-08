@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // authenticated users on to the dashboard via the 'guest' middleware.
@@ -18,6 +19,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'show'])->name('login');
 
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::post('/api/check-email-availability', [AuthController::class, 'checkEmailAvailability'])->name('api.check-email');
 
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/register/verify-otp', [AuthController::class, 'verifyRegistrationOtp'])->name('register.verify');
@@ -39,18 +41,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard', [
-            'stats' => [
-                'myActivities' => 0,
-                'upcoming' => 0,
-                'notifications' => 0,
-                'attendanceRate' => 0,
-            ],
-            'announcements' => collect([]),
-            'upcomingActivities' => collect([]),
-        ]);
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/activities', function () {
         return view('activities');
@@ -94,3 +85,4 @@ Route::middleware('auth')->group(function () {
         return view('profile');
     })->name('profile');
 });
+

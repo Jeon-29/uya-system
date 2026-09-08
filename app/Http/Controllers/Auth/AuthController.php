@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
@@ -44,8 +45,8 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'email' => ['required', 'email', 'max:255'],
+            'password' => ['required', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -55,23 +56,63 @@ class AuthController extends Controller
                 ->with('active_form', 'form-login');
         }
 
-        $credentials = $validator->validated();
-        $user = User::where('email', $credentials['email'])->first();
+        // Sanitize email input
+        $email = filter_var(trim($request->input('email')), FILTER_SANITIZE_EMAIL);
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        $user = User::where('email', $email)->first();
+
+        // If user does not exist, simulate a hash check so timing
+        // is similar to a real login attempt (prevents user enumeration).
+        if (! $user) {
+            Hash::check($request->input('password'), '$2y$10$0123456789012345678901AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
             return back()
-                ->withErrors(['email' => 'These credentials do not match our records.'], self::BAG_LOGIN)
+                ->withErrors(['email' => 'Invalid email or password.'], self::BAG_LOGIN)
                 ->withInput($request->only('email'))
                 ->with('active_form', 'form-login');
         }
 
+        // Check lockout
+        if ($user->locked_until && Carbon::now()->lt($user->locked_until)) {
+            $remaining = Carbon::now()->diffInSeconds($user->locked_until);
+            $minutes = ceil($remaining / 60);
+
+            return back()
+                ->withErrors(['email' => 'Invalid email or password.'], self::BAG_LOGIN)
+                ->withInput($request->only('email'))
+                ->with('active_form', 'form-login')
+                ->with('lockout_remaining', $minutes);
+        }
+
+        if (! Hash::check($request->input('password'), $user->password)) {
+            // Increment failed attempts
+            $user->increment('failed_attempts');
+
+            // Lock account after 5 failed attempts for 1 minute
+            if ($user->failed_attempts >= 5) {
+                $user->update([
+                    'locked_until' => Carbon::now()->addMinute(),
+                ]);
+            }
+
+            return back()
+                ->withErrors(['email' => 'Invalid email or password.'], self::BAG_LOGIN)
+                ->withInput($request->only('email'))
+                ->with('active_form', 'form-login');
+        }
+
+        // Successful login — reset failed attempts and lockout
+        if ($user->failed_attempts > 0 || $user->locked_until) {
+            $user->update([
+                'failed_attempts' => 0,
+                'locked_until' => null,
+            ]);
+        }
+
+        // Verify email (existing OTP flow)
         if (! $user->email_verified_at) {
             $otp = $user->generateOtp();
             Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
 
-            // register_email must survive more than one redirect (it's read
-            // again when the OTP form itself is submitted), so it goes in
-            // persistent session storage rather than one-shot flash data.
             $request->session()->put('register_email', $user->email);
 
             return redirect()->route('login')
@@ -309,5 +350,31 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * Check if an email is available for registration (AJAX endpoint).
+     * Returns JSON response indicating availability.
+     */
+    public function checkEmailAvailability(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Invalid email format.',
+            ]);
+        }
+
+        $email = filter_var(trim($request->input('email')), FILTER_SANITIZE_EMAIL);
+        $exists = User::where('email', $email)->exists();
+
+        return response()->json([
+            'available' => ! $exists,
+            'message' => $exists ? 'This email is already registered.' : 'Email is available.',
+        ]);
     }
 }

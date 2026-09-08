@@ -18,6 +18,8 @@ use Illuminate\Notifications\Notifiable;
     'contact_number',
     'address',
     'password',
+    'failed_attempts',
+    'locked_until',
 ])]
 #[Hidden(['password', 'remember_token', 'otp_code'])]
 class User extends Authenticatable
@@ -80,5 +82,15 @@ class User extends Authenticatable
             'otp_code' => null,
             'otp_expires_at' => null,
         ])->save();
+    }
+
+    /**
+     * Get the activities the user has joined.
+     */
+    public function activities()
+    {
+        return $this->belongsToMany(Activity::class, 'activity_participants')
+            ->withPivot('attended', 'created_at')
+            ->withTimestamps();
     }
 }

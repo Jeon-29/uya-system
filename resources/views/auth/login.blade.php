@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UYA Connect</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -260,6 +261,14 @@
                     <h3 class="fw-bold text-brand mb-1">Welcome Back</h3>
                     <p class="text-muted small">Sign in to your account</p>
                 </div>
+
+                @if (session('lockout_remaining'))
+                    <div class="alert alert-warning small text-center mb-3">
+                        <i class="fa-solid fa-lock me-1"></i>
+                        Account temporarily locked. Please wait <strong id="lockoutCountdown">{{ session('lockout_remaining') }}</strong> minute(s).
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login.attempt') }}" novalidate>
                     @csrf
                     <div class="mb-3">
@@ -326,7 +335,8 @@
                             <label class="form-label">Email Address</label>
                             <input type="email" name="email" value="{{ old('email') }}"
                                 class="form-control @error('email', 'register') is-invalid @enderror"
-                                placeholder="Enter email address">
+                                placeholder="Enter email address" id="register-email">
+                            <span id="register-email-status" class="small mt-1 d-block"></span>
                             @error('email', 'register')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -368,9 +378,10 @@
                         <div class="password-wrapper">
                             <input type="password" name="password"
                                 class="form-control @error('password', 'register') is-invalid @enderror"
-                                placeholder="Min 8 characters">
+                                placeholder="Min 8 characters" id="register-password">
                             <i class="fa-regular fa-eye password-toggle"></i>
                         </div>
+                        <div id="register-strength-meter" class="mt-1 small"></div>
                         @error('password', 'register')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -499,9 +510,10 @@
                         <div class="password-wrapper">
                             <input type="password" name="password"
                                 class="form-control @error('password', 'forgotPassword') is-invalid @enderror"
-                                placeholder="Enter new password">
+                                placeholder="Enter new password" id="forgot-new-password">
                             <i class="fa-regular fa-eye password-toggle"></i>
                         </div>
+                        <div id="forgot-new-strength-meter" class="mt-1 small"></div>
                         @error('password', 'forgotPassword')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -510,7 +522,7 @@
                         <label class="form-label">Confirm Password</label>
                         <div class="password-wrapper">
                             <input type="password" name="password_confirmation" class="form-control"
-                                placeholder="Re-enter new password">
+                                placeholder="Re-enter new password" id="forgot-confirm-password">
                             <i class="fa-regular fa-eye password-toggle"></i>
                         </div>
                     </div>
@@ -549,8 +561,7 @@
                 });
             });
 
-            // OTP boxes: auto-advance, backspace support, and packing the
-            // 6 digits into the single hidden "otp" field each form submits.
+            // OTP boxes: auto-advance, backspace support, and packing digits into hidden field
             document.querySelectorAll('.otp-form').forEach(form => {
                 const digits = form.querySelectorAll('.otp-digit');
                 const hidden = form.querySelector('input[name="otp"]');
@@ -585,6 +596,132 @@
                     hidden.value = Array.from(digits).map(d => d.value).join('');
                 });
             });
+
+            // Register form password strength meter
+            const registerStrengthMeter = document.getElementById('register-strength-meter');
+            const registerPasswordInput = document.getElementById('register-password');
+
+            if (registerStrengthMeter && registerPasswordInput) {
+                registerPasswordInput.addEventListener('input', () => {
+                    const value = registerPasswordInput.value;
+                    let strength = 0;
+
+                    if (value.length >= 8) strength++;
+                    if (value.length >= 12) strength++;
+                    if (/[a-z]/.test(value)) strength++;
+                    if (/[A-Z]/.test(value)) strength++;
+                    if (/[0-9]/.test(value)) strength++;
+                    if (/[^a-zA-Z0-9]/.test(value)) strength++;
+
+                    const strengthLabels = ['Too short', 'Weak', 'Medium', 'Strong'];
+                    const strengthColors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745'];
+                    const strengthBgColors = ['rgba(220, 53, 69, 0.1)', 'rgba(253, 126, 20, 0.1)', 'rgba(255, 193, 7, 0.1)', 'rgba(40, 167, 69, 0.1)'];
+
+                    if (value.length === 0) {
+                        registerStrengthMeter.innerHTML = '';
+                        registerStrengthMeter.style.display = 'none';
+                    } else {
+                        registerStrengthMeter.style.display = 'block';
+                        registerStrengthMeter.innerHTML = `
+                            <span style="color: ${strengthColors[Math.min(strength - 1, 3)]}">
+                                ${strengthLabels[Math.min(strength - 1, 3)]}
+                            </span>
+                        `;
+                        registerStrengthMeter.style.background = strengthBgColors[Math.min(strength - 1, 3)];
+                        registerStrengthMeter.style.padding = '4px 8px';
+                        registerStrengthMeter.style.borderRadius = '4px';
+                        registerStrengthMeter.style.marginTop = '4px';
+                        registerStrengthMeter.style.display = 'inline-block';
+                    }
+                });
+            }
+
+            // Forgot password new strength meter
+            const forgotNewStrengthMeter = document.getElementById('forgot-new-strength-meter');
+            const forgotNewPasswordInput = document.getElementById('forgot-new-password');
+
+            if (forgotNewStrengthMeter && forgotNewPasswordInput) {
+                forgotNewPasswordInput.addEventListener('input', () => {
+                    const value = forgotNewPasswordInput.value;
+                    let strength = 0;
+
+                    if (value.length >= 8) strength++;
+                    if (value.length >= 12) strength++;
+                    if (/[a-z]/.test(value)) strength++;
+                    if (/[A-Z]/.test(value)) strength++;
+                    if (/[0-9]/.test(value)) strength++;
+                    if (/[^a-zA-Z0-9]/.test(value)) strength++;
+
+                    const strengthLabels = ['Too short', 'Weak', 'Medium', 'Strong'];
+                    const strengthColors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745'];
+                    const strengthBgColors = ['rgba(220, 53, 69, 0.1)', 'rgba(253, 126, 20, 0.1)', 'rgba(255, 193, 7, 0.1)', 'rgba(40, 167, 69, 0.1)'];
+
+                    if (value.length === 0) {
+                        forgotNewStrengthMeter.innerHTML = '';
+                        forgotNewStrengthMeter.style.display = 'none';
+                    } else {
+                        forgotNewStrengthMeter.style.display = 'block';
+                        forgotNewStrengthMeter.innerHTML = `
+                            <span style="color: ${strengthColors[Math.min(strength - 1, 3)]}">
+                                ${strengthLabels[Math.min(strength - 1, 3)]}
+                            </span>
+                        `;
+                        forgotNewStrengthMeter.style.background = strengthBgColors[Math.min(strength - 1, 3)];
+                        forgotNewStrengthMeter.style.padding = '4px 8px';
+                        forgotNewStrengthMeter.style.borderRadius = '4px';
+                        forgotNewStrengthMeter.style.marginTop = '4px';
+                        forgotNewStrengthMeter.style.display = 'inline-block';
+                    }
+                });
+            }
+
+            // Real-time inline email validation for Registration
+            const registerEmailInput = document.getElementById('register-email');
+            const registerEmailStatus = document.getElementById('register-email-status');
+
+            if (registerEmailInput && registerEmailStatus) {
+                registerEmailInput.addEventListener('blur', async function() {
+                    const email = registerEmailInput.value.trim();
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                    if (!email) {
+                        registerEmailStatus.innerHTML = '';
+                        registerEmailStatus.style.display = 'none';
+                        return;
+                    }
+
+                    if (!emailRegex.test(email)) {
+                        registerEmailStatus.innerHTML = '<span style="color: #dc3545;">Please enter a valid email address.</span>';
+                        registerEmailStatus.style.display = 'block';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/check-email-availability', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ email: email })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.available) {
+                            registerEmailStatus.innerHTML = '<span style="color: #28a745;">Email is available.</span>';
+                            registerEmailStatus.style.display = 'block';
+                        } else {
+                            registerEmailStatus.innerHTML = '<span style="color: #dc3545;">This email is already registered.</span>';
+                            registerEmailStatus.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Email check failed:', error);
+                        registerEmailStatus.innerHTML = '<span style="color: #6c757d;">Unable to check availability.</span>';
+                        registerEmailStatus.style.display = 'block';
+                    }
+                });
+            }
         });
     </script>
 </body>
