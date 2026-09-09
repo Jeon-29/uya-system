@@ -93,4 +93,20 @@ class User extends Authenticatable
             ->withPivot('attended', 'created_at')
             ->withTimestamps();
     }
+
+    /**
+     * Get the proposals the user has created.
+     */
+    public function proposals()
+    {
+        return $this->hasMany(Proposal::class);
+    }
+
+    /**
+     * Get the votes the user has cast on proposals.
+     */
+    public function proposalVotes()
+    {
+        return $this->hasMany(ProposalVote::class);
+    }
 }
