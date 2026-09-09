@@ -1,6 +1,6 @@
 <!-- Floating Modern Navbar -->
 @php $stats = $stats ?? ['notifications' => 0]; @endphp
-<nav class="navbar navbar-expand-lg fixed-top my-2 mx-3 rounded-4 shadow-sm px-4 py-2"
+<nav class="navbar navbar-expand-lg fixed-top my-2 mx-2 mx-md-3 rounded-4 shadow-sm px-3 px-md-4 py-2"
     style="background-color: var(--uya-dark-teal); border: 1px solid rgba(255, 255, 255, 0.1);">
     <div class="container-fluid" style="padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important;">
 

@@ -26,11 +26,17 @@
 
         .text-brand { color: var(--uya-dark-teal) !important; }
 
-        /* Full space container extension */
+        /* Responsive Container: compact padding on mobile, spacious on desktop */
         .container-fluid {
             width: 100% !important;
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        @media (min-width: 768px) {
+            .container-fluid {
+                padding-left: 2.5rem !important;
+                padding-right: 2.5rem !important;
+            }
         }
 
         /* Main Wrapper Cards */
@@ -38,6 +44,7 @@
             background-color: #ffffff;
             border: 1px solid rgba(131, 182, 190, 0.25) !important;
             box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
+            border-radius: 16px;
         }
 
         /* Distinct Inner Sub-cards for Announcements */
@@ -79,22 +86,30 @@
     <!-- Include Navbar Component -->
     @include('layouts.navbar')
 
-    <!-- Dashboard Main Contents (Edge-to-Edge Container) -->
-    <div class="container-fluid py-3">
+    <!-- Dashboard Main Contents -->
+    <div class="container-fluid py-3 py-md-4">
+
+        <!-- Header Section -->
+        <div class="row mb-3 mb-md-4 px-2 px-md-0">
+            <div class="col-12">
+                <h2 class="fw-bold mb-1 text-brand">Dashboard</h2>
+                <p class="text-muted small mb-0">Welcome back! Here's an overview of your activities and announcements.</p>
+            </div>
+        </div>
 
         <!-- Metric Cards Row -->
-        <div class="row g-3 mb-4">
+        <div class="row g-2 g-md-3 mb-4">
 
             <div class="col-6 col-md-6 col-xl-3">
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">My Activities</span>
-                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.4rem;">{{ $stats['myActivities'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.75rem;">Activities joined</span>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">My Activities</span>
+                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['myActivities'] }}</h2>
+                            <span class="text-muted" style="font-size: 0.7rem;">Activities joined</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
-                            <i class="fa-regular fa-calendar-days"></i>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
+                            <i class="fa-regular fa-calendar-days fa-sm"></i>
                         </div>
                     </div>
                 </div>
@@ -104,27 +119,12 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Upcoming</span>
-                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.4rem;">{{ $stats['upcoming'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.75rem;">Upcoming activities</span>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Upcoming</span>
+                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['upcoming'] }}</h2>
+                            <span class="text-muted" style="font-size: 0.7rem;">Upcoming activities</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(216, 178, 87, 0.2); color: var(--uya-gold);">
-                            <i class="fa-solid fa-clock"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-6 col-xl-3">
-                <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Notifications</span>
-                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.4rem;">{{ $stats['notifications'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.75rem;">Active announcements</span>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
-                            <i class="fa-regular fa-bell"></i>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(216, 178, 87, 0.2); color: var(--uya-gold);">
+                            <i class="fa-solid fa-clock fa-sm"></i>
                         </div>
                     </div>
                 </div>
@@ -134,12 +134,27 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Attendance Rate</span>
-                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.4rem;">{{ $stats['attendanceRate'] }}%</h2>
-                            <span class="text-muted" style="font-size: 0.75rem;">Your attendance</span>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Notifications</span>
+                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['notifications'] }}</h2>
+                            <span class="text-muted" style="font-size: 0.7rem;">Active announcements</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(40, 167, 69, 0.15); color: #28a745;">
-                            <i class="fa-solid fa-chart-line"></i>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
+                            <i class="fa-regular fa-bell fa-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-6 col-xl-3">
+                <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Attendance Rate</span>
+                            <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['attendanceRate'] }}%</h2>
+                            <span class="text-muted" style="font-size: 0.7rem;">Your attendance</span>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(40, 167, 69, 0.15); color: #28a745;">
+                            <i class="fa-solid fa-chart-line fa-sm"></i>
                         </div>
                     </div>
                 </div>
@@ -148,20 +163,20 @@
         </div>
 
         <!-- Main Content Section: Announcements & Upcoming Activities -->
-        <div class="row g-4">
+        <div class="row g-3 g-md-4">
 
             <!-- Left Column: Recent Announcements -->
             <div class="col-lg-6">
-                <div class="card shadow-sm rounded-4 p-4 h-100 pastel-card-primary">
+                <div class="card shadow-sm rounded-4 p-3 p-md-4 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0 text-brand">Recent Announcements</h5>
+                        <h5 class="fw-bold mb-0 text-brand fs-6 fs-md-5">Recent Announcements</h5>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
                         @forelse ($announcements as $announcement)
                             <div class="p-3 rounded-3 announcement-subcard shadow-sm">
-                                <h6 class="fw-bold mb-1 text-brand">{{ $announcement->title }}</h6>
-                                <p class="text-muted small mb-2">{{ $announcement->content }}</p>
+                                <h6 class="fw-bold mb-1 text-brand" style="font-size: 0.9rem;">{{ $announcement->title }}</h6>
+                                <p class="text-muted small mb-2" style="font-size: 0.8rem;">{{ $announcement->content }}</p>
                                 <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
                                     <span class="text-muted fw-semibold">{{ $announcement->author->name ?? 'Admin' }}</span>
                                     <span class="text-muted">{{ $announcement->created_at->format('M j, Y') }}</span>
@@ -180,9 +195,9 @@
 
             <!-- Right Column: Upcoming Activities -->
             <div class="col-lg-6">
-                <div class="card shadow-sm rounded-4 p-4 h-100 pastel-card-primary">
+                <div class="card shadow-sm rounded-4 p-3 p-md-4 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0 text-brand">Upcoming Activities</h5>
+                        <h5 class="fw-bold mb-0 text-brand fs-6 fs-md-5">Upcoming Activities</h5>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
@@ -190,15 +205,15 @@
                         @forelse ($upcomingActivities as $activity)
                             <div class="card rounded-3 p-3 activity-item shadow-sm">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h6 class="fw-bold mb-0 text-brand">{{ $activity->title }}</h6>
+                                    <h6 class="fw-bold mb-0 text-brand" style="font-size: 0.9rem;">{{ $activity->title }}</h6>
                                     <span class="badge rounded-pill px-2 py-1" style="background-color: var(--uya-gold); color: #fff; font-size: 0.65rem;">{{ strtoupper($activity->status) }}</span>
                                 </div>
-                                <div class="text-muted small d-flex flex-column gap-1 mb-3">
+                                <div class="text-muted small d-flex flex-column gap-1 mb-3" style="font-size: 0.8rem;">
                                     <div><i class="fa-regular fa-calendar me-2 text-secondary"></i> {{ $activity->date->format('D, M j, Y') }}</div>
                                     <div><i class="fa-solid fa-location-dot me-2 text-secondary"></i> {{ $activity->location }}</div>
                                     <div><i class="fa-solid fa-users me-2 text-secondary"></i> {{ $activity->participants_count ?? 0 }} participants</div>
                                 </div>
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-1 fw-semibold custom-btn-outline">View Activity</a>
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-1 fw-semibold custom-btn-outline" style="font-size: 0.8rem;">View Activity</a>
                             </div>
                         @empty
                             <p class="text-muted small text-center py-3">No upcoming activities.</p>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\CalendarController;
 use Illuminate\Support\Facades\Route;
 
 // authenticated users on to the dashboard via the 'guest' middleware.
@@ -53,7 +54,7 @@ Route::middleware('auth')->group(function () {
         return view('activities.finished-show', ['id' => $id]);
     })->name('activities.finished.show');
 
-    Route::view('/calendar', 'calendar')->name('calendar');
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 
     Route::get('/certificates', function () {
         return view('certificates');
