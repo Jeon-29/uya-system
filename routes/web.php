@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
 // authenticated users on to the dashboard via the 'guest' middleware.
@@ -74,9 +75,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy');
     Route::post('/proposals/{proposal}/vote', [ProposalController::class, 'vote'])->name('proposals.vote');
 
-    Route::get('/announcements', function () {
-        return view('announcements');
-    })->name('announcements');
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements');
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
 
     Route::get('/profile', function () {
         return view('profile');

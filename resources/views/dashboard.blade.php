@@ -92,8 +92,7 @@
         <!-- Header Section -->
         <div class="row mb-3 mb-md-4 px-2 px-md-0">
             <div class="col-12">
-                <h2 class="fw-bold mb-1 text-brand">Dashboard</h2>
-                <p class="text-muted small mb-0">Welcome back! Here's an overview of your activities and announcements.</p>
+                <h3 class="fw-bold mb-1 text-brand">Hello, {{ auth()->user()->name ?? 'User' }}</h3>
             </div>
         </div>
 
