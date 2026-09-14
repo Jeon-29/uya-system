@@ -96,23 +96,38 @@
             color: #000;
         }
 
-        /* Mobile Weekly Strip Styling */
+        /* Mobile Weekly & Monthly Box Tile Styling */
         @media (max-width: 767.98px) {
             .calendar-grid-wrapper:not(.expanded) .cal-week-row:not(.current-week-row) {
                 display: none !important;
             }
             .calendar-grid-wrapper:not(.expanded) .cal-day-cell {
-                min-height: 60px !important;
-                padding: 10px 2px !important;
+                aspect-ratio: 1; /* Forces a perfect square box look */
+                min-height: unset !important;
+                height: auto !important;
+                padding: 4px !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
                 text-align: center;
                 background-color: #ffffff;
                 border: 1px solid #edf2f7;
+            }
+            .calendar-grid-wrapper.expanded .cal-day-cell {
+                aspect-ratio: 1; /* Keeps expanded month view tiles as even square boxes too */
+                min-height: unset !important;
+                padding: 4px !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
             .calendar-grid-wrapper:not(.expanded) .event-pill {
                 display: none !important;
             }
             .calendar-grid-wrapper:not(.expanded) .date-number {
-                font-size: 0.9rem !important;
+                font-size: 0.95rem !important;
             }
         }
     </style>
@@ -201,7 +216,7 @@
                                     @endphp
                                     <div class="cal-day-cell text-center text-md-start {{ $isOtherMonth ? 'other-month' : '' }} {{ $isToday ? 'active-today' : '' }}" data-date="{{ $dateString }}">
 
-                                        <div class="d-flex justify-content-between align-items-center justify-content-md-between">
+                                        <div class="d-flex justify-content-between align-items-center justify-content-md-between w-100">
                                             <!-- Current date number highlighted in red for easy noticing -->
                                             <span class="fw-semibold date-number {{ $isToday ? 'fw-bold text-danger' : 'text-dark' }}" style="font-size: 0.9rem;">{{ $date->format('d') }}</span>
 
