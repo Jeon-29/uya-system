@@ -15,11 +15,6 @@ use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
-    /**
-     * All six form sections live on one page. Each gets its own validation
-     * error bag so a failure in one form never bleeds into another form's
-     * same-named field (e.g. "email" appears on 3 different forms here).
-     */
     private const BAG_LOGIN = 'login';
     private const BAG_REGISTER = 'register';
     private const BAG_REGISTER_OTP = 'registerOtp';
@@ -27,9 +22,6 @@ class AuthController extends Controller
     private const BAG_FORGOT_OTP = 'forgotOtp';
     private const BAG_FORGOT_PASSWORD = 'forgotPassword';
 
-    /**
-     * Show the combined login / register / forgot-password page.
-     */
     public function show(Request $request)
     {
         return view('auth.login', [
@@ -39,9 +31,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Handle a login attempt.
-     */
     public function login(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -56,13 +45,10 @@ class AuthController extends Controller
                 ->with('active_form', 'form-login');
         }
 
-        // Sanitize email input
         $email = filter_var(trim($request->input('email')), FILTER_SANITIZE_EMAIL);
 
         $user = User::where('email', $email)->first();
 
-        // If user does not exist, simulate a hash check so timing
-        // is similar to a real login attempt (prevents user enumeration).
         if (! $user) {
             Hash::check($request->input('password'), '$2y$10$0123456789012345678901AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
             return back()
@@ -71,7 +57,6 @@ class AuthController extends Controller
                 ->with('active_form', 'form-login');
         }
 
-        // Check lockout
         if ($user->locked_until && Carbon::now()->lt($user->locked_until)) {
             $remaining = Carbon::now()->diffInSeconds($user->locked_until);
             $minutes = ceil($remaining / 60);
@@ -84,10 +69,8 @@ class AuthController extends Controller
         }
 
         if (! Hash::check($request->input('password'), $user->password)) {
-            // Increment failed attempts
             $user->increment('failed_attempts');
 
-            // Lock account after 5 failed attempts for 1 minute
             if ($user->failed_attempts >= 5) {
                 $user->update([
                     'locked_until' => Carbon::now()->addMinute(),
@@ -100,7 +83,6 @@ class AuthController extends Controller
                 ->with('active_form', 'form-login');
         }
 
-        // Successful login — reset failed attempts and lockout
         if ($user->failed_attempts > 0 || $user->locked_until) {
             $user->update([
                 'failed_attempts' => 0,
@@ -108,7 +90,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Verify email (existing OTP flow)
         if (! $user->email_verified_at) {
             $otp = $user->generateOtp();
             Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
@@ -123,12 +104,14 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
+        // Redirect based on user role
+        if (in_array($user->role, ['admin', 'officer'])) {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
-    /**
-     * Handle a new account registration and kick off email verification.
-     */
     public function register(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -160,9 +143,6 @@ class AuthController extends Controller
             ->with('status', 'We sent a 6-digit code to '.$user->email.'.');
     }
 
-    /**
-     * Verify the OTP sent during registration and log the new user in.
-     */
     public function verifyRegistrationOtp(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -201,9 +181,6 @@ class AuthController extends Controller
         return redirect()->route('dashboard')->with('status', 'Your email has been verified!');
     }
 
-    /**
-     * Resend the registration OTP.
-     */
     public function resendRegistrationOtp(Request $request): RedirectResponse
     {
         $email = $request->session()->get('register_email');
@@ -221,9 +198,6 @@ class AuthController extends Controller
             ->with('status', 'A new code was sent to '.$user->email.'.');
     }
 
-    /**
-     * Start the forgot-password flow by emailing an OTP.
-     */
     public function sendPasswordOtp(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -249,9 +223,6 @@ class AuthController extends Controller
             ->with('status', 'We sent a 6-digit code to '.$user->email.'.');
     }
 
-    /**
-     * Verify the forgot-password OTP before letting the user set a new password.
-     */
     public function verifyPasswordOtp(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -285,9 +256,6 @@ class AuthController extends Controller
         return redirect()->route('login')->with('active_form', 'form-forgot-new');
     }
 
-    /**
-     * Resend the forgot-password OTP.
-     */
     public function resendPasswordOtp(Request $request): RedirectResponse
     {
         $email = $request->session()->get('reset_email');
@@ -305,9 +273,6 @@ class AuthController extends Controller
             ->with('status', 'A new code was sent to '.$user->email.'.');
     }
 
-    /**
-     * Set the new password once the OTP has been verified.
-     */
     public function updatePassword(Request $request): RedirectResponse
     {
         $email = $request->session()->get('reset_email');
@@ -339,9 +304,6 @@ class AuthController extends Controller
             ->with('status', 'Your password has been updated. Please sign in.');
     }
 
-    /**
-     * Log the current user out.
-     */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
@@ -352,10 +314,6 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    /**
-     * Check if an email is available for registration (AJAX endpoint).
-     * Returns JSON response indicating availability.
-     */
     public function checkEmailAvailability(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [

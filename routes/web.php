@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Admin\MemberController;
 use Illuminate\Support\Facades\Route;
 
 // authenticated users on to the dashboard via the 'guest' middleware.
@@ -84,4 +86,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', function () {
         return view('profile');
     })->name('profile');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin & Officer Protected Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Member Management Routes
+        Route::get('/members', [MemberController::class, 'index'])->name('members');
+        Route::post('/members', [MemberController::class, 'store'])->name('members.store');
+        Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
+        Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
+    });
 });
