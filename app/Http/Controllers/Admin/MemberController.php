@@ -84,6 +84,27 @@ class MemberController extends Controller
     }
 
     /**
+     * Toggle the specified member's active status.
+     *
+     * "Active" is represented by a non-null email_verified_at timestamp;
+     * toggling flips it between null (inactive) and now() (active).
+     */
+    public function toggleStatus(User $member)
+    {
+        // Prevent an admin/officer from locking themselves out
+        if (auth()->id() === $member->id) {
+            return redirect()->route('admin.members')->with('error', 'You cannot change your own account status.');
+        }
+
+        $member->email_verified_at = $member->email_verified_at ? null : now();
+        $member->save();
+
+        $status = $member->email_verified_at ? 'activated' : 'deactivated';
+
+        return redirect()->route('admin.members')->with('success', "Member {$status} successfully.");
+    }
+
+    /**
      * Remove the specified member from storage.
      */
     public function destroy(User $member)

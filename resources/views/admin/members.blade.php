@@ -31,6 +31,13 @@
             overflow-x: hidden;
         }
 
+        /* Bootstrap's default .text-muted (#6c757d) is tuned for light
+           backgrounds and is very low-contrast on this dark theme.
+           Override it to use the theme's light slate color instead. */
+        .text-muted {
+            color: var(--admin-text-muted) !important;
+        }
+
         /* Standardized Responsive Container */
         .admin-content-container {
             width: 100% !important;
@@ -223,6 +230,17 @@
             padding: 3px 10px;
             border-radius: 10px;
             font-size: 0.72rem;
+        }
+
+        /* Clickable version of the status badges, used to toggle a
+           member's active/inactive state. */
+        .badge-toggle-btn {
+            cursor: pointer;
+            transition: filter 0.15s ease;
+        }
+
+        .badge-toggle-btn:hover {
+            filter: brightness(1.3);
         }
 
         /* Action Buttons */
@@ -504,10 +522,23 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($member->email_verified_at)
-                                            <span class="badge badge-status-active">Active</span>
+                                        @if(auth()->id() === $member->id)
+                                            {{-- Can't toggle your own status --}}
+                                            @if($member->email_verified_at)
+                                                <span class="badge badge-status-active">Active</span>
+                                            @else
+                                                <span class="badge badge-status-inactive">Inactive</span>
+                                            @endif
                                         @else
-                                            <span class="badge badge-status-inactive">Inactive</span>
+                                            <form method="POST" action="{{ route('admin.members.toggle-status', $member->id) }}" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if($member->email_verified_at)
+                                                    <button type="submit" class="badge badge-status-active badge-toggle-btn" title="Click to deactivate">Active</button>
+                                                @else
+                                                    <button type="submit" class="badge badge-status-inactive badge-toggle-btn" title="Click to activate">Inactive</button>
+                                                @endif
+                                            </form>
                                         @endif
                                     </td>
                                     <td class="text-end">
