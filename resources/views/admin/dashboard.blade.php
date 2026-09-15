@@ -312,7 +312,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('calendar') }}" class="sidebar-nav-link">
+                    <a href="{{ route('admin.calendar') }}" class="sidebar-nav-link">
                         <i class="fa-regular fa-calendar"></i>
                         <span>Calendar</span>
                     </a>

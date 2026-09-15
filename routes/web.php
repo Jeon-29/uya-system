@@ -7,6 +7,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use Illuminate\Support\Facades\Route;
 
 // authenticated users on to the dashboard via the 'guest' middleware.
@@ -101,5 +102,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
         Route::patch('/members/{member}/toggle-status', [MemberController::class, 'toggleStatus'])->name('members.toggle-status');
         Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
+
+        // Admin Calendar Route
+        Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar');
     });
 });
