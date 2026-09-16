@@ -27,21 +27,10 @@
 @endpush
 
 @section('content')
-    @php
-        $authUser = auth()->user();
-        $authName = $authUser->name ?? 'User';
-        $authRole = ucfirst($authUser->role ?? 'Officer');
-    @endphp
-
-    @if (session('success'))
-        <div class="alert alert-success bg-success bg-opacity-20 text-success border-0 rounded-3 mb-3" style="font-size: 0.85rem;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold mb-1 text-white">Announcements</h4>
+            <p class="text-subtle small mb-0">Publish and manage broadcast announcements</p>
         </div>
         <button type="button" class="btn btn-purple d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createAnnouncementModal">
             <i class="fa-solid fa-plus"></i> Create Announcement
@@ -190,9 +179,29 @@
                     </div>
                     <div class="d-flex justify-content-end gap-2 p-3 border-top border-white border-opacity-10">
                         <button type="button" class="btn btn-outline-light rounded-3 px-4 py-2" style="font-size: 0.85rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-purple px-4 py-2">Save Changes</button>
+                        <button type="button" class="btn btn-purple px-4 py-2" onclick="promptEditConfirmation()">Save Changes</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT CONFIRMATION MODAL -->
+    <div class="modal fade admin-modal" id="editConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content p-3 text-center">
+                <div class="modal-body p-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width: 56px; height: 56px; background-color: rgba(99, 102, 241, 0.15);">
+                        <i class="fa-solid fa-pen-to-square text-primary fa-lg"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Update Announcement?</h5>
+                    <p class="text-subtle small mb-4">Are you sure you want to save changes to this announcement post?</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-outline-light rounded-3 px-4" onclick="cancelEditConfirmation()">Back</button>
+                        <button type="button" class="btn btn-purple rounded-3 px-4" onclick="submitEditForm()">Yes, Save Changes</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -225,6 +234,9 @@
 
 @push('scripts')
 <script>
+    let editModalInstance = null;
+    let editConfirmModalInstance = null;
+
     function editAnnouncement(announcement) {
         document.getElementById('editAnnouncementForm').action = '/announcements/' + announcement.id;
         document.getElementById('edit_title').value = announcement.title;
@@ -232,8 +244,36 @@
         document.getElementById('edit_content').value = announcement.content;
         document.getElementById('edit_is_pinned').checked = Boolean(announcement.is_pinned);
 
-        const modal = new bootstrap.Modal(document.getElementById('editAnnouncementModal'));
-        modal.show();
+        editModalInstance = new bootstrap.Modal(document.getElementById('editAnnouncementModal'));
+        editModalInstance.show();
+    }
+
+    function promptEditConfirmation() {
+        const form = document.getElementById('editAnnouncementForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        if (editModalInstance) {
+            editModalInstance.hide();
+        }
+
+        editConfirmModalInstance = new bootstrap.Modal(document.getElementById('editConfirmModal'));
+        editConfirmModalInstance.show();
+    }
+
+    function cancelEditConfirmation() {
+        if (editConfirmModalInstance) {
+            editConfirmModalInstance.hide();
+        }
+        if (editModalInstance) {
+            editModalInstance.show();
+        }
+    }
+
+    function submitEditForm() {
+        document.getElementById('editAnnouncementForm').submit();
     }
 
     function confirmDelete(actionUrl) {

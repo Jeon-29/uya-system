@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Announcement;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
@@ -64,7 +65,6 @@ class AnnouncementController extends Controller
             'is_pinned'       => $request->boolean('is_pinned'),
         ]);
 
-        // Query users based on target audience (excluding creator)
         $userQuery = User::where('id', '!=', auth()->id());
 
         if ($validated['target_audience'] === 'officers') {
@@ -75,10 +75,11 @@ class AnnouncementController extends Controller
 
         $recipients = $userQuery->get();
 
-        // Dispatch notifications to target audience
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new AnnouncementPublished($announcement));
         }
+
+        ActivityLog::record('Published Announcement', "Posted announcement: \"{$announcement->title}\".");
 
         $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
 
@@ -103,6 +104,8 @@ class AnnouncementController extends Controller
             'is_pinned'       => $request->boolean('is_pinned'),
         ]);
 
+        ActivityLog::record('Updated Announcement', "Updated announcement #{$announcement->id}: \"{$announcement->title}\".");
+
         $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
 
         return redirect()->route($redirect)->with('success', 'Announcement updated successfully.');
@@ -112,7 +115,10 @@ class AnnouncementController extends Controller
     {
         $this->authorizeAdminOrOfficer();
 
+        $title = $announcement->title;
         $announcement->delete();
+
+        ActivityLog::record('Deleted Announcement', "Deleted announcement: \"{$title}\".");
 
         $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
 

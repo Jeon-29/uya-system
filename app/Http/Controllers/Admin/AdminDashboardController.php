@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Announcement;
 use App\Models\Proposal;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -25,18 +27,19 @@ class AdminDashboardController extends Controller
             : collect();
 
         $stats = [
-            'totalMembers'           => User::where('role', 'member')->count(),
-            'activeMembers'          => User::where('role', 'member')->whereNotNull('email_verified_at')->count(),
-            'totalActivities'        => $totalActivities,
+            'totalMembers'            => User::where('role', 'member')->count(),
+            'activeMembers'           => User::where('role', 'member')->whereNotNull('email_verified_at')->count(),
+            'totalActivities'         => $totalActivities,
             'upcomingActivitiesCount' => $upcomingCount,
-            'approvedProposals'      => Proposal::where('status', 'approved')->count(),
-            'pendingProposals'       => Proposal::where('status', 'pending')->count(),
-            'rejectedProposals'      => Proposal::where('status', 'rejected')->count(),
-            'attendanceRate'         => 85, // Dynamic calculation placeholder
+            'approvedProposals'       => Proposal::where('status', 'approved')->count(),
+            'pendingProposals'        => Proposal::where('status', 'pending')->count(),
+            'rejectedProposals'       => Proposal::where('status', 'rejected')->count(),
+            'attendanceRate'          => 85,
         ];
 
         $recentAnnouncements = Announcement::with('author')->latest()->take(3)->get();
+        $recentActivityLogs  = ActivityLog::with('user')->latest()->take(6)->get();
 
-        return view('admin.dashboard', compact('stats', 'recentAnnouncements', 'upcomingActivities'));
+        return view('admin.dashboard', compact('stats', 'recentAnnouncements', 'upcomingActivities', 'recentActivityLogs'));
     }
 }

@@ -110,4 +110,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProposalVote::class);
     }
+
+    /**
+     * Get the activity logs recorded for this user.
+     */
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class)->latest();
+    }
 }

@@ -12,10 +12,52 @@
 
     .badge-role-admin, .badge-role-officer { border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; background: transparent; font-weight: 500; padding: 4px 12px; border-radius: 12px; font-size: 0.72rem; }
     .badge-role-member { background-color: var(--admin-accent-purple); color: #ffffff; font-weight: 500; padding: 4px 12px; border-radius: 12px; font-size: 0.72rem; }
-    .badge-status-active { border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; background: transparent; font-weight: 400; padding: 3px 10px; border-radius: 10px; font-size: 0.72rem; }
-    .badge-status-inactive { border: 1px solid rgba(244, 63, 94, 0.4); color: #fb7185; background: transparent; font-weight: 400; padding: 3px 10px; border-radius: 10px; font-size: 0.72rem; }
-    .badge-toggle-btn { cursor: pointer; transition: filter 0.15s ease; }
-    .badge-toggle-btn:hover { filter: brightness(1.3); }
+
+    /* Interactive Status Toggle Pill Styling */
+    .status-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--admin-border);
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    .status-toggle-btn.active-status {
+        color: #4ade80;
+        border-color: rgba(74, 222, 128, 0.3);
+        background-color: rgba(74, 222, 128, 0.08);
+    }
+    .status-toggle-btn.inactive-status {
+        color: #fb7185;
+        border-color: rgba(251, 113, 133, 0.3);
+        background-color: rgba(251, 113, 133, 0.08);
+    }
+    .status-toggle-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .status-toggle-btn.active-status:hover {
+        border-color: #4ade80;
+        background-color: rgba(74, 222, 128, 0.16);
+    }
+    .status-toggle-btn.inactive-status:hover {
+        border-color: #fb7185;
+        background-color: rgba(251, 113, 133, 0.16);
+    }
+    .status-toggle-btn.disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    .status-toggle-btn.disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
 
     .btn-action-icon { background: transparent; border: none; color: var(--admin-text-muted); padding: 4px 6px; transition: color 0.2s ease; }
     .btn-action-icon:hover { color: #ffffff; }
@@ -33,27 +75,39 @@
     .admin-modal .form-label { font-size: 0.82rem; font-weight: 600; color: #ffffff; }
     .admin-modal .form-control, .admin-modal .form-select { background-color: var(--admin-input-bg); border: 1px solid var(--admin-border); color: #ffffff; border-radius: 10px; font-size: 0.85rem; padding: 10px 14px; }
     .admin-modal .form-control:focus, .admin-modal .form-select:focus { background-color: var(--admin-input-bg); color: #ffffff; border-color: var(--admin-accent-purple); box-shadow: none; }
+
+    /* Custom Minimal Dark Pagination */
+    .admin-pagination .pagination { margin-bottom: 0; gap: 4px; }
+    .admin-pagination .page-item .page-link {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text-muted);
+        border-radius: 8px !important;
+        padding: 5px 11px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+        box-shadow: none !important;
+    }
+    .admin-pagination .page-item .page-link:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    .admin-pagination .page-item.active .page-link {
+        background-color: var(--admin-accent-purple) !important;
+        border-color: var(--admin-accent-purple) !important;
+        color: #ffffff !important;
+    }
+    .admin-pagination .page-item.disabled .page-link {
+        background-color: transparent !important;
+        border-color: rgba(255, 255, 255, 0.04) !important;
+        color: rgba(255, 255, 255, 0.2) !important;
+    }
 </style>
 @endpush
 
 @section('content')
-    @php
-        $authUser = auth()->user();
-        $authName = $authUser->name ?? 'User';
-        $authRole = ucfirst($authUser->role ?? 'Officer');
-    @endphp
-
-    @if (session('success'))
-        <div class="alert alert-success bg-success bg-opacity-20 text-success border-0 rounded-3 mb-3" style="font-size: 0.85rem;">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-danger bg-danger bg-opacity-20 text-danger border-0 rounded-3 mb-3" style="font-size: 0.85rem;">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold mb-1 text-white">Manage Members</h4>
@@ -109,22 +163,20 @@
                                 @endif
                             </td>
                             <td>
+                                @php $isActive = (bool)$member->email_verified_at; @endphp
                                 @if(auth()->id() === $member->id)
-                                    @if($member->email_verified_at)
-                                        <span class="badge badge-status-active">Active</span>
-                                    @else
-                                        <span class="badge badge-status-inactive">Inactive</span>
-                                    @endif
+                                    <span class="status-toggle-btn {{ $isActive ? 'active-status' : 'inactive-status' }} disabled" title="You cannot change your own status">
+                                        <i class="fa-solid {{ $isActive ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-lg"></i>
+                                        <span>{{ $isActive ? 'Active' : 'Inactive' }}</span>
+                                    </span>
                                 @else
-                                    <form method="POST" action="{{ route('admin.members.toggle-status', $member->id) }}" class="d-inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        @if($member->email_verified_at)
-                                            <button type="submit" class="badge badge-status-active badge-toggle-btn" title="Click to deactivate">Active</button>
-                                        @else
-                                            <button type="submit" class="badge badge-status-inactive badge-toggle-btn" title="Click to activate">Inactive</button>
-                                        @endif
-                                    </form>
+                                    <button type="button"
+                                            class="status-toggle-btn {{ $isActive ? 'active-status' : 'inactive-status' }}"
+                                            title="Click to toggle status"
+                                            onclick="confirmToggleStatus('{{ route('admin.members.toggle-status', $member->id) }}', '{{ addslashes($member->name) }}', {{ $isActive ? 'true' : 'false' }})">
+                                        <i class="fa-solid {{ $isActive ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-lg"></i>
+                                        <span>{{ $isActive ? 'Active' : 'Inactive' }}</span>
+                                    </button>
                                 @endif
                             </td>
                             <td class="text-end">
@@ -149,9 +201,9 @@
             <div class="text-muted">
                 Showing {{ $members->firstItem() ?? 0 }}-{{ $members->lastItem() ?? 0 }} of {{ $members->total() ?? 0 }} members
             </div>
-            <div>
+            <div class="admin-pagination">
                 @if(method_exists($members, 'links'))
-                    {{ $members->links() }}
+                    {{ $members->links('pagination::bootstrap-5') }}
                 @endif
             </div>
         </div>
@@ -246,9 +298,53 @@
 
                     <div class="d-flex justify-content-end gap-2 p-3 border-top border-white border-opacity-10">
                         <button type="button" class="btn btn-outline-light rounded-3 px-4 py-2" style="font-size: 0.85rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-purple px-4 py-2">Update Member</button>
+                        <button type="button" class="btn btn-purple px-4 py-2" onclick="promptEditConfirmation()">Update Member</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT CONFIRMATION MODAL -->
+    <div class="modal fade admin-modal" id="editConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content p-3 text-center">
+                <div class="modal-body p-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width: 56px; height: 56px; background-color: rgba(99, 102, 241, 0.15);">
+                        <i class="fa-solid fa-pen-to-square text-primary fa-lg"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Save Member Changes?</h5>
+                    <p class="text-subtle small mb-4">Are you sure you want to update this member's account information?</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-outline-light rounded-3 px-4" onclick="cancelEditConfirmation()">Back</button>
+                        <button type="button" class="btn btn-purple rounded-3 px-4" onclick="submitEditForm()">Yes, Update Member</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS TOGGLE CONFIRMATION MODAL -->
+    <div class="modal fade admin-modal" id="toggleStatusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content p-3 text-center">
+                <div class="modal-body p-4">
+                    <div id="toggleIconBox" class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px;">
+                        <i id="toggleModalIcon" class="fa-solid fa-lg"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" id="toggleModalTitle">Change Member Status?</h5>
+                    <p class="text-subtle small mb-4" id="toggleModalBody">Are you sure you want to change this member's active status?</p>
+
+                    <form id="toggleStatusForm" method="POST" action="">
+                        @csrf
+                        @method('PATCH')
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-outline-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" id="toggleConfirmBtn" class="btn rounded-3 px-4">Confirm</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -281,13 +377,74 @@
 
 @push('scripts')
 <script>
+    let editModalInstance = null;
+    let editConfirmModalInstance = null;
+
     function editMember(data) {
         document.getElementById('editMemberForm').action = '/admin/members/' + data.id;
         document.getElementById('edit_name').value = data.name;
         document.getElementById('edit_email').value = data.email;
         document.getElementById('edit_role').value = data.role || 'member';
 
-        const modal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+        editModalInstance = new bootstrap.Modal(document.getElementById('editMemberModal'));
+        editModalInstance.show();
+    }
+
+    function promptEditConfirmation() {
+        const form = document.getElementById('editMemberForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        if (editModalInstance) {
+            editModalInstance.hide();
+        }
+
+        editConfirmModalInstance = new bootstrap.Modal(document.getElementById('editConfirmModal'));
+        editConfirmModalInstance.show();
+    }
+
+    function cancelEditConfirmation() {
+        if (editConfirmModalInstance) {
+            editConfirmModalInstance.hide();
+        }
+        if (editModalInstance) {
+            editModalInstance.show();
+        }
+    }
+
+    function submitEditForm() {
+        document.getElementById('editMemberForm').submit();
+    }
+
+    function confirmToggleStatus(actionUrl, memberName, isCurrentlyActive) {
+        const form = document.getElementById('toggleStatusForm');
+        form.action = actionUrl;
+
+        const iconBox = document.getElementById('toggleIconBox');
+        const icon = document.getElementById('toggleModalIcon');
+        const title = document.getElementById('toggleModalTitle');
+        const body = document.getElementById('toggleModalBody');
+        const confirmBtn = document.getElementById('toggleConfirmBtn');
+
+        if (isCurrentlyActive) {
+            iconBox.style.backgroundColor = 'rgba(244, 63, 94, 0.15)';
+            icon.className = 'fa-solid fa-toggle-off text-danger fa-lg';
+            title.innerText = 'Deactivate Member?';
+            body.innerHTML = `Are you sure you want to deactivate <strong>${memberName}</strong>? They will temporarily lose active privileges.`;
+            confirmBtn.className = 'btn btn-danger rounded-3 px-4';
+            confirmBtn.innerText = 'Deactivate';
+        } else {
+            iconBox.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
+            icon.className = 'fa-solid fa-toggle-on text-success fa-lg';
+            title.innerText = 'Activate Member?';
+            body.innerHTML = `Are you sure you want to activate <strong>${memberName}</strong>?`;
+            confirmBtn.className = 'btn btn-success rounded-3 px-4';
+            confirmBtn.innerText = 'Activate';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
         modal.show();
     }
 

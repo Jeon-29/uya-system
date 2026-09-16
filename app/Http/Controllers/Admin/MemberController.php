@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,9 +11,6 @@ use Illuminate\Validation\Rule;
 
 class MemberController extends Controller
 {
-    /**
-     * Display a paginated list of members with search filtering.
-     */
     public function index(Request $request)
     {
         $query = User::query();
@@ -33,9 +31,6 @@ class MemberController extends Controller
         return view('admin.members', compact('members'));
     }
 
-    /**
-     * Store a newly created member in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -45,20 +40,19 @@ class MemberController extends Controller
             'role'     => ['required', 'string', Rule::in(['admin', 'officer', 'member'])],
         ]);
 
-        User::create([
+        $newMember = User::create([
             'name'              => $validated['name'],
             'email'             => $validated['email'],
             'password'          => Hash::make($validated['password']),
             'role'              => $validated['role'],
-            'email_verified_at' => now(), // Admin-created accounts are active by default
+            'email_verified_at' => now(),
         ]);
+
+        ActivityLog::record('Added Member', "Created user account for {$newMember->name} ({$newMember->email}) with role {$newMember->role}.");
 
         return redirect()->route('admin.members')->with('success', 'Member added successfully.');
     }
 
-    /**
-     * Update the specified member in storage.
-     */
     public function update(Request $request, User $member)
     {
         $validated = $request->validate([
@@ -69,9 +63,9 @@ class MemberController extends Controller
         ]);
 
         $data = [
-            'name' => $validated['name'],
+            'name'  => $validated['name'],
             'email' => $validated['email'],
-            'role' => $validated['role'],
+            'role'  => $validated['role'],
         ];
 
         if (!empty($validated['password'])) {
@@ -80,18 +74,13 @@ class MemberController extends Controller
 
         $member->update($data);
 
+        ActivityLog::record('Updated Member', "Updated details for member #{$member->id} ({$member->name}).");
+
         return redirect()->route('admin.members')->with('success', 'Member updated successfully.');
     }
 
-    /**
-     * Toggle the specified member's active status.
-     *
-     * "Active" is represented by a non-null email_verified_at timestamp;
-     * toggling flips it between null (inactive) and now() (active).
-     */
     public function toggleStatus(User $member)
     {
-        // Prevent an admin/officer from locking themselves out
         if (auth()->id() === $member->id) {
             return redirect()->route('admin.members')->with('error', 'You cannot change your own account status.');
         }
@@ -101,20 +90,23 @@ class MemberController extends Controller
 
         $status = $member->email_verified_at ? 'activated' : 'deactivated';
 
+        ActivityLog::record('Toggled Member Status', "Status of member #{$member->id} ({$member->name}) set to {$status}.");
+
         return redirect()->route('admin.members')->with('success', "Member {$status} successfully.");
     }
 
-    /**
-     * Remove the specified member from storage.
-     */
     public function destroy(User $member)
     {
-        // Prevent an admin from accidentally deleting their own active account
         if (auth()->id() === $member->id) {
             return redirect()->route('admin.members')->with('error', 'You cannot delete your own account.');
         }
 
+        $memberName = $member->name;
+        $memberId   = $member->id;
+
         $member->delete();
+
+        ActivityLog::record('Deleted Member', "Deleted member account #{$memberId} ({$memberName}).");
 
         return redirect()->route('admin.members')->with('success', 'Member deleted successfully.');
     }

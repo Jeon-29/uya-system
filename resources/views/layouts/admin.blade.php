@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin - UYA Connect')</title>
 
     <!-- Bootstrap 5 CSS -->
@@ -158,6 +159,80 @@
             z-index: 1039;
         }
 
+        /* Custom Notification Dropdown Styling */
+        .notif-dropdown-menu {
+            width: 340px;
+            max-width: calc(100vw - 32px);
+            background-color: #151e32;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 10px !important;
+        }
+
+        .notif-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background-color 0.15s ease;
+        }
+        .notif-item:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .notif-icon-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        /* Mobile Dropdown Centering */
+        @media (max-width: 575.98px) {
+            .dropdown-menu-end[data-bs-popper] {
+                right: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) translateY(10px) !important;
+            }
+        }
+
+        /* Custom Floating Dark Mode Toast */
+        .admin-toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1090;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .admin-toast {
+            background-color: #1e293b;
+            border: 1px solid var(--admin-border);
+            color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            font-size: 0.85rem;
+            overflow: hidden;
+            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .admin-toast-success { border-left: 4px solid #22c55e; }
+        .admin-toast-danger { border-left: 4px solid #f43f5e; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
         @media (max-width: 991.98px) {
             .admin-sidebar { transform: translateX(-100%); }
             .admin-sidebar.show { transform: translateX(0); }
@@ -177,6 +252,33 @@
 
     <!-- Mobile Sidebar Backdrop -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Master Toast Notifications Container -->
+    <div class="admin-toast-container">
+        @if (session('success'))
+            <div class="toast admin-toast admin-toast-success align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000" data-bs-autohide="true">
+                <div class="d-flex p-3">
+                    <div class="toast-body p-0 d-flex align-items-center gap-2.5">
+                        <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white ms-auto shadow-none" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="toast admin-toast admin-toast-danger align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000" data-bs-autohide="true">
+                <div class="d-flex p-3">
+                    <div class="toast-body p-0 d-flex align-items-center gap-2.5">
+                        <i class="fa-solid fa-circle-exclamation text-danger fa-lg"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white ms-auto shadow-none" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+    </div>
 
     <!-- Sidebar Navigation Layout -->
     <aside class="admin-sidebar" id="adminSidebar">
@@ -235,7 +337,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('profile') }}" class="sidebar-nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.profile') }}" class="sidebar-nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}">
                         <i class="fa-regular fa-user"></i>
                         <span>Profile</span>
                     </a>
@@ -267,9 +369,81 @@
             </div>
 
             <div class="d-flex align-items-center gap-3">
-                <a href="{{ route('admin.attendance') }}" class="btn p-2 text-white border-0 position-relative shadow-none">
-                    <i class="fa-regular fa-bell fa-lg"></i>
-                </a>
+                @php
+                    $unreadCount = auth()->user()->unreadNotifications->count();
+                    $recentNotifs = auth()->user()->unreadNotifications->take(4);
+                @endphp
+
+                <!-- Notifications Dropdown -->
+                <div class="dropdown">
+                    <button class="btn p-2 text-white border-0 position-relative shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                        <i class="fa-regular fa-bell fa-lg"></i>
+                        @if($unreadCount > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-primary" style="font-size: 0.65rem; padding: 4px 6px;">
+                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                            </span>
+                        @endif
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end notif-dropdown-menu p-0">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-bottom border-white border-opacity-10">
+                            <h6 class="fw-bold mb-0 text-white" style="font-size: 0.95rem;">Notifications</h6>
+                            @if($unreadCount > 0)
+                                <form method="POST" action="{{ route('admin.notifications.read-all') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link p-0 text-decoration-none border-0 shadow-none text-primary fw-semibold" style="font-size: 0.78rem;">
+                                        Mark all as read
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                        <!-- Notification Feed Items -->
+                        <div class="d-flex flex-column" style="max-height: 320px; overflow-y: auto;">
+                            @forelse($recentNotifs as $notif)
+                                @php $notifData = $notif->data ?? []; @endphp
+                                <div class="notif-item d-flex align-items-start gap-3">
+                                    <div class="notif-icon-circle">
+                                        <i class="{{ $notifData['icon'] ?? 'fa-solid fa-bullhorn' }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1 min-width-0">
+                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                            <span class="fw-semibold text-white text-truncate" style="font-size: 0.85rem;">
+                                                {{ $notifData['title'] ?? 'Notification' }}
+                                            </span>
+                                            <form method="POST" action="{{ route('admin.notifications.read', $notif->id) }}" class="m-0">
+                                                @csrf
+                                                <button type="submit" class="btn btn-link text-muted p-0 border-0 shadow-none" title="Mark as read" style="font-size: 0.75rem;">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <p class="text-subtle mb-1 text-truncate" style="font-size: 0.78rem; line-height: 1.35;">
+                                            {{ $notifData['message'] ?? '' }}
+                                        </p>
+                                        <div class="text-muted" style="font-size: 0.7rem;">
+                                            <i class="fa-regular fa-clock me-1 opacity-75"></i>{{ $notif->created_at->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="p-4 text-center text-subtle small">
+                                    <i class="fa-regular fa-bell-slash fa-2x mb-2 d-block opacity-50"></i>
+                                    You have no unread notifications.
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Footer Link -->
+                        <div class="p-2 text-center border-top border-white border-opacity-10">
+                            <a href="{{ route('admin.notifications') }}" class="text-primary text-decoration-none fw-semibold d-block py-1" style="font-size: 0.82rem;">
+                                View All Notifications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 0.85rem;">
                     {{ strtoupper(substr($authName, 0, 1)) }}
                 </div>
@@ -312,6 +486,15 @@
             document.getElementById('adminSidebar').classList.toggle('show');
             document.getElementById('sidebarBackdrop').classList.toggle('show');
         }
+
+        // Auto-initialize & show Bootstrap Toasts with 3s autohide delay
+        document.addEventListener('DOMContentLoaded', function () {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            toastElList.forEach(function (toastEl) {
+                var toast = new bootstrap.Toast(toastEl, { delay: 3000, autohide: true });
+                toast.show();
+            });
+        });
     </script>
     @stack('scripts')
 </body>

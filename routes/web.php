@@ -7,10 +7,12 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect guest root attempts to login page
@@ -125,5 +127,20 @@ Route::middleware('auth')->group(function () {
         // Admin Attendance Management
         Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('attendance');
         Route::put('/attendance/{id}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
+
+        // Admin Notification Management
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+        // Admin Certificates Management
+        Route::get('/certificates', function () {
+            return view('admin.certificates');
+        })->name('certificates');
+
+        // Admin Profile & Activity Log Management
+        Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
+        Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('password.update');
     });
 });

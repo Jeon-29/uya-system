@@ -52,6 +52,30 @@
     .feed-desc { font-size: 0.78rem; color: var(--admin-text-muted); line-height: 1.4; margin-bottom: 6px; }
     .feed-meta { font-size: 0.72rem; color: #94a3b8; }
     .upcoming-pill { border: 1px solid rgba(255, 255, 255, 0.2); color: var(--admin-text-muted); font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; }
+
+    /* Minimal Log Row Styling */
+    .log-row {
+        background-color: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 10px 14px;
+        transition: background-color 0.15s ease;
+    }
+    .log-row:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    .log-icon-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background-color: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
 </style>
 @endpush
 
@@ -154,7 +178,7 @@
     </div>
 
     <!-- Row 3: Recent Announcements & Upcoming Activities -->
-    <div class="row g-3 g-md-4">
+    <div class="row g-3 g-md-4 mb-4">
         <div class="col-12 col-lg-6">
             <div class="admin-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -208,6 +232,50 @@
                     </span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Row 4: System Activity Audit Trail -->
+    <div class="admin-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h6 class="fw-bold text-white mb-0" style="font-size: 0.95rem;">
+                    <i class="fa-solid fa-bolt me-2 text-primary"></i>Recent System Activity
+                </h6>
+            </div>
+            <a href="{{ route('admin.profile') }}" class="text-decoration-none small text-muted">View my logs</a>
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+            @forelse($recentActivityLogs as $log)
+                <div class="log-row d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2.5 overflow-hidden">
+                        <div class="log-icon-box">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="text-truncate">
+                            <span class="fw-semibold text-white me-2" style="font-size: 0.85rem;">
+                                {{ $log->user->name ?? 'System' }}
+                            </span>
+                            <span class="badge border border-white border-opacity-10 text-subtle me-2" style="font-size: 0.68rem;">
+                                {{ $log->action }}
+                            </span>
+                            @if($log->description)
+                                <span class="text-subtle small text-truncate d-none d-md-inline">• {{ $log->description }}</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 ms-auto text-muted" style="font-size: 0.75rem;">
+                        <span><i class="fa-regular fa-clock me-1 opacity-75"></i>{{ $log->created_at->diffForHumans() }}</span>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center text-muted py-4 small">
+                    <i class="fa-solid fa-clock-rotate-left fa-2x mb-2 d-block opacity-50"></i>
+                    No system activity recorded yet.
+                </div>
+            @endforelse
         </div>
     </div>
 @endsection
