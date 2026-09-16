@@ -6,6 +6,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
@@ -91,9 +92,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
-    Route::get('/profile', function () {
-        return view('profile');
-    })->name('profile');
+    // Member Profile routes
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     /*
     |--------------------------------------------------------------------------

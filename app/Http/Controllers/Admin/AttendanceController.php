@@ -13,49 +13,75 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        $hasAttendanceTable = DB::getSchemaBuilder()->hasTable('attendances');
+        $hasParticipantsTable = DB::getSchemaBuilder()->hasTable('activity_participants');
+        $hasAttendanceTable   = DB::getSchemaBuilder()->hasTable('attendances');
 
-        if (!$hasAttendanceTable) {
+        if ($hasParticipantsTable) {
+            $query = DB::table('activity_participants')
+                ->leftJoin('users', 'activity_participants.user_id', '=', 'users.id')
+                ->leftJoin('activities', 'activity_participants.activity_id', '=', 'activities.id')
+                ->select(
+                    'activity_participants.id',
+                    'activity_participants.attended',
+                    'activity_participants.created_at',
+                    'users.name as member_name',
+                    'activities.title as activity_name'
+                );
+
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('users.name', 'like', "%{$search}%")
+                      ->orWhere('activities.title', 'like', "%{$search}%");
+                });
+            }
+
+            $records = $query->orderBy('activity_participants.created_at', 'desc')->paginate(10);
+
+            $totalRecords = DB::table('activity_participants')->count();
+            $presentCount = DB::table('activity_participants')->where('attended', true)->count();
+            $absentCount  = DB::table('activity_participants')->where('attended', false)->count();
+            $lateCount    = 0;
+
+            $attendanceRate = $totalRecords > 0
+                ? round(($presentCount / $totalRecords) * 100)
+                : 0;
+        } elseif ($hasAttendanceTable) {
+            $query = DB::table('attendances')
+                ->leftJoin('users', 'attendances.user_id', '=', 'users.id')
+                ->leftJoin('activities', 'attendances.activity_id', '=', 'activities.id')
+                ->select(
+                    'attendances.*',
+                    'users.name as member_name',
+                    'activities.title as activity_name'
+                );
+
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('users.name', 'like', "%{$search}%")
+                      ->orWhere('activities.title', 'like', "%{$search}%");
+                });
+            }
+
+            $records = $query->orderBy('attendances.created_at', 'desc')->paginate(10);
+
+            $totalRecords = DB::table('attendances')->count();
+            $presentCount = DB::table('attendances')->where('status', 'present')->count();
+            $lateCount    = DB::table('attendances')->whereIn('status', ['late', 'present but late'])->count();
+            $absentCount  = DB::table('attendances')->where('status', 'absent')->count();
+
+            $attendanceRate = $totalRecords > 0
+                ? round((($presentCount + $lateCount) / $totalRecords) * 100)
+                : 0;
+        } else {
             $records = collect();
-            $stats = [
-                'totalRecords'   => 0,
-                'presentCount'   => 0,
-                'lateCount'      => 0,
-                'absentCount'    => 0,
-                'attendanceRate' => 0,
-            ];
-
-            return view('admin.attendance', compact('records', 'stats'));
+            $totalRecords = 0;
+            $presentCount = 0;
+            $lateCount    = 0;
+            $absentCount  = 0;
+            $attendanceRate = 0;
         }
-
-        $query = DB::table('attendances')
-            ->leftJoin('users', 'attendances.user_id', '=', 'users.id')
-            ->leftJoin('activities', 'attendances.activity_id', '=', 'activities.id')
-            ->select(
-                'attendances.*',
-                'users.name as member_name',
-                'activities.title as activity_name'
-            );
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('users.name', 'like', "%{$search}%")
-                  ->orWhere('activities.title', 'like', "%{$search}%");
-            });
-        }
-
-        $records = $query->orderBy('attendances.created_at', 'desc')->paginate(10);
-
-        // Aggregate statistics calculation
-        $totalRecords = DB::table('attendances')->count();
-        $presentCount = DB::table('attendances')->where('status', 'present')->count();
-        $lateCount    = DB::table('attendances')->whereIn('status', ['late', 'present but late'])->count();
-        $absentCount  = DB::table('attendances')->where('status', 'absent')->count();
-
-        $attendanceRate = $totalRecords > 0
-            ? round((($presentCount + $lateCount) / $totalRecords) * 100)
-            : 0;
 
         $stats = [
             'totalRecords'   => $totalRecords,
@@ -77,9 +103,12 @@ class AttendanceController extends Controller
             'status' => 'required|string|in:present,late,absent',
         ]);
 
-        $hasAttendanceTable = DB::getSchemaBuilder()->hasTable('attendances');
-
-        if ($hasAttendanceTable) {
+        if (DB::getSchemaBuilder()->hasTable('activity_participants')) {
+            DB::table('activity_participants')->where('id', $id)->update([
+                'attended'   => $validated['status'] === 'present',
+                'updated_at' => now(),
+            ]);
+        } elseif (DB::getSchemaBuilder()->hasTable('attendances')) {
             DB::table('attendances')->where('id', $id)->update([
                 'status'     => $validated['status'],
                 'updated_at' => now(),
