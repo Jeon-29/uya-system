@@ -26,7 +26,7 @@
 
         .text-brand { color: var(--uya-dark-teal) !important; }
 
-        /* Responsive Container */
+        /* Responsive Container Scaffolding */
         .container-fluid {
             width: 100% !important;
             padding-left: 0.75rem !important;
@@ -48,11 +48,6 @@
         }
         .announcement-card:hover {
             border-color: var(--uya-light-blue) !important;
-        }
-
-        .announcement-card.pinned-card {
-            border-left: 4px solid var(--uya-gold) !important;
-            background-color: #fffefb;
         }
 
         .announcement-icon-box {
@@ -89,6 +84,23 @@
             background-color: #f1f5f9;
             color: var(--uya-dark-teal);
         }
+
+        /* Audience Badges */
+        .badge-audience-all {
+            background-color: rgba(34, 77, 91, 0.1);
+            color: var(--uya-dark-teal);
+            font-weight: 600;
+        }
+        .badge-audience-officers {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .badge-audience-admin {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -98,13 +110,6 @@
 
     <div class="container-fluid py-3 py-md-4">
 
-        @if (session('success'))
-            <div class="alert alert-success rounded-4 mb-3">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger rounded-4 mb-3">{{ session('error') }}</div>
-        @endif
-
         <!-- Header & Action Section -->
         <div class="row mb-3 mb-md-4 px-2 px-md-0 align-items-center">
             <div class="col-7 col-sm-8">
@@ -112,7 +117,7 @@
             </div>
             <div class="col-5 col-sm-4 text-end">
                 @php
-                    $isOfficerOrAdmin = in_array(auth()->user()->role ?? 'member', ['admin', 'officer']);
+                    $isOfficerOrAdmin = in_array(strtolower(auth()->user()->role ?? 'member'), ['admin', 'officer']);
                 @endphp
 
                 @if($isOfficerOrAdmin)
@@ -132,7 +137,7 @@
             <div class="col-lg-8 order-2 order-lg-1">
                 <div class="d-flex flex-column gap-3">
                     @forelse ($announcements as $announcement)
-                        <div class="card p-3 p-md-4 announcement-card {{ $announcement->is_pinned ? 'pinned-card' : '' }}">
+                        <div class="card p-3 p-md-4 announcement-card">
                             <div class="d-flex align-items-start gap-3">
                                 <div class="announcement-icon-box">
                                     <i class="fa-solid fa-bullhorn"></i>
@@ -145,6 +150,23 @@
                                             @if($announcement->is_pinned)
                                                 <span class="badge rounded-pill bg-warning text-dark px-2 py-1 fw-normal" style="font-size: 0.65rem;">
                                                     <i class="fa-solid fa-thumbtack me-1"></i> Pinned
+                                                </span>
+                                            @endif
+
+                                            @php
+                                                $audience = $announcement->target_audience ?? 'all';
+                                            @endphp
+                                            @if($audience === 'officers')
+                                                <span class="badge rounded-pill badge-audience-officers px-2 py-1" style="font-size: 0.65rem;">
+                                                    <i class="fa-solid fa-user-shield me-1"></i> Officers
+                                                </span>
+                                            @elseif($audience === 'admin')
+                                                <span class="badge rounded-pill badge-audience-admin px-2 py-1" style="font-size: 0.65rem;">
+                                                    <i class="fa-solid fa-lock me-1"></i> Admin
+                                                </span>
+                                            @else
+                                                <span class="badge rounded-pill badge-audience-all px-2 py-1" style="font-size: 0.65rem;">
+                                                    <i class="fa-solid fa-users me-1"></i> All
                                                 </span>
                                             @endif
                                         </div>
@@ -263,6 +285,15 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Target Audience *</label>
+                        <select name="target_audience" class="form-select rounded-pill py-2 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <option value="all" selected>All (Members, Officers & Admins)</option>
+                            <option value="officers">Officers Only</option>
+                            <option value="admin">Admin Only</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Content *</label>
                         <textarea class="form-control rounded-4 p-3 shadow-none border" rows="4" style="font-size: 0.85rem; resize: none;"
                             name="content" placeholder="Write the announcement details here..." required>{{ old('content') }}</textarea>
@@ -300,6 +331,15 @@
                         <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Title *</label>
                         <input type="text" id="edit_title" class="form-control rounded-pill py-2 px-3 shadow-none border" style="font-size: 0.85rem;"
                             name="title" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Target Audience *</label>
+                        <select id="edit_target_audience" name="target_audience" class="form-select rounded-pill py-2 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <option value="all">All (Members, Officers & Admins)</option>
+                            <option value="officers">Officers Only</option>
+                            <option value="admin">Admin Only</option>
+                        </select>
                     </div>
 
                     <div class="mb-3">
@@ -355,6 +395,7 @@
         function editAnnouncement(data) {
             document.getElementById('editForm').action = '/announcements/' + data.id;
             document.getElementById('edit_title').value = data.title;
+            document.getElementById('edit_target_audience').value = data.target_audience || 'all';
             document.getElementById('edit_content').value = data.content;
             document.getElementById('edit_is_pinned').checked = Boolean(data.is_pinned);
 

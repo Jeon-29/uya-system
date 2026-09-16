@@ -1,5 +1,24 @@
 <!-- Floating Modern Navbar -->
-@php $stats = $stats ?? ['notifications' => 0]; @endphp
+@php
+    $unreadNotifs = auth()->check() ? auth()->user()->unreadNotifications : collect();
+    $unreadCount = $unreadNotifs->count();
+@endphp
+
+<!-- Global Floating Toast Notification -->
+@if (session('success') || session('error'))
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090; margin-top: 85px;">
+        <div id="globalToast" class="toast align-items-center text-white {{ session('success') ? 'bg-success' : 'bg-danger' }} border-0 show shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold py-3 px-3" style="font-size: 0.88rem;">
+                    <i class="{{ session('success') ? 'fa-solid fa-circle-check me-2' : 'fa-solid fa-circle-exclamation me-2' }}"></i>
+                    {{ session('success') ?? session('error') }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-3 m-auto shadow-none" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+@endif
+
 <nav class="navbar navbar-expand-lg fixed-top my-2 mx-2 mx-md-3 rounded-4 shadow-sm px-3 px-md-4 py-2"
     style="background-color: var(--uya-dark-teal); border: 1px solid rgba(255, 255, 255, 0.1);">
     <div class="container-fluid" style="padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important;">
@@ -114,11 +133,13 @@
                         class="btn position-relative text-white p-2 rounded-circle border-0 hover-icon"
                         style="background: transparent;">
                         <i class="fa-regular fa-bell fa-lg"></i>
-                        <span
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark fw-bold"
-                            style="font-size: 0.55rem;">
-                            {{ $stats['notifications'] ?? 0 }}
-                        </span>
+                        @if($unreadCount > 0)
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark fw-bold"
+                                style="font-size: 0.55rem;">
+                                {{ $unreadCount }}
+                            </span>
+                        @endif
                     </button>
 
                     <!-- Notification Pop-up Card -->
@@ -128,107 +149,69 @@
                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark" style="font-size: 1rem;">Notifications</h6>
-                                <span class="text-muted" style="font-size: 0.75rem;">3 unread notifications</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">{{ $unreadCount }} unread notifications</span>
                             </div>
-                            <a href="#" class="text-decoration-none text-muted small fw-semibold"
-                                style="font-size: 0.75rem;"><i class="fa-solid fa-check me-1"></i>Mark all read</a>
+                            @if($unreadCount > 0)
+                                @if(Route::has('notifications.read-all'))
+                                    <form method="POST" action="{{ route('notifications.read-all') }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-link text-decoration-none text-muted p-0 small fw-semibold" style="font-size: 0.75rem;">
+                                            <i class="fa-solid fa-check me-1"></i>Mark all read
+                                        </button>
+                                    </form>
+                                @endif
+                            @endif
                         </div>
 
                         <!-- Notification Scrollable Wrapper -->
                         <div style="max-height: 380px; overflow-y: auto;" class="pe-1">
-
-                            <!-- Notification Item 1 -->
-                            <div
-                                class="p-2.5 mb-2 rounded-3 ref-notif-item position-relative bg-white border-bottom pb-3">
-                                <div class="d-flex gap-3 align-start">
-                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-                                        style="width: 40px; height: 40px; background-color: #e4edf0; color: #224d5b; border: 1px solid #d0dce0;">
-                                        <i class="fa-regular fa-calendar-days"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">New Activity
-                                                Posted</span>
-                                            <button class="btn-close shadow-none" style="font-size: 0.55rem;"></button>
+                            @forelse($unreadNotifs as $notif)
+                                @php
+                                    $data = $notif->data ?? [];
+                                    $icon = $data['icon'] ?? 'fa-regular fa-bell';
+                                    $title = $data['title'] ?? 'Notification';
+                                    $message = $data['message'] ?? '';
+                                    $actionUrl = $data['action_url'] ?? '#';
+                                    $actionText = $data['action_text'] ?? 'View';
+                                @endphp
+                                <div class="p-2.5 mb-2 rounded-3 ref-notif-item position-relative bg-white border-bottom pb-3">
+                                    <div class="d-flex gap-3 align-start">
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                                            style="width: 40px; height: 40px; background-color: #e4edf0; color: #224d5b; border: 1px solid #d0dce0;">
+                                            <i class="{{ $icon }}"></i>
                                         </div>
-                                        <p class="text-secondary mb-2 mt-1"
-                                            style="font-size: 0.75rem; line-height: 1.25;">Community Service Day has
-                                            been added to the activity list for May 2026.</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span
-                                                    class="badge rounded-pill bg-secondary bg-opacity-2 text-dark px-2 py-1 fw-normal"
-                                                    style="font-size: 0.6rem; background-color: #e2e8f0 !important;">Unread</span>
-                                                <a href="#" class="text-decoration-none fw-semibold"
-                                                    style="font-size: 0.7rem; color: #224d5b;">View activity</a>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $title }}</span>
+                                                @if(Route::has('notifications.read'))
+                                                    <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
+                                                        @csrf
+                                                        <button type="submit" class="btn-close shadow-none" style="font-size: 0.55rem;"></button>
+                                                    </form>
+                                                @endif
                                             </div>
-                                            <span class="text-muted" style="font-size: 0.65rem;">May 22</span>
+                                            <p class="text-secondary mb-2 mt-1" style="font-size: 0.75rem; line-height: 1.25;">
+                                                {{ $message }}
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge rounded-pill text-dark px-2 py-1 fw-normal"
+                                                        style="font-size: 0.6rem; background-color: #e2e8f0 !important;">Unread</span>
+                                                    <a href="{{ $actionUrl }}" class="text-decoration-none fw-semibold" style="font-size: 0.7rem; color: #224d5b;">
+                                                        {{ $actionText }}
+                                                    </a>
+                                                </div>
+                                                <span class="text-muted" style="font-size: 0.65rem;">{{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Notification Item 2 -->
-                            <div
-                                class="p-2.5 mb-2 rounded-3 ref-notif-item position-relative bg-white border-bottom pb-3">
-                                <div class="d-flex gap-3 align-start">
-                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-                                        style="width: 40px; height: 40px; background-color: #e4edf0; color: #224d5b; border: 1px solid #d0dce0;">
-                                        <i class="fa-regular fa-clipboard-check"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">Attendance QR
-                                                Open</span>
-                                            <button class="btn-close shadow-none"
-                                                style="font-size: 0.55rem;"></button>
-                                        </div>
-                                        <p class="text-secondary mb-2 mt-1"
-                                            style="font-size: 0.75rem; line-height: 1.25;">Attendance validation is
-                                            open for Tech Workshop: Web Development.</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge rounded-pill text-dark px-2 py-1 fw-normal"
-                                                    style="font-size: 0.6rem; background-color: #e2e8f0 !important;">Unread</span>
-                                                <a href="#" class="text-decoration-none fw-semibold"
-                                                    style="font-size: 0.7rem; color: #224d5b;">Scan QR</a>
-                                            </div>
-                                            <span class="text-muted" style="font-size: 0.65rem;">May 22</span>
-                                        </div>
-                                    </div>
+                            @empty
+                                <div class="text-center py-4 text-muted small">
+                                    <i class="fa-regular fa-bell-slash fa-2x mb-2 d-block text-secondary"></i>
+                                    No new unread notifications.
                                 </div>
-                            </div>
-
-                            <!-- Notification Item 3 -->
-                            <div class="p-2.5 rounded-3 ref-notif-item position-relative bg-white">
-                                <div class="d-flex gap-3 align-start">
-                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-                                        style="width: 40px; height: 40px; background-color: #e4edf0; color: #224d5b; border: 1px solid #d0dce0;">
-                                        <i class="fa-regular fa-square-check"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">Anonymous Vote
-                                                Received</span>
-                                            <button class="btn-close shadow-none"
-                                                style="font-size: 0.55rem;"></button>
-                                        </div>
-                                        <p class="text-secondary mb-2 mt-1"
-                                            style="font-size: 0.75rem; line-height: 1.25;">A member voted on your
-                                            proposal "CleanUp Drive in Carmona City."</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge rounded-pill text-dark px-2 py-1 fw-normal"
-                                                    style="font-size: 0.6rem; background-color: #e2e8f0 !important;">Unread</span>
-                                                <a href="#" class="text-decoration-none fw-semibold"
-                                                    style="font-size: 0.7rem; color: #224d5b;">View my proposal</a>
-                                            </div>
-                                            <span class="text-muted" style="font-size: 0.65rem;">May 22</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -303,8 +286,13 @@
         <div class="mobile-menu-divider"></div>
 
         <div class="mobile-menu-actions">
-            <a href="#" class="mobile-action-link" onclick="closeMobileMenu()">
-                <div class="mobile-action-icon"><i class="fa-regular fa-bell"></i><span class="mobile-badge">{{ $stats['notifications'] ?? 0 }}</span></div>
+            <a href="{{ Route::has('notifications') ? route('notifications') : '#' }}" class="mobile-action-link" onclick="closeMobileMenu()">
+                <div class="mobile-action-icon">
+                    <i class="fa-regular fa-bell"></i>
+                    @if($unreadCount > 0)
+                        <span class="mobile-badge">{{ $unreadCount }}</span>
+                    @endif
+                </div>
                 <span>Notifications</span>
             </a>
             <a href="{{ route('profile') }}" class="mobile-action-link" onclick="closeMobileMenu()">
@@ -641,6 +629,17 @@
         const btn = document.getElementById('notifBtn');
         if (!popup.contains(e.target) && !btn.contains(e.target)) {
             popup.classList.add('d-none');
+        }
+    });
+
+    // Auto-hide floating toast after 3 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('globalToast');
+        if (toastEl) {
+            setTimeout(function () {
+                const bsToast = bootstrap.Toast.getOrCreateInstance(toastEl);
+                bsToast.hide();
+            }, 3000);
         }
     });
 </script>

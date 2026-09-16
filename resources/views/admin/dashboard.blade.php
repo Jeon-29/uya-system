@@ -287,71 +287,71 @@
 
     <!-- Sidebar Navigation -->
     <aside class="admin-sidebar" id="adminSidebar">
-        <div>
-            <div class="sidebar-brand d-flex align-items-center gap-2">
-                <span>UYA Connect</span>
-            </div>
-
-            <ul class="sidebar-nav">
-                <li>
-                    <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-link active">
-                        <i class="fa-solid fa-border-all"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.members') }}" class="sidebar-nav-link">
-                        <i class="fa-regular fa-user"></i>
-                        <span>Manage Members</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('activities') }}" class="sidebar-nav-link">
-                        <i class="fa-regular fa-calendar-check"></i>
-                        <span>Manage Activities</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.calendar') }}" class="sidebar-nav-link">
-                        <i class="fa-regular fa-calendar"></i>
-                        <span>Calendar</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('proposals') }}" class="sidebar-nav-link">
-                        <i class="fa-regular fa-lightbulb"></i>
-                        <span>Manage Proposals</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('announcements') }}" class="sidebar-nav-link">
-                        <i class="fa-solid fa-bullhorn"></i>
-                        <span>Announcements</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="sidebar-nav-link">
-                        <i class="fa-regular fa-circle-check"></i>
-                        <span>Attendance</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('profile') }}" class="sidebar-nav-link">
-                        <i class="fa-regular fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
-            </ul>
+    <div>
+        <div class="sidebar-brand d-flex align-items-center gap-2">
+            <span>UYA Connect</span>
         </div>
 
-        <div class="sidebar-footer">
-            <button type="button" class="sidebar-nav-link border-0 bg-transparent w-100 text-start text-danger"
-                data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Logout</span>
-            </button>
-        </div>
-    </aside>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.members') }}" class="sidebar-nav-link {{ request()->routeIs('admin.members*') ? 'active' : '' }}">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Manage Members</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('activities') }}" class="sidebar-nav-link {{ request()->routeIs('activities*') ? 'active' : '' }}">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Manage Activities</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.calendar') }}" class="sidebar-nav-link {{ request()->routeIs('admin.calendar') ? 'active' : '' }}">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('proposals') }}" class="sidebar-nav-link {{ request()->routeIs('proposals*') ? 'active' : '' }}">
+                    <i class="fa-regular fa-lightbulb"></i>
+                    <span>Manage Proposals</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.announcements') }}" class="sidebar-nav-link {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>Announcements</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.attendance') }}" class="sidebar-nav-link {{ request()->routeIs('admin.attendance*') ? 'active' : '' }}">
+                    <i class="fa-regular fa-circle-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('profile') }}" class="sidebar-nav-link {{ request()->routeIs('profile') ? 'active' : '' }}">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-footer">
+        <button type="button" class="sidebar-nav-link border-0 bg-transparent w-100 text-start text-danger"
+            data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Logout</span>
+        </button>
+    </div>
+</aside>
 
     <!-- Main Content Layout -->
     <main class="admin-main">

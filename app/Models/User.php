@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'age',
     'email',
+    'role',
     'gender',
     'contact_number',
     'address',

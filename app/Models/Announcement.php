@@ -15,6 +15,7 @@ class Announcement extends Model
         'title',
         'content',
         'is_pinned',
+        'target_audience',
     ];
 
     protected $casts = [

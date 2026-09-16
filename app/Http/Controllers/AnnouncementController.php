@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\User;
+use App\Notifications\AnnouncementPublished;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\Rule;
 
 class AnnouncementController extends Controller
 {
@@ -11,7 +16,17 @@ class AnnouncementController extends Controller
     {
         $query = Announcement::with('author');
 
-        // Apply compact search filter
+        $userRole = strtolower(auth()->user()->role ?? 'member');
+        $isAdminArea = $request->routeIs('admin.*') || $request->is('admin*') || in_array($userRole, ['admin', 'officer']);
+
+        if (!$isAdminArea) {
+            if ($userRole === 'member') {
+                $query->where('target_audience', 'all');
+            } elseif ($userRole === 'officer') {
+                $query->whereIn('target_audience', ['all', 'officers']);
+            }
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -20,13 +35,14 @@ class AnnouncementController extends Controller
             });
         }
 
-        // Always prioritize pinned announcements at the top, then latest date
         $announcements = $query->orderBy('is_pinned', 'desc')
                                ->latest()
                                ->paginate(10)
                                ->withQueryString();
 
-        return view('announcements', compact('announcements'));
+        $view = $isAdminArea ? 'admin.announcements' : 'announcements';
+
+        return view($view, compact('announcements'));
     }
 
     public function store(Request $request)
@@ -34,19 +50,39 @@ class AnnouncementController extends Controller
         $this->authorizeAdminOrOfficer();
 
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'content'   => 'required|string',
-            'is_pinned' => 'nullable|boolean',
+            'title'           => 'required|string|max:255',
+            'content'         => 'required|string',
+            'target_audience' => ['required', Rule::in(['all', 'officers', 'admin'])],
+            'is_pinned'       => 'nullable|boolean',
         ]);
 
-        Announcement::create([
-            'author_id' => auth()->id(),
-            'title'     => $validated['title'],
-            'content'   => $validated['content'],
-            'is_pinned' => $request->boolean('is_pinned'),
+        $announcement = Announcement::create([
+            'author_id'       => auth()->id(),
+            'title'           => $validated['title'],
+            'content'         => $validated['content'],
+            'target_audience' => $validated['target_audience'],
+            'is_pinned'       => $request->boolean('is_pinned'),
         ]);
 
-        return redirect()->route('announcements')->with('success', 'Announcement posted successfully.');
+        // Query users based on target audience (excluding creator)
+        $userQuery = User::where('id', '!=', auth()->id());
+
+        if ($validated['target_audience'] === 'officers') {
+            $userQuery->whereIn(DB::raw('LOWER(role)'), ['officer', 'admin']);
+        } elseif ($validated['target_audience'] === 'admin') {
+            $userQuery->where(DB::raw('LOWER(role)'), 'admin');
+        }
+
+        $recipients = $userQuery->get();
+
+        // Dispatch notifications to target audience
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new AnnouncementPublished($announcement));
+        }
+
+        $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
+
+        return redirect()->route($redirect)->with('success', 'Announcement posted and notifications sent.');
     }
 
     public function update(Request $request, Announcement $announcement)
@@ -54,35 +90,39 @@ class AnnouncementController extends Controller
         $this->authorizeAdminOrOfficer();
 
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'content'   => 'required|string',
-            'is_pinned' => 'nullable|boolean',
+            'title'           => 'required|string|max:255',
+            'content'         => 'required|string',
+            'target_audience' => ['required', Rule::in(['all', 'officers', 'admin'])],
+            'is_pinned'       => 'nullable|boolean',
         ]);
 
         $announcement->update([
-            'title'     => $validated['title'],
-            'content'   => $validated['content'],
-            'is_pinned' => $request->boolean('is_pinned'),
+            'title'           => $validated['title'],
+            'content'         => $validated['content'],
+            'target_audience' => $validated['target_audience'],
+            'is_pinned'       => $request->boolean('is_pinned'),
         ]);
 
-        return redirect()->route('announcements')->with('success', 'Announcement updated successfully.');
+        $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
+
+        return redirect()->route($redirect)->with('success', 'Announcement updated successfully.');
     }
 
-    public function destroy(Announcement $announcement)
+    public function destroy(Announcement $announcement, Request $request)
     {
         $this->authorizeAdminOrOfficer();
 
         $announcement->delete();
 
-        return redirect()->route('announcements')->with('success', 'Announcement deleted successfully.');
+        $redirect = ($request->routeIs('admin.*') || $request->is('admin*')) ? 'admin.announcements' : 'announcements';
+
+        return redirect()->route($redirect)->with('success', 'Announcement deleted successfully.');
     }
 
-    /**
-     * Helper check to enforce Admin / Officer privileges.
-     */
     private function authorizeAdminOrOfficer(): void
     {
-        if (!in_array(auth()->user()->role ?? 'member', ['admin', 'officer'])) {
+        $role = strtolower(auth()->user()->role ?? 'member');
+        if (!in_array($role, ['admin', 'officer'])) {
             abort(403, 'Unauthorized action.');
         }
     }

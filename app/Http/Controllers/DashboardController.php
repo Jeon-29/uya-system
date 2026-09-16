@@ -42,13 +42,13 @@ class DashboardController extends Controller
         // Recent Announcements: latest 5 announcements with author
         $announcements = Announcement::with('author')
             ->latest()
-            ->take(5)
+            ->take(3)
             ->get();
 
         // Upcoming Activities: latest 5 upcoming activities (ordered by date)
         $upcomingActivities = Activity::upcoming()
             ->orderBy('date')
-            ->take(5)
+            ->take(3)
             ->get();
 
         return view('dashboard', [

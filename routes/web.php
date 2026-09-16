@@ -5,12 +5,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use Illuminate\Support\Facades\Route;
 
-// authenticated users on to the dashboard via the 'guest' middleware.
+// Redirect guest root attempts to login page
 Route::redirect('/', '/login');
 
 /*
@@ -40,7 +42,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated app pages
+| Authenticated App Pages (Member & Shared Views)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -64,7 +66,7 @@ Route::middleware('auth')->group(function () {
         return view('certificates');
     })->name('certificates');
 
-    // Proposals routes
+    // Member Proposals routes
     Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals');
     Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
 
@@ -78,11 +80,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy');
     Route::post('/proposals/{proposal}/vote', [ProposalController::class, 'vote'])->name('proposals.vote');
 
-    // Announcements routes (Full CRUD)
+    // Shared Announcements routes
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements');
     Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
     Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
     Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+    // Member Notification routes
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     Route::get('/profile', function () {
         return view('profile');
@@ -94,16 +101,27 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Member Management Routes
+        // Admin Member Management
         Route::get('/members', [MemberController::class, 'index'])->name('members');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store');
         Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
         Route::patch('/members/{member}/toggle-status', [MemberController::class, 'toggleStatus'])->name('members.toggle-status');
         Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
 
-        // Admin Calendar Route
+        // Admin Calendar
         Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar');
+
+        // Admin Announcements
+        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+        // Admin Attendance Management
+        Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('attendance');
+        Route::put('/attendance/{id}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
     });
 });
