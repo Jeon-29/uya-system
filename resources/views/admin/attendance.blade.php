@@ -113,8 +113,8 @@
                             <td class="fw-semibold text-white">{{ $record->member_name ?? ($record->user->name ?? 'N/A') }}</td>
                             <td class="text-subtle">{{ $record->activity_name ?? ($record->activity->title ?? 'N/A') }}</td>
                             <td>
-                                @php $st = strtolower($record->status ?? ($record->attended ? 'present' : 'absent')); @endphp
-                                @if($st === 'present')
+                                @php $st = strtolower($record->status ?? 'registered'); @endphp
+                                @if($st === 'attended' || $st === 'present')
                                     <span class="badge badge-status-present">Present</span>
                                 @elseif($st === 'late' || $st === 'present but late')
                                     <span class="badge badge-status-late">Present but Late</span>
@@ -205,8 +205,9 @@
         document.getElementById('edit_member_name').value = record.member_name || (record.user ? record.user.name : '');
         document.getElementById('edit_activity_name').value = record.activity_name || (record.activity ? record.activity.title : '');
 
-        let statusVal = (record.status || (record.attended ? 'present' : 'absent')).toLowerCase();
-        if (statusVal === 'present but late') statusVal = 'late';
+        let statusVal = (record.status || 'registered').toLowerCase();
+        if (statusVal === 'attended') statusVal = 'present';
+        if (statusVal === 'registered') statusVal = 'absent';
         document.getElementById('edit_status').value = statusVal;
 
         const modal = new bootstrap.Modal(document.getElementById('editAttendanceModal'));

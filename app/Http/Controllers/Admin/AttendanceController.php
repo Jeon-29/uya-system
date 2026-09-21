@@ -22,7 +22,7 @@ class AttendanceController extends Controller
                 ->leftJoin('activities', 'activity_participants.activity_id', '=', 'activities.id')
                 ->select(
                     'activity_participants.id',
-                    'activity_participants.attended',
+                    'activity_participants.status',
                     'activity_participants.created_at',
                     'users.name as member_name',
                     'activities.title as activity_name'
@@ -39,12 +39,12 @@ class AttendanceController extends Controller
             $records = $query->orderBy('activity_participants.created_at', 'desc')->paginate(10);
 
             $totalRecords = DB::table('activity_participants')->count();
-            $presentCount = DB::table('activity_participants')->where('attended', true)->count();
-            $absentCount  = DB::table('activity_participants')->where('attended', false)->count();
-            $lateCount    = 0;
+            $presentCount = DB::table('activity_participants')->where('status', 'attended')->count();
+            $lateCount    = DB::table('activity_participants')->where('status', 'late')->count();
+            $absentCount  = DB::table('activity_participants')->where('status', 'registered')->count();
 
             $attendanceRate = $totalRecords > 0
-                ? round(($presentCount / $totalRecords) * 100)
+                ? round((($presentCount + $lateCount) / $totalRecords) * 100)
                 : 0;
         } elseif ($hasAttendanceTable) {
             $query = DB::table('attendances')
@@ -100,12 +100,20 @@ class AttendanceController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:present,late,absent',
+            'status' => 'required|string|in:present,late,absent,attended,registered',
         ]);
+
+        $statusMap = [
+            'present' => 'attended',
+            'late'    => 'late',
+            'absent'  => 'registered',
+        ];
+
+        $targetStatus = $statusMap[$validated['status']] ?? $validated['status'];
 
         if (DB::getSchemaBuilder()->hasTable('activity_participants')) {
             DB::table('activity_participants')->where('id', $id)->update([
-                'attended'   => $validated['status'] === 'present',
+                'status'     => $targetStatus,
                 'updated_at' => now(),
             ]);
         } elseif (DB::getSchemaBuilder()->hasTable('attendances')) {

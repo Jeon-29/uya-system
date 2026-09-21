@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Activity extends Model
@@ -22,6 +24,8 @@ class Activity extends Model
         'status',
         'is_registration_open',
         'is_attendance_open',
+        'certificate_template_id',
+        'certificate_issuance_rule',
         'created_by',
     ];
 
@@ -56,6 +60,22 @@ class Activity extends Model
     public function feedback()
     {
         return $this->hasMany(ActivityFeedback::class);
+    }
+
+    /**
+     * Get the certificate template assigned to this activity.
+     */
+    public function certificateTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CertificateTemplate::class, 'certificate_template_id');
+    }
+
+    /**
+     * Get all certificates issued for this activity.
+     */
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function hasAvailableSlots(): bool

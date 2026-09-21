@@ -15,13 +15,13 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        // Calculate member attendance stats dynamically
+        // Calculate member attendance stats dynamically based on pivot status column
         $attendanceQuery = $user->activities();
         $total = $attendanceQuery->count();
-        $present = (clone $attendanceQuery)->wherePivot('attended', true)->count();
-        $absent = $total - $present;
-        $late = 0; // Configurable based on pivot schema if tracking timestamps
-        $rate = $total > 0 ? round(($present / $total) * 100) . '%' : '0%';
+        $present = (clone $attendanceQuery)->wherePivot('status', 'attended')->count();
+        $late = (clone $attendanceQuery)->wherePivot('status', 'late')->count();
+        $absent = $total - ($present + $late);
+        $rate = $total > 0 ? round((($present + $late) / $total) * 100) . '%' : '0%';
 
         $attendanceStats = [
             'total'   => $total,

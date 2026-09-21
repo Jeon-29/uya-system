@@ -46,12 +46,11 @@
             box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.03);
         }
 
-        /* Slimmer Information Fields for Mobile */
         .info-box {
             background-color: #f3f7f9;
             border: 1px solid #dce5e8;
             border-radius: 10px;
-            padding: 0.55rem 1rem; /* Reduced top/bottom padding to decrease height */
+            padding: 0.55rem 1rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -282,21 +281,21 @@
                 <div class="stat-card">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">PRESENT</span>
                     <h3 class="fw-bold mb-1 text-success" style="font-size: 1.4rem;">{{ $attendanceStats['present'] ?? 0 }}</h3>
-                    <span class="text-muted" style="font-size: 0.7rem;">On-time &amp; late</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Attended</span>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-xl">
                 <div class="stat-card">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">LATE</span>
                     <h3 class="fw-bold mb-1 text-warning" style="font-size: 1.4rem;">{{ $attendanceStats['late'] ?? 0 }}</h3>
-                    <span class="text-muted" style="font-size: 0.7rem;">Present but late</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Late check-ins</span>
                 </div>
             </div>
             <div class="col-6 col-md-6 col-xl">
                 <div class="stat-card">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">ABSENT</span>
                     <h3 class="fw-bold mb-1 text-danger" style="font-size: 1.4rem;">{{ $attendanceStats['absent'] ?? 0 }}</h3>
-                    <span class="text-muted" style="font-size: 0.7rem;">No valid QR scan</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Registered only</span>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-xl">
@@ -323,14 +322,16 @@
                     <tbody>
                         @forelse($attendanceRecords ?? [] as $activity)
                             @php
-                                $attended = $activity->pivot->attended ?? false;
+                                $status = $activity->pivot->status ?? 'registered';
                             @endphp
                             <tr>
                                 <td class="fw-semibold text-dark">{{ $activity->title }}</td>
                                 <td class="text-muted">{{ $activity->pivot->created_at ? \Carbon\Carbon::parse($activity->pivot->created_at)->format('n/j/Y') : 'N/A' }}</td>
                                 <td>
-                                    @if($attended)
+                                    @if($status === 'attended')
                                         <span class="badge rounded-pill text-success px-2.5 py-1 fw-semibold" style="background-color: rgba(25, 135, 84, 0.12); font-size: 0.7rem;">PRESENT</span>
+                                    @elseif($status === 'late')
+                                        <span class="badge rounded-pill text-warning px-2.5 py-1 fw-semibold" style="background-color: rgba(255, 193, 7, 0.15); font-size: 0.7rem;">LATE</span>
                                     @else
                                         <span class="badge rounded-pill text-danger px-2.5 py-1 fw-semibold" style="background-color: rgba(220, 53, 69, 0.12); font-size: 0.7rem;">ABSENT</span>
                                     @endif

@@ -115,6 +115,7 @@
                                 <div><i class="fa-solid fa-location-dot me-2 opacity-75"></i> {{ $activity->location ?? 'TBD' }}</div>
                                 <div><i class="fa-regular fa-user me-2 opacity-75"></i> Organized by {{ $activity->organizer_name ?? 'Admin' }}</div>
                                 <div><i class="fa-solid fa-peso-sign me-2 opacity-75"></i> Budget: ₱{{ number_format($activity->budget, 2) }}</div>
+                                <div><i class="fa-solid fa-certificate me-2 opacity-75 text-primary"></i> Template: {{ $activity->certificateTemplate->title ?? 'None Assigned' }}</div>
                             </div>
 
                             <p class="text-subtle small mb-4 line-clamp-2" style="font-size: 0.82rem; line-height: 1.5;">
@@ -178,6 +179,7 @@
                             <span><i class="fa-solid fa-location-dot me-1"></i> {{ $activity->location ?? 'N/A' }}</span>
                             <span><i class="fa-regular fa-user me-1"></i> {{ $activity->organizer_name ?? 'Admin' }}</span>
                             <span><i class="fa-solid fa-peso-sign me-1"></i> ₱{{ number_format($activity->budget, 2) }}</span>
+                            <span><i class="fa-solid fa-certificate me-1 text-primary"></i> {{ $activity->certificateTemplate->title ?? 'No Template' }}</span>
                         </div>
                     </div>
 
@@ -267,20 +269,20 @@
                     <div class="modal-body p-3">
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Activity Title</label>
+                                <label class="form-label">Activity Title *</label>
                                 <input type="text" name="title" class="form-control" placeholder="e.g. Web Dev Workshop" required>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Organizer Name</label>
+                                <label class="form-label">Organizer Name *</label>
                                 <input type="text" name="organizer_name" class="form-control" value="{{ auth()->user()->name }}" required>
                             </div>
 
                             <div class="col-12 col-md-3">
-                                <label class="form-label">Event Date</label>
+                                <label class="form-label">Event Date *</label>
                                 <input type="date" name="event_date" class="form-control" required>
                             </div>
                             <div class="col-12 col-md-3">
-                                <label class="form-label">Event Start Time</label>
+                                <label class="form-label">Event Start Time *</label>
                                 <input type="time" name="event_time" class="form-control" required>
                             </div>
 
@@ -297,13 +299,33 @@
                                 <input type="text" name="duration" class="form-control" placeholder="e.g. 2 hours / Half day">
                             </div>
                             <div class="col-12 col-md-4">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">Status *</label>
                                 <select name="status" class="form-select" required>
                                     <option value="upcoming" selected>Upcoming</option>
                                     <option value="ongoing">Ongoing</option>
                                     <option value="completed">Completed</option>
                                 </select>
                             </div>
+
+                            <!-- Certificate Configuration Fields -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Certificate Template</label>
+                                <select name="certificate_template_id" class="form-select">
+                                    <option value="">-- No Certificate --</option>
+                                    @foreach($certificateTemplates as $tmpl)
+                                        <option value="{{ $tmpl->id }}">{{ $tmpl->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Certificate Issuance Rule</label>
+                                <select name="certificate_issuance_rule" class="form-select">
+                                    <option value="attendance" selected>Attendance Scanned (Attended/Present)</option>
+                                    <option value="all_registered">All Registered Participants</option>
+                                    <option value="manual">Manual Selection by Officer</option>
+                                </select>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label">Description</label>
                                 <textarea name="description" class="form-control" rows="3" placeholder="Write activity description..."></textarea>
@@ -335,20 +357,20 @@
                     <div class="modal-body p-3">
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Activity Title</label>
+                                <label class="form-label">Activity Title *</label>
                                 <input type="text" id="edit_title" name="title" class="form-control" required>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label">Organizer Name</label>
+                                <label class="form-label">Organizer Name *</label>
                                 <input type="text" id="edit_organizer_name" name="organizer_name" class="form-control" required>
                             </div>
 
                             <div class="col-12 col-md-3">
-                                <label class="form-label">Event Date</label>
+                                <label class="form-label">Event Date *</label>
                                 <input type="date" id="edit_event_date" name="event_date" class="form-control" required>
                             </div>
                             <div class="col-12 col-md-3">
-                                <label class="form-label">Event Start Time</label>
+                                <label class="form-label">Event Start Time *</label>
                                 <input type="time" id="edit_event_time" name="event_time" class="form-control" required>
                             </div>
 
@@ -365,13 +387,33 @@
                                 <input type="text" id="edit_duration" name="duration" class="form-control">
                             </div>
                             <div class="col-12 col-md-4">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">Status *</label>
                                 <select id="edit_status" name="status" class="form-select" required>
                                     <option value="upcoming">Upcoming</option>
                                     <option value="ongoing">Ongoing</option>
                                     <option value="completed">Completed</option>
                                 </select>
                             </div>
+
+                            <!-- Certificate Configuration Fields -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Certificate Template</label>
+                                <select id="edit_certificate_template_id" name="certificate_template_id" class="form-select">
+                                    <option value="">-- No Certificate --</option>
+                                    @foreach($certificateTemplates as $tmpl)
+                                        <option value="{{ $tmpl->id }}">{{ $tmpl->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Certificate Issuance Rule</label>
+                                <select id="edit_certificate_issuance_rule" name="certificate_issuance_rule" class="form-select">
+                                    <option value="attendance">Attendance Scanned (Attended/Present)</option>
+                                    <option value="all_registered">All Registered Participants</option>
+                                    <option value="manual">Manual Selection by Officer</option>
+                                </select>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label">Description</label>
                                 <textarea id="edit_description" name="description" class="form-control" rows="3"></textarea>
@@ -454,6 +496,8 @@
         document.getElementById('edit_budget').value = data.budget || '0.00';
         document.getElementById('edit_duration').value = data.duration || '';
         document.getElementById('edit_status').value = data.status || 'upcoming';
+        document.getElementById('edit_certificate_template_id').value = data.certificate_template_id || '';
+        document.getElementById('edit_certificate_issuance_rule').value = data.certificate_issuance_rule || 'attendance';
         document.getElementById('edit_description').value = data.description || '';
 
         const modal = new bootstrap.Modal(document.getElementById('editActivityModal'));

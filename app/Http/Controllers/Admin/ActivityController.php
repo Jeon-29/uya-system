@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityPhoto;
 use App\Models\ActivityLog;
+use App\Models\CertificateTemplate;
 use App\Models\User;
 use App\Notifications\ActivityCreatedNotification;
 use App\Notifications\AttendanceOpenedNotification;
 use App\Notifications\ActivityCompletedNotification;
+use App\Services\CertificateGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
@@ -24,6 +26,9 @@ class ActivityController extends Controller
         $activeCount = Activity::whereIn('status', ['upcoming', 'ongoing'])->count();
         $finishedCount = Activity::where('status', 'completed')->count();
         $archivedCount = Activity::onlyTrashed()->count();
+
+        // Fetch certificate templates for dropdown options in modals
+        $certificateTemplates = CertificateTemplate::orderBy('title', 'asc')->get();
 
         if ($tab === 'archived') {
             $query = Activity::onlyTrashed();
@@ -47,7 +52,7 @@ class ActivityController extends Controller
             $query->whereIn('status', ['upcoming', 'ongoing']);
         }
 
-        $activities = $query->orderBy('date', 'desc')->paginate(9)->withQueryString();
+        $activities = $query->with('certificateTemplate')->orderBy('date', 'desc')->paginate(9)->withQueryString();
 
         return view('admin.activities.index', compact(
             'activities',
@@ -55,14 +60,15 @@ class ActivityController extends Controller
             'search',
             'activeCount',
             'finishedCount',
-            'archivedCount'
+            'archivedCount',
+            'certificateTemplates'
         ));
     }
 
     public function show($id)
     {
         $activity = Activity::withTrashed()
-            ->with(['creator', 'photos', 'feedback.user', 'participants.user'])
+            ->with(['creator', 'photos', 'feedback.user', 'participants.user', 'certificateTemplate', 'certificates.user'])
             ->findOrFail($id);
 
         $registeredCount = $activity->participants()->whereIn('status', ['registered', 'attended', 'late'])->count();
@@ -131,31 +137,35 @@ class ActivityController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'organizer_name' => 'required|string|max:255',
-            'event_date'     => 'required|date',
-            'event_time'     => 'required',
-            'location'       => 'nullable|string|max:255',
-            'budget'         => 'nullable|numeric|min:0',
-            'duration'       => 'nullable|string|max:100',
-            'status'         => 'required|in:upcoming,ongoing,completed',
-            'description'    => 'nullable|string',
+            'title'                     => 'required|string|max:255',
+            'organizer_name'            => 'required|string|max:255',
+            'event_date'                => 'required|date',
+            'event_time'                => 'required',
+            'location'                  => 'nullable|string|max:255',
+            'budget'                    => 'nullable|numeric|min:0',
+            'duration'                  => 'nullable|string|max:100',
+            'status'                    => 'required|in:upcoming,ongoing,completed',
+            'certificate_template_id'   => 'nullable|exists:certificate_templates,id',
+            'certificate_issuance_rule' => 'nullable|in:attendance,all_registered,manual',
+            'description'               => 'nullable|string',
         ]);
 
         $eventDateTime = $validated['event_date'] . ' ' . $validated['event_time'];
 
         $activity = Activity::create([
-            'title'                => $validated['title'],
-            'organizer_name'       => $validated['organizer_name'],
-            'date'                 => $eventDateTime,
-            'location'             => $validated['location'],
-            'budget'               => $validated['budget'] ?? 0.00,
-            'duration'             => $validated['duration'],
-            'status'               => $validated['status'],
-            'description'          => $validated['description'],
-            'is_registration_open' => true,
-            'is_attendance_open'   => false,
-            'created_by'           => auth()->id(),
+            'title'                     => $validated['title'],
+            'organizer_name'            => $validated['organizer_name'],
+            'date'                      => $eventDateTime,
+            'location'                  => $validated['location'],
+            'budget'                    => $validated['budget'] ?? 0.00,
+            'duration'                  => $validated['duration'],
+            'status'                    => $validated['status'],
+            'certificate_template_id'   => $validated['certificate_template_id'] ?? null,
+            'certificate_issuance_rule' => $validated['certificate_issuance_rule'] ?? 'attendance',
+            'description'               => $validated['description'],
+            'is_registration_open'      => true,
+            'is_attendance_open'        => false,
+            'created_by'                => auth()->id(),
         ]);
 
         ActivityLog::record('Created Activity', "Created activity: \"{$activity->title}\".");
@@ -172,28 +182,32 @@ class ActivityController extends Controller
     public function update(Request $request, Activity $activity)
     {
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'organizer_name' => 'required|string|max:255',
-            'event_date'     => 'required|date',
-            'event_time'     => 'required',
-            'location'       => 'nullable|string|max:255',
-            'budget'         => 'nullable|numeric|min:0',
-            'duration'       => 'nullable|string|max:100',
-            'status'         => 'required|in:upcoming,ongoing,completed',
-            'description'    => 'nullable|string',
+            'title'                     => 'required|string|max:255',
+            'organizer_name'            => 'required|string|max:255',
+            'event_date'                => 'required|date',
+            'event_time'                => 'required',
+            'location'                  => 'nullable|string|max:255',
+            'budget'                    => 'nullable|numeric|min:0',
+            'duration'                  => 'nullable|string|max:100',
+            'status'                    => 'required|in:upcoming,ongoing,completed',
+            'certificate_template_id'   => 'nullable|exists:certificate_templates,id',
+            'certificate_issuance_rule' => 'nullable|in:attendance,all_registered,manual',
+            'description'               => 'nullable|string',
         ]);
 
         $eventDateTime = $validated['event_date'] . ' ' . $validated['event_time'];
 
         $activity->update([
-            'title'          => $validated['title'],
-            'organizer_name' => $validated['organizer_name'],
-            'date'           => $eventDateTime,
-            'location'       => $validated['location'],
-            'budget'         => $validated['budget'] ?? 0.00,
-            'duration'       => $validated['duration'],
-            'status'         => $validated['status'],
-            'description'    => $validated['description'],
+            'title'                     => $validated['title'],
+            'organizer_name'            => $validated['organizer_name'],
+            'date'                      => $eventDateTime,
+            'location'                  => $validated['location'],
+            'budget'                    => $validated['budget'] ?? 0.00,
+            'duration'                  => $validated['duration'],
+            'status'                    => $validated['status'],
+            'certificate_template_id'   => $validated['certificate_template_id'] ?? null,
+            'certificate_issuance_rule' => $validated['certificate_issuance_rule'] ?? 'attendance',
+            'description'               => $validated['description'],
         ]);
 
         ActivityLog::record('Updated Activity', "Updated details for: \"{$activity->title}\".");
@@ -201,7 +215,10 @@ class ActivityController extends Controller
         return back()->with('success', 'Activity updated successfully.');
     }
 
-    public function complete(Activity $activity)
+    /**
+     * Mark an activity as completed and trigger automated certificate generation.
+     */
+    public function complete(Activity $activity, CertificateGeneratorService $certService)
     {
         $activity->update([
             'status'               => 'completed',
@@ -210,6 +227,12 @@ class ActivityController extends Controller
         ]);
 
         ActivityLog::record('Completed Activity', "Marked activity as completed: \"{$activity->title}\".");
+
+        // Batch generate certificates if template is configured
+        $generatedCount = 0;
+        if ($activity->certificate_template_id) {
+            $generatedCount = $certService->batchGenerateForActivity($activity);
+        }
 
         // Notify all registered/attended participants that the activity is completed
         $registeredUserIds = $activity->participants()
@@ -221,7 +244,12 @@ class ActivityController extends Controller
             Notification::send($participants, new ActivityCompletedNotification($activity));
         }
 
-        return back()->with('success', 'Activity has been marked as completed.');
+        $msg = "Activity has been marked as completed.";
+        if ($generatedCount > 0) {
+            $msg .= " Generated {$generatedCount} certificate(s) for eligible participants.";
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function toggleRegistration(Activity $activity)

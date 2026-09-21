@@ -331,7 +331,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ Route::has('admin.certificates') ? route('admin.certificates') : (Route::has('certificates') ? route('certificates') : '#') }}" class="sidebar-nav-link {{ request()->routeIs('*certificates*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.certificates.templates.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.certificates*') ? 'active' : '' }}">
                         <i class="fa-solid fa-certificate"></i>
                         <span>Certificates</span>
                     </a>

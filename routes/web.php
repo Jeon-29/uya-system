@@ -9,6 +9,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ActivityQrController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\ProposalController as AdminProposalController;
+use App\Http\Controllers\Admin\CertificateTemplateController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect guest root attempts to login page
@@ -65,9 +67,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 
-    Route::get('/certificates', function () {
-        return view('certificates');
-    })->name('certificates');
+    // Member Certificate Routes
+    Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates');
+    Route::get('/certificates/{certificate}/download', [CertificateController::class, 'download'])->name('certificates.download');
+    Route::patch('/certificates/{certificate}/archive', [CertificateController::class, 'archive'])->name('certificates.archive');
+    Route::patch('/certificates/{id}/restore', [CertificateController::class, 'restore'])->name('certificates.restore');
+    Route::delete('/certificates/{id}', [CertificateController::class, 'destroy'])->name('certificates.destroy');
 
     // Member Proposals routes
     Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals');
@@ -93,7 +98,7 @@ Route::middleware('auth')->group(function () {
     // Member Profile routes
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     /*
     |--------------------------------------------------------------------------
@@ -166,5 +171,17 @@ Route::middleware('auth')->group(function () {
         Route::patch('/proposals/{proposal}/restore', [AdminProposalController::class, 'restore'])->name('proposals.restore');
         Route::post('/proposals/{proposal}/convert', [AdminProposalController::class, 'convertToActivity'])->name('proposals.convert');
         Route::delete('/proposals/{proposal}', [AdminProposalController::class, 'destroy'])->name('proposals.destroy');
+
+        // Admin Certificate Template Management
+        Route::resource('certificates/templates', CertificateTemplateController::class, [
+            'names' => [
+                'index'   => 'certificates.templates.index',
+                'create'  => 'certificates.templates.create',
+                'store'   => 'certificates.templates.store',
+                'edit'    => 'certificates.templates.edit',
+                'update'  => 'certificates.templates.update',
+                'destroy' => 'certificates.templates.destroy',
+            ],
+        ]);
     });
 });
