@@ -19,7 +19,7 @@
     .event-pill:hover { transform: translateY(-1px); }
 
     .icon-cyan { color: #38bdf8 !important; }
-    .btn-purple { background-color: var(--admin-accent-purple); color: #ffffff; border: none; border-radius: 50rem; font-weight: 600; font-size: 0.85rem; padding: 9px 18px; transition: background-color 0.2s ease; }
+    .btn-purple { background-color: var(--admin-accent-purple); color: #ffffff; border: none; border-radius: 50rem; font-weight: 600; font-size: 0.85rem; padding: 9px 18px; transition: background-color 0.2s ease; text-decoration: none; }
     .btn-purple:hover { background-color: var(--admin-accent-purple-hover); color: #ffffff; }
 
     .btn-outline-pill { border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; border-radius: 50rem; font-weight: 600; font-size: 0.85rem; padding: 9px 18px; background: transparent; transition: all 0.2s ease; }
@@ -46,6 +46,12 @@
         }
         $weeks = array_chunk($calendarDays, 7);
         $initialActivity = $upcomingActivities->first();
+
+        // Check if attendance/QR is open for initial activity
+        $initialAttendanceOpen = $initialActivity && (
+            (!empty($initialActivity->is_attendance_open) && $initialActivity->is_attendance_open == true) ||
+            (!empty($initialActivity->status) && in_array($initialActivity->status, ['ongoing', 'attendance_open']))
+        );
     @endphp
 
     <div class="mb-4">
@@ -116,12 +122,14 @@
                     {{ $initialActivity ? \Carbon\Carbon::parse($initialActivity->date)->format('l, F j, Y') : now()->format('l, F j, Y') }}
                 </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 id="sideCardTitle" class="fw-bold mb-0 text-white" style="font-size: 1.1rem;">
                         {{ $initialActivity->title ?? 'No Activities Scheduled' }}
                     </h5>
-                    <span id="sideCardBadge" class="badge bg-warning bg-opacity-20 text-warning px-2 py-1 {{ $initialActivity ? '' : 'd-none' }}" style="font-size: 0.65rem;">
-                        Scheduled
+
+                    <!-- Clean High-Contrast Badge Status Pill -->
+                    <span id="sideCardBadge" class="badge bg-warning text-dark rounded-pill px-2.5 py-1.5 fw-semibold {{ $initialActivity ? '' : 'd-none' }}" style="font-size: 0.7rem;">
+                        {{ ucfirst($initialActivity->status ?? 'Scheduled') }}
                     </span>
                 </div>
 
@@ -141,15 +149,19 @@
                 </p>
 
                 <div class="d-flex flex-column gap-2">
-                    <a id="btnViewDetails" href="{{ isset($initialActivity->id) ? route('activities.show', $initialActivity->id) : '#' }}"
+                    <!-- Point to Admin Detail View -->
+                    <a id="btnViewDetails" href="{{ isset($initialActivity->id) ? route('admin.activities.show', $initialActivity->id) : '#' }}"
                        class="btn btn-outline-pill w-100 text-center text-decoration-none d-flex align-items-center justify-content-center gap-2 {{ $initialActivity ? '' : 'disabled opacity-50' }}">
                         <i class="fa-regular fa-eye"></i>
                         <span>View Details</span>
                     </a>
-                    <button type="button" id="btnViewQR" class="btn btn-purple w-100 d-flex align-items-center justify-content-center gap-2 {{ $initialActivity ? '' : 'disabled opacity-50' }}">
+
+                    <!-- Show ONLY if attendance/QR is available -->
+                    <a id="btnViewQR" href="{{ isset($initialActivity->id) ? route('admin.activities.show', $initialActivity->id) : '#' }}"
+                       class="btn btn-purple w-100 d-flex align-items-center justify-content-center gap-2 {{ $initialAttendanceOpen ? '' : 'd-none' }}">
                         <i class="fa-solid fa-qrcode"></i>
                         <span>View QR / Attendance</span>
-                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -184,14 +196,40 @@
         document.getElementById('sideCardParticipants').innerText = activity.participants ? activity.participants + ' participants' : '0 participants';
         document.getElementById('sideCardDesc').innerText = activity.description || 'No detailed description available.';
 
-        document.getElementById('sideCardBadge').classList.remove('d-none');
+        // Configure Status Pill
+        const badge = document.getElementById('sideCardBadge');
+        badge.classList.remove('d-none', 'bg-warning', 'bg-success', 'bg-primary', 'bg-secondary', 'text-dark', 'text-white');
 
+        const status = (activity.status || 'scheduled').toLowerCase();
+        if (status === 'ongoing' || status === 'active') {
+            badge.classList.add('bg-success', 'text-white');
+            badge.innerText = 'Ongoing';
+        } else if (status === 'completed') {
+            badge.classList.add('bg-secondary', 'text-white');
+            badge.innerText = 'Completed';
+        } else {
+            badge.classList.add('bg-warning', 'text-dark');
+            badge.innerText = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        // Admin Activity Details Link
         const viewBtn = document.getElementById('btnViewDetails');
         viewBtn.classList.remove('disabled', 'opacity-50');
-        viewBtn.href = '/activities/' + (activity.id || '');
+        viewBtn.href = '/admin/activities/' + (activity.id || '');
 
+        // Check if QR / Attendance is open
         const qrBtn = document.getElementById('btnViewQR');
-        qrBtn.classList.remove('disabled', 'opacity-50');
+        const isAttendanceOpen = activity.is_attendance_open === true ||
+                                activity.is_attendance_open === 1 ||
+                                activity.status === 'ongoing' ||
+                                activity.status === 'attendance_open';
+
+        if (isAttendanceOpen) {
+            qrBtn.classList.remove('d-none');
+            qrBtn.href = '/admin/activities/' + (activity.id || '');
+        } else {
+            qrBtn.classList.add('d-none');
+        }
     }
 
     function selectDay(dateFormatted, dayActivities) {
@@ -204,14 +242,17 @@
             document.getElementById('sideCardLocation').innerText = 'N/A';
             document.getElementById('sideCardParticipants').innerText = '0 participants';
             document.getElementById('sideCardDesc').innerText = 'There are no activities or events scheduled for this day.';
+
+            // Hide Status Pill if no activity is scheduled
             document.getElementById('sideCardBadge').classList.add('d-none');
 
             const viewBtn = document.getElementById('btnViewDetails');
             viewBtn.classList.add('disabled', 'opacity-50');
             viewBtn.href = '#';
 
+            // Hide QR button if no activity is scheduled
             const qrBtn = document.getElementById('btnViewQR');
-            qrBtn.classList.add('disabled', 'opacity-50');
+            qrBtn.classList.add('d-none');
         }
     }
 </script>

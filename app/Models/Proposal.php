@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Proposal extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
+        'campaign_id',
+        'user_id',
+        'activity_id',
         'title',
         'description',
         'location',
@@ -16,57 +21,67 @@ class Proposal extends Model
         'proposed_date',
         'voting_deadline',
         'estimated_budget',
+        'supporting_document_path',
+        'is_document_validated',
         'status',
-        'user_id',
     ];
 
     protected $casts = [
-        'proposed_date' => 'date',
-        'voting_deadline' => 'date',
+        'proposed_date'         => 'date',
+        'voting_deadline'       => 'datetime',
+        'is_document_validated' => 'boolean',
+        'estimated_budget'      => 'decimal:2',
     ];
 
-    public function proposer(): BelongsTo
+    // Relationships
+    public function campaign()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(ProposalCampaign::class, 'campaign_id');
     }
 
-    public function votes(): HasMany
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
+
+    public function votes()
     {
         return $this->hasMany(ProposalVote::class);
     }
 
-    public function attachments(): HasMany
+    public function revisions()
     {
-        return $this->hasMany(ProposalAttachment::class);
+        return $this->hasMany(ProposalRevision::class)->latest();
     }
 
-    // Accessor for vote counts
-    public function getYesCountAttribute()
+    // Helper Calculations
+    public function totalVotesCount()
     {
-        if ($this->relationLoaded('votes')) {
-            return $this->votes->where('vote', 'yes')->count();
-        }
-        return $this->votes()->where('vote', 'yes')->count();
+        return $this->votes()->count();
     }
 
-    public function getNoCountAttribute()
+    public function yesVotesCount()
     {
-        if ($this->relationLoaded('votes')) {
-            return $this->votes->where('vote', 'no')->count();
-        }
-        return $this->votes()->where('vote', 'no')->count();
+        return $this->votes()->where('vote_type', 'yes')->count();
     }
 
-    public function getTotalVotesAttribute()
+    public function noVotesCount()
     {
-        return $this->yes_count + $this->no_count;
+        return $this->votes()->where('vote_type', 'no')->count();
     }
 
-    public function getApprovalPercentageAttribute()
+    public function approvalRatePercentage()
     {
-        if ($this->total_votes === 0) {
+        $total = $this->totalVotesCount();
+        if ($total === 0) {
             return 0;
         }
-        return round(($this->yes_count / $this->total_votes) * 100);
+
+        return round(($this->yesVotesCount() / $total) * 100);
     }
 }

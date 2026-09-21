@@ -301,7 +301,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('activities') }}" class="sidebar-nav-link {{ request()->routeIs('activities*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.activities.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.activities*') ? 'active' : '' }}">
                         <i class="fa-regular fa-calendar-check"></i>
                         <span>Manage Activities</span>
                     </a>
@@ -313,7 +313,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('proposals') }}" class="sidebar-nav-link {{ request()->routeIs('proposals*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.proposals.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.proposals*') ? 'active' : '' }}">
                         <i class="fa-regular fa-lightbulb"></i>
                         <span>Manage Proposals</span>
                     </a>

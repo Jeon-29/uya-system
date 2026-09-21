@@ -2,56 +2,72 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Activity extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'title',
         'description',
         'date',
-        'time',
         'location',
+        'organizer_name',
+        'budget',
+        'duration',
+        'max_capacity',
         'status',
+        'is_registration_open',
+        'is_attendance_open',
         'created_by',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date'                 => 'datetime',
+        'budget'               => 'decimal:2',
+        'is_registration_open' => 'boolean',
+        'is_attendance_open'   => 'boolean',
     ];
 
-    public function creator(): BelongsTo
+    public function scopeUpcoming($query)
+    {
+        return $query->whereIn('status', ['upcoming', 'ongoing'])
+                     ->where('date', '>=', now()->toDateString());
+    }
+
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function participants(): HasManyThrough
+    public function participants()
     {
-        return $this->hasManyThrough(
-            User::class,
-            ActivityParticipant::class,
-            'activity_id', // Foreign key on activity_participants table...
-            'id', // Foreign key on users table...
-            'id', // Local key on activities table...
-            'user_id' // Local key on activity_participants table...
-        )->withPivot('attended');
+        return $this->hasMany(ActivityParticipant::class);
     }
 
-    // Alternative: direct many to many with pivot
-    public function attendees()
+    public function photos()
     {
-        return $this->belongsToMany(User::class, 'activity_participants')
-            ->withPivot('attended', 'created_at')
-            ->withTimestamps();
+        return $this->hasMany(ActivityPhoto::class);
     }
 
-    public function scopeUpcoming(Builder $query): Builder
+    public function feedback()
     {
-        return $query->where('status', 'upcoming')
-            ->whereDate('date', '>=', today());
+        return $this->hasMany(ActivityFeedback::class);
+    }
+
+    public function hasAvailableSlots(): bool
+    {
+        if (is_null($this->max_capacity)) {
+            return true;
+        }
+
+        $activeRegistrations = $this->participants()
+            ->whereIn('status', ['registered', 'attended'])
+            ->count();
+
+        return $activeRegistrations < $this->max_capacity;
     }
 }

@@ -6,27 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->date('date');
-            $table->time('time')->nullable();
-            $table->string('location');
-            $table->enum('status', ['upcoming', 'ongoing', 'finished'])->default('upcoming');
+            $table->dateTime('date');
+            $table->string('location')->nullable();
+            $table->unsignedInteger('max_capacity')->nullable();
+            $table->enum('status', ['upcoming','draft', 'open', 'ongoing', 'completed', 'cancelled'])->default('open');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('activities');

@@ -7,12 +7,16 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityQrController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\CalendarController as AdminCalendarController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Admin\ProposalController as AdminProposalController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect guest root attempts to login page
@@ -51,17 +55,13 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/activities', function () {
-        return view('activities');
-    })->name('activities');
-
-    Route::get('/activities/{id}', function ($id) {
-        return view('activity-details', ['id' => $id]);
-    })->name('activities.show');
-
-    Route::get('/activities/{id}/finished', function ($id) {
-        return view('activities.finished-show', ['id' => $id]);
-    })->name('activities.finished.show');
+    // Member Dynamic Activity Routes
+    Route::get('/activities', [ActivityController::class, 'index'])->name('activities');
+    Route::get('/activities/{id}', [ActivityController::class, 'show'])->name('activities.show');
+    Route::post('/activities/{activity}/join', [ActivityController::class, 'join'])->name('activities.join');
+    Route::post('/activities/{activity}/cancel', [ActivityController::class, 'cancel'])->name('activities.cancel');
+    Route::post('/activities/{activity}/feedback', [ActivityController::class, 'storeFeedback'])->name('activities.feedback.store');
+    Route::post('/activities/process-qr-scan', [ActivityQrController::class, 'processScan'])->name('activities.process-qr');
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 
@@ -72,14 +72,10 @@ Route::middleware('auth')->group(function () {
     // Member Proposals routes
     Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals');
     Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
-
-    // Legacy view-detail route (no ID) - kept for backward compatibility.
-    Route::get('/proposals/view-details', function () {
-        return view('view');
-    })->name('view-detail');
-
-    Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
+    Route::get('/proposals/{id}', [ProposalController::class, 'show'])->name('proposals.show');
     Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
+    Route::patch('/proposals/{proposal}/archive', [ProposalController::class, 'archive'])->name('proposals.archive');
+    Route::patch('/proposals/{proposal}/restore', [ProposalController::class, 'restore'])->name('proposals.restore');
     Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy');
     Route::post('/proposals/{proposal}/vote', [ProposalController::class, 'vote'])->name('proposals.vote');
 
@@ -97,7 +93,7 @@ Route::middleware('auth')->group(function () {
     // Member Profile routes
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
 
     /*
     |--------------------------------------------------------------------------
@@ -133,14 +129,42 @@ Route::middleware('auth')->group(function () {
         Route::post('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
-        // Admin Certificates Management
-        Route::get('/certificates', function () {
-            return view('admin.certificates');
-        })->name('certificates');
-
-        // Admin Profile & Activity Log Management
+        // Admin Profile Management
         Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
         Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('password.update');
+
+        // Admin Activity Management
+        Route::get('/activities', [AdminActivityController::class, 'index'])->name('activities.index');
+        Route::post('/activities', [AdminActivityController::class, 'store'])->name('activities.store');
+        Route::get('/activities/{id}', [AdminActivityController::class, 'show'])->name('activities.show');
+        Route::put('/activities/{activity}', [AdminActivityController::class, 'update'])->name('activities.update');
+        Route::patch('/activities/{activity}/complete', [AdminActivityController::class, 'complete'])->name('activities.complete');
+        Route::patch('/activities/{activity}/toggle-registration', [AdminActivityController::class, 'toggleRegistration'])->name('activities.toggle-registration');
+        Route::patch('/activities/{activity}/toggle-attendance', [AdminActivityController::class, 'toggleAttendance'])->name('activities.toggle-attendance');
+
+        // Soft delete, Restore & Force delete
+        Route::delete('/activities/{id}', [AdminActivityController::class, 'destroy'])->name('activities.destroy');
+        Route::patch('/activities/{id}/restore', [AdminActivityController::class, 'restore'])->name('activities.restore');
+        Route::delete('/activities/{id}/force-delete', [AdminActivityController::class, 'forceDelete'])->name('activities.force-delete');
+
+        // Photo upload & photo deletion for documentation
+        Route::post('/activities/{activity}/photos', [AdminActivityController::class, 'uploadPhotos'])->name('activities.photos.store');
+        Route::delete('/activities/photos/{photoId}', [AdminActivityController::class, 'deletePhoto'])->name('activities.photos.destroy');
+
+        Route::get('/activities/{activity}/qr-payload', [ActivityQrController::class, 'generatePayload'])->name('activities.qr-payload');
+
+        // Admin Proposal Management
+        Route::get('/proposals', [AdminProposalController::class, 'index'])->name('proposals.index');
+        Route::get('/proposals/{id}', [AdminProposalController::class, 'show'])->name('proposals.show');
+        Route::post('/proposals/schedule', [AdminProposalController::class, 'updateSchedule'])->name('proposals.updateSchedule');
+        Route::patch('/proposals/{proposal}/toggle-document', [AdminProposalController::class, 'toggleDocumentValidation'])->name('proposals.toggleDocument');
+        Route::post('/proposals/{proposal}/request-revision', [AdminProposalController::class, 'requestRevision'])->name('proposals.requestRevision');
+        Route::patch('/proposals/{proposal}/approve-voting', [AdminProposalController::class, 'approveForVoting'])->name('proposals.approveVoting');
+        Route::patch('/proposals/{proposal}/reject', [AdminProposalController::class, 'reject'])->name('proposals.reject');
+        Route::patch('/proposals/{proposal}/archive', [AdminProposalController::class, 'archive'])->name('proposals.archive');
+        Route::patch('/proposals/{proposal}/restore', [AdminProposalController::class, 'restore'])->name('proposals.restore');
+        Route::post('/proposals/{proposal}/convert', [AdminProposalController::class, 'convertToActivity'])->name('proposals.convert');
+        Route::delete('/proposals/{proposal}', [AdminProposalController::class, 'destroy'])->name('proposals.destroy');
     });
 });

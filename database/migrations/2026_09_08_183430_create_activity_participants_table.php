@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('activity_participants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('activity_id')->constrained('activities')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->boolean('attended')->default(false);
+            $table->enum('status', ['registered', 'cancelled', 'attended', 'absent'])->default('registered');
+            $table->timestamp('check_in_time')->nullable();
+            $table->boolean('certificate_issued')->default(false);
             $table->timestamps();
+
             $table->unique(['activity_id', 'user_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('activity_participants');

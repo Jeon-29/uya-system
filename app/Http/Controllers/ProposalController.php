@@ -3,351 +3,284 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proposal;
+use App\Models\ProposalCampaign;
 use App\Models\ProposalVote;
-use App\Models\ProposalAttachment;
 use App\Models\User;
+use App\Notifications\ProposalSubmittedNotification;
+use App\Notifications\ProposalVotedNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class ProposalController extends Controller
 {
     /**
-     * Display a listing of proposals.
-     *
-     * @param  Request  $request
-     * @return \Illuminate\Http\Response
+     * Display member proposals feed with tabs (Proposals vs My Proposals).
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $tab = $request->query('tab', 'all'); // which pane is active by default ('all' or 'my')
-        $search = $request->query('search', '');
-        $status = $request->query('status', '');
-        $sort = $request->query('sort', 'latest'); // latest, oldest, deadline, votes
+        $tab = $request->query('tab', 'proposals');
+        $search = $request->query('search');
+        $user = auth()->user();
 
-        $applyFilters = function ($query) use ($search, $status, $sort) {
-            if ($status) {
-                $query->where('status', $status);
-            }
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
 
-            if ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            }
+        // Counts for tab badges (Excludes archived proposals from public count)
+        $proposalsCount = Proposal::whereIn('status', ['active', 'approved_for_execution', 'rejected', 'completed'])->count();
+        $myProposalsCount = Proposal::where('user_id', $user->id)->count();
 
-            switch ($sort) {
-                case 'oldest':
-                    $query->orderBy('created_at', 'asc');
-                    break;
-                case 'deadline':
-                    $query->orderBy('voting_deadline', 'asc');
-                    break;
-                case 'votes':
-                    $query->orderByDesc('votes_count');
-                    break;
-                default:
-                    $query->orderBy('created_at', 'desc');
-                    break;
-            }
+        $query = Proposal::with(['user', 'votes', 'campaign']);
 
-            return $query;
-        };
-
-        // "Other Proposals" tab: everyone else's proposals (available to vote on).
-        $otherProposals = $applyFilters(
-            Proposal::withCount('votes')
-                ->with(['proposer', 'votes'])
-                ->where('user_id', '!=', $user->id)
-        )->paginate(10, ['*'], 'other_page')->appends($request->query());
-
-        // "My Proposals" tab: only the current user's own proposals.
-        $myProposals = $applyFilters(
-            Proposal::withCount('votes')
-                ->with(['proposer', 'votes'])
-                ->where('user_id', $user->id)
-        )->paginate(10, ['*'], 'my_page')->appends($request->query());
-
-        $allCount = Proposal::where('user_id', '!=', $user->id)->count();
-        $myCount = $user->proposals()->count();
-
-        return view('proposals', [
-            'proposals' => $otherProposals, // kept for backward compatibility
-            'otherProposals' => $otherProposals,
-            'myProposals' => $myProposals,
-            'tab' => $tab,
-            'search' => $search,
-            'status' => $status,
-            'sort' => $sort,
-            'allCount' => $allCount,
-            'myCount' => $myCount,
-        ]);
-    }
-
-    /**
-     * Display the specified proposal.
-     *
-     * @param  Proposal  $proposal
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Proposal $proposal)
-    {
-        $proposal->load(['proposer', 'votes.user', 'attachments']);
-
-        $userVoted = null;
-        $userFeedback = '';
-        if (Auth::check()) {
-            $vote = $proposal->votes()->where('user_id', Auth::id())->first();
-            if ($vote) {
-                $userVoted = $vote->vote;
-                $userFeedback = $vote->feedback;
-            }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
-        return view('proposals-details', [
-            'proposal' => $proposal,
-            'userVoted' => $userVoted,
-            'userFeedback' => $userFeedback,
-        ]);
+        if ($tab === 'my-proposals') {
+            $query->where('user_id', $user->id);
+        } else {
+            // Public feed: show active, approved, rejected, or completed proposals
+            $query->whereIn('status', ['active', 'approved_for_execution', 'rejected', 'completed']);
+        }
+
+        $proposals = $query->orderBy('created_at', 'desc')->paginate(6)->withQueryString();
+
+        return view('proposals.index', compact(
+            'proposals',
+            'tab',
+            'search',
+            'activeCampaign',
+            'proposalsCount',
+            'myProposalsCount'
+        ));
     }
 
     /**
-     * Show the form for creating a new proposal.
-     *
-     * @return \Illuminate\Http\Response
+     * Display single proposal details.
      */
-    public function create()
+    public function show($id)
     {
-        return redirect()->route('proposals');
+        $proposal = Proposal::with(['user', 'revisions.officer', 'votes.user', 'campaign'])->findOrFail($id);
+        $user = auth()->user();
+
+        $isOwner = (int)$proposal->user_id === (int)$user->id;
+        $userVote = ProposalVote::where('proposal_id', $proposal->id)->where('user_id', $user->id)->first();
+
+        // Private feedback loaded exclusively for the proposer/owner
+        $yesFeedback = $isOwner ? $proposal->votes()->where('vote_type', 'yes')->whereNotNull('feedback')->with('user')->get() : collect();
+        $noFeedback  = $isOwner ? $proposal->votes()->where('vote_type', 'no')->whereNotNull('feedback')->with('user')->get() : collect();
+
+        return view('proposals.show', compact('proposal', 'isOwner', 'userVote', 'yesFeedback', 'noFeedback'));
     }
 
     /**
-     * Store a newly created proposal in storage.
-     *
-     * @param  Request  $request
-     * @return \Illuminate\Http\Response
+     * Store new member proposal.
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
 
-        // Check if user is an officer or admin
-        $isOfficer = in_array($user->role ?? 'member', ['admin', 'officer']);
-
-        $rules = [
-            'title' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'duration' => 'required|string',
-            'proposed_date' => 'required|date|after_or_equal:today',
-            'estimated_budget' => 'nullable|string|max:100',
-            'description' => 'required|string',
-            'attachments.*' => 'file|mimes:pdf,doc,docx|max:10240', // 10MB
-        ];
-
-        // Only validate the voting deadline if an officer/admin is submitting it
-        if ($isOfficer) {
-            $rules['voting_deadline'] = 'required|date|before_or_equal:proposed_date|after_or_equal:today';
+        // Safeguard: Check if campaign allows submission
+        if (!$activeCampaign || !$activeCampaign->isSubmissionAllowed()) {
+            return back()->with('error', 'Proposal submissions are currently closed.');
         }
 
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $data = $validator->validated();
-
-        // Calculate a default voting deadline for standard members automatically
-        if (!$isOfficer) {
-            $proposed = \Carbon\Carbon::parse($data['proposed_date']);
-            $deadline = $proposed->copy()->subDays(7); // Default to 7 days before event
-
-            // If 7 days prior is already in the past, set the deadline to today
-            if ($deadline->isPast()) {
-                $deadline = now();
-            }
-            $data['voting_deadline'] = $deadline->format('Y-m-d');
-        }
-
-        $data['status'] = 'submitted';
-        $data['user_id'] = $user->id;
-
-        $proposal = Proposal::create($data);
-
-        // Handle attachments
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('proposal_attachments', 'public');
-                ProposalAttachment::create([
-                    'proposal_id' => $proposal->id,
-                    'file_path' => $path,
-                ]);
-            }
-        }
-
-        return redirect()->route('proposals.show', $proposal)
-            ->with('success', 'Proposal created successfully.');
-    }
-
-    /**
-     * Show the form for editing the specified proposal.
-     *
-     * @param  Proposal  $proposal
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Proposal $proposal)
-    {
-        if ($proposal->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Unauthorized.');
-        }
-
-        return view('proposals', [
-            'proposal' => $proposal,
+        $validated = $request->validate([
+            'title'                => 'required|string|max:255',
+            'location'             => 'required|string|max:255',
+            'duration'             => 'required|string|max:100',
+            'proposed_date'        => 'required|date',
+            'estimated_budget'     => 'nullable|numeric|min:0',
+            'description'          => 'required|string|max:2000',
+            'supporting_document'  => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
+
+        $filePath = null;
+        if ($request->hasFile('supporting_document')) {
+            $filePath = $request->file('supporting_document')->store('proposal_docs', 'public');
+        }
+
+        $proposal = Proposal::create([
+            'campaign_id'              => $activeCampaign?->id,
+            'user_id'                  => auth()->id(),
+            'title'                    => $validated['title'],
+            'location'                 => $validated['location'],
+            'duration'                 => $validated['duration'],
+            'proposed_date'            => $validated['proposed_date'],
+            'estimated_budget'         => $validated['estimated_budget'] ?? 0.00,
+            'description'              => $validated['description'],
+            'supporting_document_path' => $filePath,
+            'status'                   => 'pending',
+        ]);
+
+        // Notify admins and officers
+        $admins = User::whereIn('role', ['admin', 'officer'])->get();
+        if ($admins->count() > 0) {
+            Notification::send($admins, new ProposalSubmittedNotification($proposal));
+        }
+
+        return back()->with('success', 'Your proposal has been submitted successfully for officer review!');
     }
 
     /**
-     * Update the specified proposal in storage.
-     *
-     * @param  Request  $request
-     * @param  Proposal  $proposal
-     * @return \Illuminate\Http\Response
+     * Update proposal.
      */
     public function update(Request $request, Proposal $proposal)
     {
-        $user = Auth::user();
-
-        if ($proposal->user_id !== $user->id && !in_array($user->role ?? 'member', ['admin', 'officer'])) {
-            return redirect()->back()->with('error', 'Unauthorized.');
+        if ((int)$proposal->user_id !== (int)auth()->id()) {
+            abort(403, 'Unauthorized action.');
         }
 
-        $isOfficer = in_array($user->role ?? 'member', ['admin', 'officer']);
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
 
-        $rules = [
-            'title' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'duration' => 'required|string',
-            'proposed_date' => 'required|date|after_or_equal:today',
-            'estimated_budget' => 'nullable|string|max:100',
-            'description' => 'required|string',
-            'attachments.*' => 'file|mimes:pdf,doc,docx|max:10240', // 10MB
-        ];
-
-        // Only allow updating/validating voting deadline if user is officer/admin
-        if ($isOfficer) {
-            $rules['voting_deadline'] = 'required|date|before_or_equal:proposed_date|after_or_equal:today';
+        // Safeguard: Block edits if in Voting or Closed phase
+        if (!$activeCampaign || !$activeCampaign->isOwnerModificationAllowed()) {
+            return back()->with('error', 'Proposals cannot be edited once voting has started or when the campaign is closed.');
         }
 
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        if (!in_array($proposal->status, ['pending', 'needs_revision'])) {
+            return back()->with('error', 'You can only edit proposals that are pending or requiring revisions.');
         }
 
-        $data = $validator->validated();
-        unset($data['attachments']);
+        $validated = $request->validate([
+            'title'                => 'required|string|max:255',
+            'location'             => 'required|string|max:255',
+            'duration'             => 'required|string|max:100',
+            'proposed_date'        => 'required|date',
+            'estimated_budget'     => 'nullable|numeric|min:0',
+            'description'          => 'required|string|max:2000',
+            'supporting_document'  => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+        ]);
 
-        // Editing a proposal that was sent back for revision resubmits it.
-        if ($proposal->status === 'revision_requested') {
-            $data['status'] = 'submitted';
+        if ($request->hasFile('supporting_document')) {
+            $validated['supporting_document_path'] = $request->file('supporting_document')->store('proposal_docs', 'public');
+            $validated['is_document_validated'] = false;
         }
 
-        $proposal->update($data);
+        $validated['status'] = 'pending';
 
-        // Handle new attachments if any
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('proposal_attachments', 'public');
-                ProposalAttachment::create([
-                    'proposal_id' => $proposal->id,
-                    'file_path' => $path,
-                ]);
-            }
+        $proposal->update($validated);
+
+        $admins = User::whereIn('role', ['admin', 'officer'])->get();
+        if ($admins->count() > 0) {
+            Notification::send($admins, new ProposalSubmittedNotification($proposal));
         }
 
-        return redirect()->route('proposals.show', $proposal)
-            ->with('success', 'Proposal updated successfully.');
+        return back()->with('success', 'Proposal updated and resubmitted for review!');
     }
 
     /**
-    * Remove the specified proposal from storage.
-    *
-    * @param  Proposal  $proposal
-    * @return \Illuminate\Http\Response
-    */
+     * Archive own proposal (Owner side).
+     */
+    public function archive(Proposal $proposal)
+    {
+        if ((int)$proposal->user_id !== (int)auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
+
+        // Safeguard: Block archiving during voting or closed phases
+        if (!$activeCampaign || !$activeCampaign->isOwnerModificationAllowed()) {
+            return back()->with('error', 'Proposals cannot be archived once voting has started or when the campaign is closed.');
+        }
+
+        $proposal->update(['status' => 'archived']);
+
+        return back()->with('success', 'Your proposal has been archived.');
+    }
+
+    /**
+     * Restore own archived proposal (Owner side).
+     */
+    public function restore(Proposal $proposal)
+    {
+        if ((int)$proposal->user_id !== (int)auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($proposal->status !== 'archived') {
+            return back()->with('error', 'Only archived proposals can be restored.');
+        }
+
+        $proposal->update(['status' => 'pending']);
+
+        return redirect()->route('proposals', ['tab' => 'my-proposals'])
+            ->with('success', 'Your proposal has been restored to Pending Review.');
+    }
+
+    /**
+     * Delete own proposal.
+     */
     public function destroy(Proposal $proposal)
     {
-        // Authorization
-        if ($proposal->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Unauthorized.');
+        if ((int)$proposal->user_id !== (int)auth()->id()) {
+            abort(403, 'Unauthorized action.');
         }
 
-        // Delete attachments files and records
-        foreach ($proposal->attachments as $attachment) {
-            Storage::disk('public')->delete($attachment->file_path);
-            $attachment->delete();
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
+
+        // Safeguard: Block deletion during voting or closed phases
+        if (!$activeCampaign || !$activeCampaign->isOwnerModificationAllowed()) {
+            return back()->with('error', 'Proposals cannot be deleted once voting has started or when the campaign is closed.');
         }
 
-        // Delete votes
-        $proposal->votes()->delete();
+        if (!in_array($proposal->status, ['pending', 'needs_revision', 'rejected', 'archived'])) {
+            return back()->with('error', 'You cannot delete active or completed proposals.');
+        }
 
-        // Delete proposal
+        if ($proposal->supporting_document_path) {
+            Storage::disk('public')->delete($proposal->supporting_document_path);
+        }
+
         $proposal->delete();
 
-        return redirect()->route('proposals')
-            ->with('success', 'Proposal deleted successfully.');
+        return redirect()->route('proposals', ['tab' => 'my-proposals'])->with('success', 'Your proposal was deleted successfully.');
     }
 
     /**
-     * Store a vote for the proposal.
-     *
-     * @param  Request  $request
-     * @param  Proposal  $proposal
-     * @return \Illuminate\Http\Response
+     * Vote Yes/No on active proposal.
      */
     public function vote(Request $request, Proposal $proposal)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
+        $user = auth()->user();
+
+        if ((int)$proposal->user_id === (int)$user->id) {
+            return back()->with('error', 'Self-voting is not allowed on your own proposal.');
         }
 
-        $user = Auth::user();
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
 
-        if ($proposal->user_id === $user->id) {
-            return redirect()->back()->with('error', 'You cannot vote on your own proposal.');
+        // Safeguard: Voting only allowed during Voting Phase
+        if (!$activeCampaign || !$activeCampaign->isVotingPhase()) {
+            return back()->with('error', 'Community voting is currently closed.');
         }
 
-        // Check if user already voted
-        if ($proposal->votes()->where('user_id', $user->id)->exists()) {
-            return redirect()->back()->with('error', 'You have already voted on this proposal.');
+        if ($proposal->status !== 'active') {
+            return back()->with('error', 'Voting is currently closed for this proposal.');
         }
 
-        $validator = Validator::make($request->all(), [
-            'vote' => ['required', Rule::in(['yes', 'no'])],
-            'feedback' => 'nullable|string|max:1000',
+        $validated = $request->validate([
+            'vote_type' => 'required|in:yes,no',
+            'feedback'  => 'nullable|string|max:1000',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        ProposalVote::updateOrCreate(
+            [
+                'proposal_id' => $proposal->id,
+                'user_id'     => $user->id,
+            ],
+            [
+                'vote_type' => $validated['vote_type'],
+                'feedback'  => $validated['feedback'] ?? null,
+            ]
+        );
 
-        $data = $validator->validated();
-        $data['user_id'] = $user->id;
-        $data['proposal_id'] = $proposal->id;
+        $proposal->user->notify(new ProposalVotedNotification($proposal, $user));
 
-        ProposalVote::create($data);
-
-        return redirect()->route('proposals.show', $proposal)
-            ->with('success', 'Your vote has been recorded.');
+        return back()->with('success', 'Your vote has been recorded!');
     }
 }
