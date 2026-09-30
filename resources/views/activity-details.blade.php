@@ -30,14 +30,14 @@
             width: 100%;
             max-width: 100%;
             margin: 0 auto;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
         }
 
-        @media (min-width: 1400px) {
+        @media (min-width: 768px) {
             .app-container {
-                padding-left: 2.5rem;
-                padding-right: 2.5rem;
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
             }
         }
 
@@ -51,18 +51,47 @@
         .detail-subcard {
             background-color: #f8fafc;
             border: 1px solid #dce5e8 !important;
-            border-radius: 12px;
-            padding: 0.85rem;
+            border-radius: 14px;
+            padding: 0.75rem 0.9rem;
+        }
+
+        .subcard-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .subcard-value {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0;
+            line-height: 1.25;
+        }
+
+        /* High contrast status pills */
+        .status-badge-gold {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .status-badge-green {
+            background-color: #15803d !important;
+            color: #ffffff !important;
+            font-weight: 700;
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.25rem 0.75rem;
+            padding: 0.35rem 0.8rem;
             font-size: 0.72rem;
-            font-weight: 600;
-            line-height: 1.2;
+            font-weight: 700;
             border-radius: 50rem;
         }
 
@@ -124,7 +153,7 @@
 
     @include('layouts.navbar')
 
-    <div class="app-container py-3 py-md-4">
+    <div class="app-container py-2 py-md-4">
 
         <!-- Back Button -->
         <div class="row mb-3">
@@ -138,96 +167,99 @@
         @php
             $isDeadlinePassed = $activity->registration_deadline && now()->greaterThan($activity->registration_deadline);
             $canRegister = $activity->is_registration_open && !$isDeadlinePassed && $activity->hasAvailableSlots();
+            $userParticipant = $activity->participants->where('user_id', auth()->id())->first();
+            $hasAttended = $userParticipant && in_array($userParticipant->status, ['attended', 'late']);
+            $userFeedback = $activity->feedback->where('user_id', auth()->id())->first();
             $groupedPhotos = $activity->photos->groupBy(function ($photo) {
                 return $photo->batch_id ?? ('single_' . $photo->id);
             });
         @endphp
 
         <!-- Main Overview Banner Card -->
-        <div class="row mb-4">
+        <div class="row mb-3 mb-md-4">
             <div class="col-12">
                 <div class="card shadow-sm rounded-4 p-3 p-md-4 pastel-card-primary">
-                    <div class="row align-items-start justify-content-between g-4">
+                    <div class="row align-items-start justify-content-between g-3">
 
                         <!-- Left Info Section -->
                         <div class="col-12 col-lg-8">
-                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                                <h3 class="fw-bold mb-0 text-brand fs-4 fs-md-3">{{ $activity->title }}</h3>
+                            <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                <h3 class="fw-bold mb-0 text-brand fs-5 fs-md-3 text-wrap">{{ $activity->title }}</h3>
                                 @if($activity->status === 'completed')
-                                    <span class="status-pill bg-success bg-opacity-15 text-success border border-success border-opacity-25">
+                                    <span class="status-pill status-badge-green flex-shrink-0">
                                         <i class="fa-solid fa-check-circle me-1"></i> Completed
                                     </span>
                                 @else
-                                    <span class="status-pill text-dark" style="background-color: var(--uya-gold);">
+                                    <span class="status-pill status-badge-gold flex-shrink-0">
                                         {{ ucfirst($activity->status) }}
                                     </span>
                                 @endif
                             </div>
-                            <p class="text-muted small mb-3">{{ $activity->description }}</p>
+                            <p class="text-muted small mb-3" style="font-size: 0.85rem; line-height: 1.45;">{{ $activity->description }}</p>
 
-                            <!-- Attendance Verification Card for Finished Activity -->
+                            <!-- Attendance & Certificate Verification Card -->
                             @if($activity->status === 'completed')
-                                <div class="detail-subcard mb-3 border-success border-opacity-25 bg-success bg-opacity-10">
+                                <div class="detail-subcard mb-3 border-success border-opacity-25 bg-success bg-opacity-10 px-3 py-2.5">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                         <div>
-                                            <span class="text-uppercase fw-bold text-muted d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Attendance Verification</span>
                                             @if($hasAttended)
-                                                <div class="text-success fw-bold mt-0.5" style="font-size: 0.88rem;">
+                                                <div class="text-success fw-bold" style="font-size: 0.83rem;">
                                                     <i class="fa-solid fa-circle-check me-1"></i> Successfully Attended
                                                 </div>
-                                                <div class="text-muted small" style="font-size: 0.75rem;">
-                                                    Verified on {{ $userParticipant->updated_at ? $userParticipant->updated_at->format('M j, Y \a\t g:i A') : 'N/A' }}
-                                                </div>
                                             @else
-                                                <div class="text-secondary fw-semibold mt-0.5" style="font-size: 0.85rem;">
+                                                <div class="text-secondary fw-semibold" style="font-size: 0.83rem;">
                                                     <i class="fa-solid fa-circle-xmark me-1"></i> Not Verified Present
                                                 </div>
                                             @endif
                                         </div>
 
                                         @if($hasAttended)
-                                            <a href="{{ route('certificates') }}" class="btn btn-sm custom-btn-filled rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem;">
-                                                <i class="fa-solid fa-award"></i> View Certificate
+                                            <a href="{{ route('certificates') }}" class="btn btn-sm custom-btn-filled rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                                                <i class="fa-solid fa-award"></i> Certificate
                                             </a>
                                         @endif
                                     </div>
                                 </div>
                             @endif
 
-                            <!-- Mini Metadata Grid -->
-                            <div class="row g-2 g-md-3">
-                                <div class="col-6 col-md-3">
+                            <!-- 2x2 Sub-Cards Metadata Grid -->
+                            <div class="row g-2">
+                                <div class="col-6">
                                     <div class="detail-subcard h-100">
-                                        <span class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Date</span>
-                                        <div class="text-dark fw-semibold mt-1" style="font-size: 0.85rem;">
-                                            <i class="fa-regular fa-calendar me-1 text-secondary"></i> {{ $activity->date->format('M j, Y') }}
+                                        <span class="subcard-label">DATE</span>
+                                        <div class="subcard-value d-flex align-items-center gap-2">
+                                            <i class="fa-regular fa-calendar text-brand"></i>
+                                            <span>{{ $activity->date->format('M j, Y') }}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-6 col-md-3">
+                                <div class="col-6">
                                     <div class="detail-subcard h-100">
-                                        <span class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Time</span>
-                                        <div class="text-dark fw-semibold mt-1" style="font-size: 0.85rem;">
-                                            <i class="fa-regular fa-clock me-1 text-secondary"></i> {{ $activity->date->format('g:i A') }}
+                                        <span class="subcard-label">TIME</span>
+                                        <div class="subcard-value d-flex align-items-center gap-2">
+                                            <i class="fa-regular fa-clock text-brand"></i>
+                                            <span>{{ $activity->date->format('g:i A') }}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-6 col-md-3">
+                                <div class="col-6">
                                     <div class="detail-subcard h-100">
-                                        <span class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Location</span>
-                                        <div class="text-dark fw-semibold mt-1 text-truncate" style="font-size: 0.85rem;">
-                                            <i class="fa-solid fa-location-dot me-1 text-secondary"></i> {{ $activity->location ?? 'TBD' }}
+                                        <span class="subcard-label">LOCATION</span>
+                                        <div class="subcard-value d-flex align-items-center gap-2 overflow-hidden">
+                                            <i class="fa-solid fa-location-dot text-brand flex-shrink-0"></i>
+                                            <span class="text-truncate" title="{{ $activity->location }}">{{ $activity->location ?? 'TBD' }}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-6 col-md-3">
+                                <div class="col-6">
                                     <div class="detail-subcard h-100">
-                                        <span class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Organizer</span>
-                                        <div class="text-dark fw-semibold mt-1" style="font-size: 0.85rem;">
-                                            <i class="fa-solid fa-user me-1 text-secondary"></i> {{ $activity->organizer_name ?? 'Admin' }}
+                                        <span class="subcard-label">ORGANIZER</span>
+                                        <div class="subcard-value d-flex align-items-center gap-2 overflow-hidden">
+                                            <i class="fa-regular fa-user text-brand flex-shrink-0"></i>
+                                            <span class="text-truncate">{{ $activity->organizer_name ?? 'Admin' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -237,26 +269,26 @@
 
                         <!-- Right Summary Widget -->
                         <div class="col-12 col-lg-4">
-                            <div class="detail-subcard bg-light bg-opacity-50">
-                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-                                    <span class="text-muted small" style="font-size: 0.8rem;">Registration</span>
-                                    <span class="badge {{ $canRegister ? 'bg-success bg-opacity-15 text-success' : 'bg-secondary bg-opacity-15 text-dark' }} px-2 py-1" style="font-size: 0.65rem;">
+                            <div class="detail-subcard d-flex flex-column gap-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted" style="font-size: 0.8rem;">Registration</span>
+                                    <span class="badge {{ $canRegister ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
                                         {{ $canRegister ? 'Open' : 'Closed' }}
                                     </span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                                    <span class="text-muted small" style="font-size: 0.8rem;">Attendance</span>
-                                    <span class="badge {{ $activity->is_attendance_open ? 'bg-success bg-opacity-15 text-success' : 'bg-secondary bg-opacity-15 text-dark' }} px-2 py-1" style="font-size: 0.65rem;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted" style="font-size: 0.8rem;">Attendance</span>
+                                    <span class="badge {{ $activity->is_attendance_open ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
                                         {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
                                     </span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="text-muted small" style="font-size: 0.8rem;">Feedback</span>
-                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $activity->feedback->count() }}</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted" style="font-size: 0.8rem;">Feedback</span>
+                                    <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->feedback->count() }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small" style="font-size: 0.8rem;">Photos</span>
-                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $activity->photos->count() }}</span>
+                                    <span class="text-muted" style="font-size: 0.8rem;">Photos</span>
+                                    <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->photos->count() }}</span>
                                 </div>
                             </div>
                         </div>
@@ -267,23 +299,21 @@
         </div>
 
         <!-- Documentation & Feedback Grid -->
-        <div class="row g-4">
+        <div class="row g-3 g-md-4">
             <!-- Documentation Column -->
             <div class="col-12 col-lg-7">
                 <div class="card p-3 p-md-4 pastel-card-primary h-100">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-2 text-brand fw-bold" style="font-size: 1rem;">
+                        <div class="d-flex align-items-center gap-2 text-brand fw-bold" style="font-size: 0.95rem;">
                             <i class="fa-regular fa-images"></i> Event Gallery ({{ $groupedPhotos->count() }} Posts)
                         </div>
                     </div>
 
                     @if($groupedPhotos->count() > 0)
                         <div class="ig-grid">
-                            @foreach($groupedPhotos as $batchId => $photos)
+                            @foreach($groupedPhotos as $batchId =>$photos)
                                 @php
-                                    $coverPhoto = $photos->first();
-                                    $photoCount = $photos->count();
-                                    $batchJson = json_encode($photos->map(function($p) {
+                                    $coverPhoto = $photos->first();$photoCount = $photos->count();$batchJson = json_encode($photos->map(function($p) {
                                         return [
                                             'id' => $p->id,
                                             'url' => asset('storage/' . $p->photo_path),
@@ -302,7 +332,7 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center text-muted py-5 detail-subcard">
+                        <div class="text-center text-muted py-4 detail-subcard">
                             <i class="fa-regular fa-images fa-2x mb-2 opacity-50 d-block"></i>
                             No documentation photos uploaded yet.
                         </div>
@@ -313,7 +343,7 @@
             <!-- Feedback Column -->
             <div class="col-12 col-lg-5">
                 <div class="card p-3 p-md-4 pastel-card-primary h-100">
-                    <div class="d-flex align-items-center gap-2 text-brand fw-bold mb-3" style="font-size: 1rem;">
+                    <div class="d-flex align-items-center gap-2 text-brand fw-bold mb-3" style="font-size: 0.95rem;">
                         <i class="fa-regular fa-comment"></i> Your Feedback
                     </div>
 
@@ -324,41 +354,41 @@
                                     <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}"
                                          alt="{{ auth()->user()->name }}"
                                          class="rounded-circle object-fit-cover shadow-sm flex-shrink-0"
-                                         style="width: 32px; height: 32px;">
+                                         style="width: 28px; height: 28px;">
                                 @else
                                     <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0"
-                                         style="width: 32px; height: 32px; background-color: var(--uya-dark-teal); font-size: 0.8rem;">
+                                         style="width: 28px; height: 28px; background-color: var(--uya-dark-teal); font-size: 0.75rem;">
                                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                     </div>
                                 @endif
 
                                 <div class="d-flex flex-wrap align-items-baseline gap-1.5 overflow-hidden">
-                                    <span class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">{{ auth()->user()->name }}</span>
-                                    <span class="text-muted small" style="font-size: 0.72rem;">
-                                        • {{ $userFeedback->created_at->format('M j, Y \a\t g:i A') }}
+                                    <span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">{{ auth()->user()->name }}</span>
+                                    <span class="text-muted small" style="font-size: 0.7rem;">
+                                        • {{ $userFeedback->created_at->format('M j, Y') }}
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="px-3 py-2 rounded-3 bg-white border border-light-subtle shadow-xs">
-                                <p class="text-secondary small mb-0" style="font-size: 0.85rem; line-height: 1.4; white-space: pre-line;">
+                            <div class="px-3 py-2 rounded-3 bg-white border border-light-subtle">
+                                <p class="text-secondary small mb-0" style="font-size: 0.82rem; line-height: 1.4; white-space: pre-line;">
                                     {{ $userFeedback->comment ?? $userFeedback->comments }}
                                 </p>
                             </div>
                         </div>
                     @elseif($hasAttended)
-                        <div class="detail-subcard d-flex flex-column gap-3">
-                            <span class="text-muted small">Share your thoughts or experience regarding this activity.</span>
-                            <button onclick="openFeedbackModal()" class="btn rounded-pill py-2.5 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2 shadow-sm w-100" style="font-size: 0.85rem;">
+                        <div class="detail-subcard d-flex flex-column gap-2.5">
+                            <span class="text-muted small" style="font-size: 0.78rem;">Share your thoughts or experience regarding this activity.</span>
+                            <button onclick="openFeedbackModal()" class="btn rounded-pill py-2 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2 shadow-sm w-100" style="font-size: 0.82rem;">
                                 <i class="fa-regular fa-comment-dots"></i> Add Feedback
                             </button>
                         </div>
                     @else
-                        <div class="detail-subcard text-center text-muted py-4">
-                            <i class="fa-solid fa-lock text-brand opacity-50 fa-2x mb-2 d-block"></i>
-                            <span class="fw-semibold text-dark d-block mb-1" style="font-size: 0.9rem;">Feedback Unavailable</span>
-                            <span class="small d-block text-muted" style="font-size: 0.78rem;">
-                                You can submit feedback after attending and verifying your QR check-in for this activity.
+                        <div class="detail-subcard text-center text-muted py-3">
+                            <i class="fa-solid fa-lock text-brand opacity-50 fa-lg mb-1.5 d-block"></i>
+                            <span class="fw-semibold text-dark d-block mb-1" style="font-size: 0.85rem;">Feedback Unavailable</span>
+                            <span class="small d-block text-muted" style="font-size: 0.75rem;">
+                                Submit feedback after attending and verifying your QR check-in.
                             </span>
                         </div>
                     @endif
@@ -366,6 +396,53 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- INSTAGRAM-STYLE LIGHTBOX MODAL POPUP -->
+    <div class="modal fade" id="slideshowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content p-0 border-0 overflow-hidden rounded-4 bg-dark text-white shadow-lg">
+                <div class="row g-0">
+                    <div class="col-12 col-md-8 bg-black position-relative d-flex align-items-center justify-content-center">
+                        <div id="lightboxCarousel" class="carousel slide w-100" data-bs-ride="false">
+                            <div class="carousel-inner" id="carouselInner"></div>
+
+                            <button class="carousel-control-prev" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#lightboxCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 p-3 d-flex flex-column justify-content-between border-start border-white border-opacity-10 bg-dark">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom border-white border-opacity-10">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.75rem; background-color: var(--uya-dark-teal);">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-white small d-block">UYA Connect</span>
+                                        <span class="text-white-50 micro-text d-block" style="font-size: 0.65rem;" id="carouselCounter">Photo 1 of 1</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <p id="slideshowCaption" class="text-white small mb-3" style="line-height: 1.5; font-size: 0.85rem;"></p>
+                        </div>
+
+                        <div class="pt-3 border-top border-white border-opacity-10 d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-dismiss="modal" style="font-size: 0.78rem;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- DETAILS PAGE FEEDBACK MODAL -->
@@ -401,9 +478,46 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let currentBatchPhotos = [];
+
         function openFeedbackModal() {
             const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
             modal.show();
+        }
+
+        function openSlideshowModal(photosList) {
+            currentBatchPhotos = photosList;
+            const inner = document.getElementById('carouselInner');
+            inner.innerHTML = '';
+
+            photosList.forEach((photo, index) => {
+                const item = document.createElement('div');
+                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="w-100 position-relative" style="aspect-ratio: 1 / 1; max-height: 480px; background: #000;">
+                        <img src="${photo.url}" class="w-100 h-100" style="object-fit: cover;">
+                    </div>
+                `;
+                inner.appendChild(item);
+            });
+
+            updateCarouselMetadata(0);
+
+            const carouselElem = document.getElementById('lightboxCarousel');
+            carouselElem.addEventListener('slid.bs.carousel', function (e) {
+                updateCarouselMetadata(e.to);
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('slideshowModal'));
+            modal.show();
+        }
+
+        function updateCarouselMetadata(index) {
+            if (currentBatchPhotos.length > 0 && currentBatchPhotos[index]) {
+                const photo = currentBatchPhotos[index];
+                document.getElementById('slideshowCaption').innerText = photo.caption || 'No caption provided.';
+                document.getElementById('carouselCounter').innerText = `Photo ${index + 1} of ${currentBatchPhotos.length}`;
+            }
         }
     </script>
 </body>

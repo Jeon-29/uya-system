@@ -42,7 +42,7 @@
         .pastel-card {
             background-color: #ffffff;
             border: 1px solid #dce5e8 !important;
-            border-radius: 16px;
+            border-radius: 20px;
             box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.03);
         }
 
@@ -154,6 +154,46 @@
             border-bottom: 1px solid #f3f7f9;
         }
 
+        /* MOBILE PROFILE HERO STYLES (< 768px) */
+        @media (max-width: 767.98px) {
+            .mobile-profile-hero {
+                text-align: center;
+                padding: 1.75rem 1.25rem !important; /* Generous card padding */
+            }
+            .mobile-avatar-circle {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+                margin: 0 auto 1.25rem auto !important; /* Spacing below avatar */
+                border: 3px solid #ffffff;
+                box-shadow: 0 4px 12px rgba(34, 77, 91, 0.12);
+            }
+            .mobile-hero-title {
+                margin-bottom: 1rem !important; /* Spacing below name */
+            }
+            .mobile-badges-row {
+                margin-bottom: 1.5rem !important; /* Distinct space between badges and buttons */
+            }
+            .mobile-buttons-row {
+                gap: 0.85rem !important; /* Space between Edit & Password buttons */
+                margin-top: 0.5rem;
+            }
+            .mobile-hero-btn {
+                font-size: 0.78rem !important;
+                padding: 0.5rem 0.85rem !important;
+            }
+            .stat-card-mobile {
+                padding: 0.65rem 0.5rem !important;
+                text-align: center;
+            }
+            .stat-card-mobile h3 {
+                font-size: 1.15rem !important;
+            }
+            .stat-card-mobile span {
+                font-size: 0.62rem !important;
+            }
+        }
+
         @media (max-width: 991.98px) {
             .border-end-lg {
                 border-right: none !important;
@@ -181,26 +221,54 @@
 
     <div class="profile-container py-3 py-md-4">
 
-        <!-- Header Section -->
-        <div class="mb-3 mb-md-4 text-center text-sm-start">
-            <h2 class="fw-bold mb-1 text-brand" style="font-size: 1.6rem;">Profile</h2>
-            <p class="text-muted small mb-0">Manage your personal information and account settings.</p>
+        <!-- MOBILE HERO CARD WITH FULL DISTINCT SPACING (< 768px) -->
+        <div class="card pastel-card mb-3 d-md-none mobile-profile-hero">
+            <!-- 1. Avatar -->
+            <div class="avatar-circle mobile-avatar-circle">
+                {{ $userInitial }}
+                <div class="avatar-camera-badge shadow-sm">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            </div>
+
+            <!-- 2. User Name -->
+            <h5 class="fw-bold text-dark fs-5 mobile-hero-title" style="letter-spacing: -0.2px;">{{ $user->name ?? 'User' }}</h5>
+
+            <!-- 3. Badges Row -->
+            <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap mobile-badges-row">
+                <span class="badge rounded-pill text-success border border-success border-opacity-25 px-2.5 py-1.5 fw-bold" style="background-color: #e8f8f0; font-size: 0.68rem;">
+                    <i class="fa-solid fa-circle-check me-1"></i> {{ $userRole }}
+                </span>
+                <span class="badge rounded-pill text-dark border px-2.5 py-1.5 fw-semibold" style="background-color: #f8fafc; font-size: 0.68rem;">
+                    <i class="fa-solid fa-location-dot me-1 text-danger"></i> {{ $user->address ?? 'Silang, Cavite' }}
+                </span>
+            </div>
+
+            <!-- 4. Action Buttons -->
+            <div class="d-flex justify-content-center mobile-buttons-row">
+                <button onclick="openEditProfileModal()" class="btn btn-sm rounded-pill mobile-hero-btn flex-fill fw-semibold custom-btn-filled gap-1.5 shadow-sm" style="max-width: 140px;">
+                    <i class="fa-regular fa-pen-to-square"></i> Edit Profile
+                </button>
+                <button onclick="openChangePasswordModal()" class="btn btn-sm rounded-pill mobile-hero-btn flex-fill fw-semibold custom-btn-outline gap-1.5" style="max-width: 140px;">
+                    <i class="fa-solid fa-lock"></i> Password
+                </button>
+            </div>
         </div>
 
-        <!-- Personal Information Section Card -->
+        <!-- Personal Information Section Card (Desktop & Details Grid) -->
         <div class="card p-3 p-md-4 pastel-card mb-4">
 
             <!-- Card Header with Edit Button -->
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
                 <h5 class="fw-bold text-brand mb-0" style="font-size: 1rem;">Personal Information</h5>
-                <button onclick="openEditProfileModal()" class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold custom-btn-filled d-inline-flex align-items-center gap-1.5 shadow-sm" style="font-size: 0.75rem;">
-                    <i class="fa-regular fa-pen-to-square"></i> <span class="d-none d-sm-inline">Edit Info</span><span class="d-sm-none">Edit</span>
+                <button onclick="openEditProfileModal()" class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold custom-btn-filled d-none d-md-inline-flex align-items-center gap-1.5 shadow-sm" style="font-size: 0.75rem;">
+                    <i class="fa-regular fa-pen-to-square"></i> Edit Info
                 </button>
             </div>
 
             <div class="row align-items-center g-3 g-lg-4">
-                <!-- Avatar Column -->
-                <div class="col-lg-3 text-center text-lg-start border-end-lg">
+                <!-- Avatar Column (Desktop View) -->
+                <div class="col-lg-3 text-center text-lg-start border-end-lg d-none d-md-block">
                     <div class="d-flex flex-column align-items-center align-items-lg-start gap-2">
                         <div class="avatar-circle shadow-sm">
                             {{ $userInitial }}
@@ -210,7 +278,7 @@
                         </div>
                         <div class="text-center text-lg-start">
                             <h5 class="fw-bold text-dark mb-1">{{ $user->name ?? 'User' }}</h5>
-                            <span class="badge rounded-pill bg-success bg-opacity-15 text-success px-2.5 py-1 fw-semibold mb-2" style="font-size: 0.65rem;">
+                            <span class="badge rounded-pill text-success border border-success border-opacity-25 px-2.5 py-1 fw-bold mb-2" style="background-color: #e8f8f0; font-size: 0.65rem;">
                                 {{ $userRole }}
                             </span>
                             <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-1.5 text-muted small" style="font-size: 0.75rem;">
@@ -224,7 +292,7 @@
                 </div>
 
                 <!-- Fields Grid Column -->
-                <div class="col-lg-9">
+                <div class="col-12 col-lg-9">
                     <div class="row g-2 g-md-3">
                         <div class="col-12 col-md-6">
                             <div class="info-box">
@@ -268,38 +336,38 @@
         </div>
 
         <!-- Attendance Stats Cards -->
-        <h5 class="fw-bold text-brand mb-3" style="font-size: 1rem;">My Attendance</h5>
+        <h5 class="fw-bold text-brand mb-3" style="font-size: 1rem;">My Attendance Overview</h5>
         <div class="row g-2 g-md-3 mb-4">
             <div class="col-6 col-md-4 col-xl">
-                <div class="stat-card">
+                <div class="stat-card stat-card-mobile">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">TOTAL RECORDS</span>
                     <h3 class="fw-bold mb-1 text-brand" style="font-size: 1.4rem;">{{ $attendanceStats['total'] ?? 0 }}</h3>
                     <span class="text-muted" style="font-size: 0.7rem;">All entries</span>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-xl">
-                <div class="stat-card">
+                <div class="stat-card stat-card-mobile">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">PRESENT</span>
                     <h3 class="fw-bold mb-1 text-success" style="font-size: 1.4rem;">{{ $attendanceStats['present'] ?? 0 }}</h3>
                     <span class="text-muted" style="font-size: 0.7rem;">Attended</span>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-xl">
-                <div class="stat-card">
+                <div class="stat-card stat-card-mobile">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">LATE</span>
                     <h3 class="fw-bold mb-1 text-warning" style="font-size: 1.4rem;">{{ $attendanceStats['late'] ?? 0 }}</h3>
                     <span class="text-muted" style="font-size: 0.7rem;">Late check-ins</span>
                 </div>
             </div>
             <div class="col-6 col-md-6 col-xl">
-                <div class="stat-card">
+                <div class="stat-card stat-card-mobile">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">ABSENT</span>
                     <h3 class="fw-bold mb-1 text-danger" style="font-size: 1.4rem;">{{ $attendanceStats['absent'] ?? 0 }}</h3>
                     <span class="text-muted" style="font-size: 0.7rem;">Registered only</span>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-xl">
-                <div class="stat-card">
+                <div class="stat-card stat-card-mobile">
                     <span class="text-muted d-block mb-1" style="font-size: 0.65rem; font-weight: 700;">ATTENDANCE RATE</span>
                     <h3 class="fw-bold mb-1 text-brand" style="font-size: 1.4rem;">{{ $attendanceStats['rate'] ?? '0%' }}</h3>
                     <span class="text-muted" style="font-size: 0.7rem;">Success rate</span>

@@ -27,24 +27,34 @@
 
         .text-brand { color: var(--uya-dark-teal) !important; }
 
-        .container-fluid {
-            width: 100% !important;
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
+        .app-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
         }
 
+        @media (min-width: 768px) {
+            .app-container {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+
+        /* Stat Card Styling */
         .stat-card {
             background-color: #ffffff;
             border: 1px solid #dce5e8 !important;
             border-radius: 16px;
-            padding: 1.25rem 1.5rem;
+            padding: 1.25rem 1.25rem;
             box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.03);
             transition: all 0.2s ease;
         }
 
         .stat-icon {
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             background-color: #f3f7f9;
             border: 1px solid #dce5e8;
             border-radius: 50%;
@@ -52,6 +62,33 @@
             align-items: center;
             justify-content: center;
             color: var(--uya-dark-teal);
+            font-size: 1rem;
+        }
+
+        /* Mobile Compressed 3x1 Layout Styles (< 768px) */
+        @media (max-width: 767.98px) {
+            .stat-card {
+                padding: 0.65rem 0.5rem;
+                border-radius: 14px;
+                text-align: center;
+                flex-direction: column !important;
+                justify-content: center !important;
+                gap: 4px;
+            }
+            .stat-card .stat-label {
+                font-size: 0.65rem !important;
+                line-height: 1.15;
+                white-space: normal;
+            }
+            .stat-card h2 {
+                font-size: 1.25rem !important;
+            }
+            .stat-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.75rem;
+                margin: 0 auto 2px auto;
+            }
         }
 
         .certificate-item {
@@ -94,20 +131,70 @@
         }
 
         .compact-search-bar {
-            max-width: 300px;
+            max-width: 320px;
             width: 100%;
+        }
+
+        /* RESPONSIVE TAB STYLES FROM ACTIVITIES.BLADE.PHP */
+        @media (min-width: 768px) {
+            .mobile-segmented-toggle {
+                display: none !important;
+            }
+            .desktop-nav-pills {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .desktop-nav-pills {
+                display: none !important;
+            }
+            .mobile-segmented-toggle {
+                display: flex !important;
+                background-color: #dce5e8;
+                padding: 4px;
+                border-radius: 16px;
+                gap: 4px;
+                width: 100%;
+            }
+            .mobile-segmented-toggle .segmented-btn {
+                flex: 1;
+                text-align: center;
+                padding: 8px 6px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--uya-dark-teal);
+                border-radius: 12px;
+                text-decoration: none;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+            }
+            .mobile-segmented-toggle .segmented-btn.active {
+                background-color: var(--uya-dark-teal);
+                color: #ffffff;
+                box-shadow: 0 2px 6px rgba(34, 77, 91, 0.2);
+            }
         }
 
         .nav-pills .nav-link {
             color: var(--uya-dark-teal);
-            font-size: 0.85rem;
+            background-color: #e2eaf0;
             font-weight: 600;
+            font-size: 0.82rem;
+            padding: 0.5rem 1.15rem;
             border-radius: 50rem;
-            padding: 6px 16px;
+            border: 1px solid #cbd9df;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            white-space: nowrap;
         }
         .nav-pills .nav-link.active {
             background-color: var(--uya-dark-teal);
-            color: #fff;
+            color: #ffffff;
+            border-color: var(--uya-dark-teal);
         }
     </style>
 </head>
@@ -116,13 +203,12 @@
     <!-- Include Navbar Component -->
     @include('layouts.navbar')
 
-    <div class="container-fluid py-3">
+    <div class="app-container py-3">
 
         <!-- Header Section with Search -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
             <div>
-                <h2 class="fw-bold mb-1 text-brand">My Certificates</h2>
-                <p class="text-muted small mb-0">View, download, and manage your certificates from UYA activities.</p>
+                <h2 class="fw-bold mb-1 text-brand fs-3 fs-md-2">My Certificates</h2>
             </div>
 
             <!-- Compact Search Bar -->
@@ -150,63 +236,70 @@
             $joinedActivitiesCount =$user->activities()->count();
         @endphp
 
-        <!-- Statistics Overview Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="stat-card d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">Available Certificates</span>
-                        <h2 class="fw-bold mb-0 text-brand">{{ $activeCount }}</h2>
-                    </div>
-                    <div class="stat-icon">
+        <!-- Compressed 3x1 Statistics Overview Cards (col-4 on mobile) -->
+        <div class="row g-2 g-md-3 mb-3 mb-md-4">
+            <div class="col-4 col-md-4">
+                <div class="stat-card d-flex align-items-center justify-content-between h-100">
+                    <div class="stat-icon order-0 order-md-1">
                         <i class="fa-solid fa-ribbon"></i>
                     </div>
+                    <div class="order-1 order-md-0">
+                        <span class="text-muted d-block mb-0.5 stat-label" style="font-size: 0.8rem; font-weight: 500;">Available</span>
+                        <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $activeCount }}</h2>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="stat-card d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">QR Validated Attendance</span>
-                        <h2 class="fw-bold mb-0 text-brand">{{ $validatedAttendanceCount }}</h2>
-                    </div>
-                    <div class="stat-icon">
+            <div class="col-4 col-md-4">
+                <div class="stat-card d-flex align-items-center justify-content-between h-100">
+                    <div class="stat-icon order-0 order-md-1">
                         <i class="fa-solid fa-qrcode"></i>
                     </div>
+                    <div class="order-1 order-md-0">
+                        <span class="text-muted d-block mb-0.5 stat-label" style="font-size: 0.8rem; font-weight: 500;">Validated</span>
+                        <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $validatedAttendanceCount }}</h2>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="stat-card d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">Joined Activities</span>
-                        <h2 class="fw-bold mb-0 text-brand">{{ $joinedActivitiesCount }}</h2>
-                    </div>
-                    <div class="stat-icon">
+            <div class="col-4 col-md-4">
+                <div class="stat-card d-flex align-items-center justify-content-between h-100">
+                    <div class="stat-icon order-0 order-md-1">
                         <i class="fa-regular fa-calendar"></i>
+                    </div>
+                    <div class="order-1 order-md-0">
+                        <span class="text-muted d-block mb-0.5 stat-label" style="font-size: 0.8rem; font-weight: 500;">Joined</span>
+                        <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $joinedActivitiesCount }}</h2>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filter Tab Pills -->
-        <div class="d-flex align-items-center mb-3">
-            <ul class="nav nav-pills bg-white p-1 rounded-pill shadow-sm border">
-                <li class="nav-item">
-                    <a class="nav-link {{ $tab === 'active' ? 'active' : '' }}" href="{{ route('certificates', ['tab' => 'active', 'search' => $search]) }}">
-                        Active <span class="badge rounded-pill bg-light text-dark ms-1">{{ $activeCount }}</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $tab === 'archived' ? 'active' : '' }}" href="{{ route('certificates', ['tab' => 'archived', 'search' => $search]) }}">
-                        Archived <span class="badge rounded-pill bg-light text-dark ms-1">{{ $archivedCount }}</span>
-                    </a>
-                </li>
-            </ul>
+        <!-- Filter Navigation Tabs Bar -->
+        <div class="mb-4">
+            <!-- Mobile Segmented Toggle (< 768px) -->
+            <div class="mobile-segmented-toggle">
+                <a href="{{ route('certificates', ['tab' => 'active', 'search' => $search]) }}" class="segmented-btn {{ $tab === 'archived' ? '' : 'active' }}">
+                    <i class="fa-solid fa-ribbon me-1"></i> Active ({{ $activeCount }})
+                </a>
+                <a href="{{ route('certificates', ['tab' => 'archived', 'search' => $search]) }}" class="segmented-btn {{ $tab === 'archived' ? 'active' : '' }}">
+                    <i class="fa-solid fa-box-archive me-1"></i> Archived ({{ $archivedCount }})
+                </a>
+            </div>
+
+            <!-- Desktop Pill Tabs (>= 768px) -->
+            <div class="desktop-nav-pills nav nav-pills gap-2 w-100">
+                <a href="{{ route('certificates', ['tab' => 'active', 'search' => $search]) }}" class="nav-link {{ $tab === 'archived' ? '' : 'active' }}">
+                    <i class="fa-solid fa-ribbon me-1"></i> Active <span class="badge bg-white text-dark ms-1 rounded-pill" style="font-size: 0.65rem;">{{ $activeCount }}</span>
+                </a>
+                <a href="{{ route('certificates', ['tab' => 'archived', 'search' => $search]) }}" class="nav-link {{ $tab === 'archived' ? 'active' : '' }}">
+                    <i class="fa-solid fa-box-archive me-1"></i> Archived <span class="badge bg-white text-dark ms-1 rounded-pill" style="font-size: 0.65rem;">{{ $archivedCount }}</span>
+                </a>
+            </div>
         </div>
 
         <!-- Certificates List -->
-        <div class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column gap-3 mb-4">
             @forelse ($certificates as $cert)
                 @php
                     $act =$cert->activity;
@@ -224,7 +317,7 @@
                             </div>
                             <p class="text-muted small mb-2.5">{{ $act->description ?? 'Certificate of Attendance from Union of Youth Alliance activities.' }}</p>
 
-                            <div class="text-muted small d-flex flex-wrap gap-4" style="font-size: 0.8rem;">
+                            <div class="text-muted small d-flex flex-wrap gap-3 gap-md-4" style="font-size: 0.8rem;">
                                 <div><i class="fa-regular fa-calendar me-1 text-secondary"></i> Activity: {{ $eventDate }}</div>
                                 <div><i class="fa-regular fa-file-lines me-1 text-secondary"></i> Issued: {{ $issueDate }}</div>
                                 <div><i class="fa-solid fa-hashtag me-1 text-secondary"></i> Certificate No: {{ $certNo }}</div>

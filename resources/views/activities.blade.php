@@ -50,6 +50,55 @@
             border-radius: 16px;
         }
 
+        /* Desktop Navigation Tabs (>= 768px) */
+        @media (min-width: 768px) {
+            .mobile-segmented-toggle {
+                display: none !important;
+            }
+            .desktop-nav-pills {
+                display: flex !important;
+            }
+        }
+
+        /* Mobile Segmented Button Toggle (< 768px) */
+        @media (max-width: 767.98px) {
+            .desktop-nav-pills {
+                display: none !important;
+            }
+            .mobile-segmented-toggle {
+                display: flex !important;
+                background-color: #dce5e8;
+                padding: 4px;
+                border-radius: 16px;
+                gap: 4px;
+                width: 100%;
+            }
+            .mobile-segmented-toggle .segmented-btn {
+                flex: 1;
+                text-align: center;
+                padding: 8px 6px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--uya-dark-teal);
+                border-radius: 12px;
+                text-decoration: none;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+            }
+            .mobile-segmented-toggle .segmented-btn.active {
+                background-color: var(--uya-dark-teal);
+                color: #ffffff;
+                box-shadow: 0 2px 6px rgba(34, 77, 91, 0.2);
+            }
+            .app-container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
         .nav-pills .nav-link {
             color: var(--uya-dark-teal);
             background-color: #e2eaf0;
@@ -102,24 +151,56 @@
             color: #fff;
         }
 
+        /* High contrast status pills */
+        .status-badge-gold {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .status-badge-green {
+            background-color: #15803d !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Clean Metadata Box Container */
+        .meta-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .meta-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .meta-val {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+        }
+
         #reader {
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
             background-color: #000;
-        }
-
-        @media (max-width: 576px) {
-            .nav-pills {
-                width: 100%;
-                overflow-x: auto;
-                flex-wrap: nowrap !important;
-                padding-bottom: 4px;
-            }
-            .app-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
         }
     </style>
 </head>
@@ -151,9 +232,23 @@
             </div>
         </div>
 
-        <!-- Horizontal Pill Tabs -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="nav nav-pills gap-2 w-100">
+        <!-- Navigation Tabs Bar -->
+        <div class="mb-4">
+            <!-- Mobile Segmented Toggle (< 768px) -->
+            <div class="mobile-segmented-toggle">
+                <a href="{{ route('activities', ['tab' => 'active', 'search' => $search]) }}" class="segmented-btn {{ $tab === 'active' ? 'active' : '' }}">
+                    <i class="fa-solid fa-bolt"></i> Active ({{ $activeCount }})
+                </a>
+                <a href="{{ route('activities', ['tab' => 'my-activities', 'search' => $search]) }}" class="segmented-btn {{ $tab === 'my-activities' ? 'active' : '' }}">
+                    <i class="fa-regular fa-calendar-check"></i> Mine ({{ $myCount }})
+                </a>
+                <a href="{{ route('activities', ['tab' => 'finished', 'search' => $search]) }}" class="segmented-btn {{ $tab === 'finished' ? 'active' : '' }}">
+                    <i class="fa-solid fa-check-circle"></i> Done ({{ $finishedCount }})
+                </a>
+            </div>
+
+            <!-- Desktop Pill Tabs (>= 768px) -->
+            <div class="desktop-nav-pills nav nav-pills gap-2 w-100">
                 <a href="{{ route('activities', ['tab' => 'active', 'search' => $search]) }}" class="nav-link {{ $tab === 'active' ? 'active' : '' }}">
                     <i class="fa-solid fa-bolt me-1"></i> Active Activities <span class="badge bg-white text-dark ms-1 rounded-pill" style="font-size: 0.65rem;">{{ $activeCount }}</span>
                 </a>
@@ -167,7 +262,7 @@
         </div>
 
         @if($tab === 'finished')
-            <!-- Revamped Finished Activities View -->
+            <!-- Finished Activities View -->
             <div class="row g-3 g-md-4 mb-4">
                 @forelse($activities as $activity)
                     @php
@@ -175,49 +270,65 @@
                         $userParticipant = $activity->participants->where('user_id', auth()->id())->first();
                         $hasAttended = $userParticipant && in_array($userParticipant->status, ['attended', 'late']);
                     @endphp
-                    <div class="col-12">
-                        <div class="card p-3 p-md-4 activity-item shadow-sm">
-                            <div class="row align-items-center g-3">
-                                <!-- Details Column -->
-                                <div class="col-12 col-lg-7 col-xl-8">
-                                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                                        <h5 class="fw-bold mb-0 text-brand fs-5">{{ $activity->title }}</h5>
-                                        <span class="badge rounded-pill bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-3 py-1 fw-semibold" style="font-size: 0.72rem;">
-                                            Completed
-                                        </span>
-                                    </div>
-                                    <p class="text-muted small mb-3">{{ $activity->description }}</p>
-
-                                    <div class="d-flex flex-wrap gap-3 text-secondary small" style="font-size: 0.8rem;">
-                                        <div><i class="fa-regular fa-calendar me-1.5 text-brand opacity-75"></i> {{ $activity->date->format('M j, Y') }}</div>
-                                        <div><i class="fa-regular fa-clock me-1.5 text-brand opacity-75"></i> {{ $activity->date->format('g:i A') }}</div>
-                                        <div><i class="fa-solid fa-location-dot me-1.5 text-brand opacity-75"></i> {{ $activity->location ?? 'TBD' }}</div>
-                                        <div><i class="fa-regular fa-user me-1.5 text-brand opacity-75"></i> {{ $activity->organizer_name ?? 'Admin' }}</div>
-                                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                        <div class="card rounded-4 p-3 p-md-4 h-100 activity-item shadow-sm d-flex flex-column justify-content-between">
+                            <div>
+                                <!-- Top Row with Title & Fixed Top-Right Status Badge -->
+                                <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                                    <h6 class="fw-bold mb-0 text-brand fs-6 text-wrap">{{ $activity->title }}</h6>
+                                    <span class="badge rounded-pill px-2.5 py-1 status-badge-green flex-shrink-0" style="font-size: 0.65rem;">
+                                        Completed
+                                    </span>
                                 </div>
 
-                                <!-- Action Buttons Bar (50/50 Split) -->
-                                <div class="col-12 col-lg-5 col-xl-4 ms-auto">
-                                    <div class="d-flex gap-2 w-100">
-                                        <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill py-2.5 fw-semibold custom-btn-outline w-50 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
-                                            <i class="fa-regular fa-eye"></i> View Details
-                                        </a>
+                                <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.83rem;">{{ $activity->description }}</p>
 
-                                        @if($userFeedback)
-                                            <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-light border rounded-pill py-2.5 fw-semibold text-success w-50 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
-                                                <i class="fa-solid fa-check-double"></i> Feedback Added
-                                            </a>
-                                        @elseif($hasAttended)
-                                            <button type="button" onclick="openIndexFeedbackModal({{ $activity->id }}, '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill py-2.5 fw-semibold custom-btn-filled w-50 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
-                                                <i class="fa-regular fa-comment-dots"></i> Add Feedback
-                                            </button>
-                                        @else
-                                            <button type="button" class="btn btn-sm btn-secondary bg-opacity-25 text-muted border-0 rounded-pill py-2.5 fw-semibold w-50 d-flex align-items-center justify-content-center gap-1.5 cursor-not-allowed" disabled style="font-size: 0.82rem;">
-                                                <i class="fa-solid fa-lock"></i> Feedback Locked
-                                            </button>
-                                        @endif
+                                <!-- Individual Sub-Containers for Info -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Date</span>
+                                            <p class="meta-val"><i class="fa-regular fa-calendar me-1 text-brand"></i> {{ $activity->date->format('M j, Y') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Time</span>
+                                            <p class="meta-val"><i class="fa-regular fa-clock me-1 text-brand"></i> {{ $activity->date->format('g:i A') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Location</span>
+                                            <p class="meta-val"><i class="fa-solid fa-location-dot me-1 text-brand"></i> {{ $activity->location ?? 'TBD' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Organizer</span>
+                                            <p class="meta-val"><i class="fa-regular fa-user me-1 text-brand"></i> {{ $activity->organizer_name ?? 'Admin' }}</p>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="d-flex flex-column gap-2 mt-auto">
+                                <hr class="text-muted opacity-25 my-1">
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-outline">View Details</a>
+
+                                @if($userFeedback)
+                                    <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-light border rounded-pill py-2 fw-semibold text-success w-100 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
+                                        <i class="fa-solid fa-check-double"></i> Feedback Added
+                                    </a>
+                                @elseif($hasAttended)
+                                    <button type="button" onclick="openIndexFeedbackModal({{ $activity->id }}, '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill py-2 fw-semibold custom-btn-filled w-100 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
+                                        <i class="fa-regular fa-comment-dots"></i> Add Feedback
+                                    </button>
+                                @else
+                                    <button type="button" class="btn btn-sm btn-secondary bg-opacity-25 text-muted border-0 rounded-pill py-2 fw-semibold w-100 d-flex align-items-center justify-content-center gap-1.5 cursor-not-allowed" disabled style="font-size: 0.82rem;">
+                                        <i class="fa-solid fa-lock"></i> Feedback Locked
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -244,30 +355,52 @@
                     <div class="col-12 col-md-6 col-lg-4 col-xl-3">
                         <div class="card rounded-4 p-3 p-md-4 h-100 activity-item shadow-sm d-flex flex-column justify-content-between">
                             <div>
+                                <!-- Top Row with Title & Fixed Top-Right Status Badge -->
                                 <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
-                                    <h6 class="fw-bold mb-0 text-brand fs-6">{{ $activity->title }}</h6>
-                                    <span class="badge rounded-pill px-2.5 py-1 text-dark fw-semibold" style="background-color: var(--uya-gold); font-size: 0.65rem;">
+                                    <h6 class="fw-bold mb-0 text-brand fs-6 text-wrap">{{ $activity->title }}</h6>
+                                    <span class="badge rounded-pill px-2.5 py-1 status-badge-gold flex-shrink-0" style="font-size: 0.65rem;">
                                         {{ ucfirst($activity->status) }}
                                     </span>
                                 </div>
 
-                                <div class="text-muted small d-flex flex-column gap-1 mb-2" style="font-size: 0.8rem;">
-                                    <div><i class="fa-regular fa-calendar me-2 text-secondary"></i> {{ $activity->date->format('D, M j, Y') }}</div>
-                                    <div><i class="fa-regular fa-clock me-2 text-secondary"></i> {{ $activity->date->format('g:i A') }}</div>
-                                    <div><i class="fa-solid fa-location-dot me-2 text-secondary"></i> {{ $activity->location ?? 'TBD' }}</div>
-                                    <div><i class="fa-solid fa-user me-2 text-secondary"></i> Organized by {{ $activity->organizer_name ?? 'Admin' }}</div>
+                                <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.83rem;">{{ $activity->description }}</p>
+
+                                <!-- Individual Sub-Containers for Info -->
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Date</span>
+                                            <p class="meta-val"><i class="fa-regular fa-calendar me-1 text-brand"></i> {{ $activity->date->format('M j, Y') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Time</span>
+                                            <p class="meta-val"><i class="fa-regular fa-clock me-1 text-brand"></i> {{ $activity->date->format('g:i A') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Location</span>
+                                            <p class="meta-val"><i class="fa-solid fa-location-dot me-1 text-brand"></i> {{ $activity->location ?? 'TBD' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="meta-box">
+                                            <span class="meta-label">Organizer</span>
+                                            <p class="meta-val"><i class="fa-regular fa-user me-1 text-brand"></i> {{ $activity->organizer_name ?? 'Admin' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3" style="font-size: 0.75rem;">
                                     @if($activity->registration_deadline)
                                         <span class="{{ $isDeadlinePassed ? 'text-danger fw-semibold' : 'text-muted' }}">
                                             <i class="fa-solid fa-hourglass-start me-1"></i>
-                                            {{ $isDeadlinePassed ? 'Deadline Passed (' . $activity->registration_deadline->format('M j, g:i A') . ')' : 'Closes: ' . $activity->registration_deadline->format('M j, g:i A') }}
+                                            {{ $isDeadlinePassed ? 'Deadline Passed' : 'Closes: ' . $activity->registration_deadline->format('M j, g:i A') }}
                                         </span>
                                     @endif
                                 </div>
-
-                                <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.83rem;">{{ $activity->description }}</p>
                             </div>
 
                             <div class="d-flex flex-column gap-2 mt-auto">
@@ -277,16 +410,16 @@
                                 @if($isAttended)
                                     <button class="btn btn-sm rounded-pill w-100 py-2 fw-semibold border-0 text-white {{ $userParticipant->status === 'late' ? 'bg-warning text-dark' : 'bg-success' }}" style="font-size: 0.8rem;" disabled>
                                         <i class="fa-solid {{ $userParticipant->status === 'late' ? 'fa-clock' : 'fa-check' }} me-1"></i>
-                                        Attendance Verified ({{ ucfirst($userParticipant->status) }})
+                                        Attendance Verified
                                     </button>
                                 @elseif($isRegistered)
                                     @if($activity->is_attendance_open)
                                         <button onclick="openQRScanner()" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2">
-                                            <i class="fa-solid fa-camera"></i> Scan QR
+                                            <i class="fa-solid fa-camera"></i> Scan QR Code
                                         </button>
                                     @else
                                         <div class="d-flex gap-2 align-items-center">
-                                            <div class="btn btn-sm rounded-pill flex-grow-1 py-2 fw-semibold border-0 text-white d-flex align-items-center justify-content-center gap-1.5" style="background-color: #198754; font-size: 0.8rem; cursor: default;">
+                                            <div class="btn btn-sm rounded-pill flex-grow-1 py-2 fw-semibold border-0 text-white d-flex align-items-center justify-content-center gap-1.5" style="background-color: #15803d; font-size: 0.8rem; cursor: default;">
                                                 <i class="fa-solid fa-user-check"></i> Registered
                                             </div>
                                             <button type="button"
