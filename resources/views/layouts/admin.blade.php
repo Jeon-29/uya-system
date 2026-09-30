@@ -248,6 +248,7 @@
         $authUser = auth()->user();
         $authName = $authUser->name ?? 'User';
         $authRole = ucfirst($authUser->role ?? 'Officer');
+        $isOfficer = ($authUser->role ?? '') === 'officer';
     @endphp
 
     <!-- Mobile Sidebar Backdrop -->
@@ -336,6 +337,14 @@
                         <span>Certificates</span>
                     </a>
                 </li>
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                    <li>
+                        <a href="{{ route('admin.reports.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                @endif
                 <li>
                     <a href="{{ route('admin.profile') }}" class="sidebar-nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}">
                         <i class="fa-regular fa-user"></i>
@@ -465,8 +474,12 @@
                         style="width: 56px; height: 56px; background-color: rgba(220, 53, 69, 0.15);">
                         <i class="fa-solid fa-arrow-right-from-bracket text-danger fa-lg"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Log out of Admin Portal?</h5>
-                    <p class="text-muted small mb-4">You'll need to sign in again to access your admin account.</p>
+                    <h5 class="fw-bold mb-2">
+                        {{ $isOfficer ? 'Log out of Officer Portal?' : 'Log out of Admin Portal?' }}
+                    </h5>
+                    <p class="text-muted small mb-4">
+                        You'll need to sign in again to access your {{ $isOfficer ? 'officer' : 'admin' }} account.
+                    </p>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-outline-light rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
                         <form method="POST" action="{{ route('logout') }}">

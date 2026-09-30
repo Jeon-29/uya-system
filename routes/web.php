@@ -19,6 +19,8 @@ use App\Http\Controllers\Admin\NotificationController as AdminNotificationContro
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Admin\ProposalController as AdminProposalController;
 use App\Http\Controllers\Admin\CertificateTemplateController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 // Redirect guest root attempts to login page
@@ -183,5 +185,15 @@ Route::middleware('auth')->group(function () {
                 'destroy' => 'certificates.templates.destroy',
             ],
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin-Only Protected Routes (Restricted from Officers)
+        |--------------------------------------------------------------------------
+        */
+        Route::middleware(EnsureUserIsAdmin::class)->group(function () {
+            Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+        });
     });
 });

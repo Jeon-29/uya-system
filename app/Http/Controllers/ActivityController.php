@@ -10,6 +10,7 @@ use App\Notifications\ActivityFeedbackSubmittedNotification;
 use App\Notifications\RegistrationConfirmedNotification;
 use App\Notifications\MemberRegisteredNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class ActivityController extends Controller
@@ -162,14 +163,27 @@ class ActivityController extends Controller
      */
     public function storeFeedback(Request $request, Activity $activity)
     {
+        $user = auth()->user();
+
+        // 1. Verify that user registered and attended (status: attended or late)
+        $participant = ActivityParticipant::where('activity_id', $activity->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$participant || !in_array($participant->status, ['attended', 'late'])) {
+            return back()->with('error', 'Feedback is only available for members who have attended and verified their attendance for this activity.');
+        }
+
+        // 2. Validate request
         $validated = $request->validate([
             'comments' => 'required|string|max:1000',
         ]);
 
+        // 3. Save feedback
         ActivityFeedback::updateOrCreate(
             [
                 'activity_id' => $activity->id,
-                'user_id'     => auth()->id(),
+                'user_id'     => $user->id,
             ],
             [
                 'comment' => $validated['comments'],
@@ -179,7 +193,7 @@ class ActivityController extends Controller
         // Notify officers and admins when new feedback is posted
         $admins = User::whereIn('role', ['admin', 'officer'])->get();
         if ($admins->count() > 0) {
-            Notification::send($admins, new ActivityFeedbackSubmittedNotification($activity, auth()->user(), $validated['comments']));
+            Notification::send($admins, new ActivityFeedbackSubmittedNotification($activity, $user, $validated['comments']));
         }
 
         return back()->with('success', 'Thank you! Your feedback has been submitted.');

@@ -46,13 +46,13 @@
                                     <i class="fa-regular fa-pen-to-square me-1"></i> Edit
                                 </a>
 
-                                <form method="POST" action="{{ route('admin.certificates.templates.destroy', $template->id) }}" onsubmit="return confirm('Are you sure you want to delete this template?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Delete Template" {{ $template->activities_count > 0 ? 'disabled' : '' }}>
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        onclick="promptDeleteModal('{{ route('admin.certificates.templates.destroy', $template->id) }}', '{{ addslashes($template->title) }}')"
+                                        class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                        title="Delete Template"
+                                        {{ $template->activities_count > 0 ? 'disabled' : '' }}>
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -67,4 +67,42 @@
 
         {{ $templates->links() }}
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteTemplateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content rounded-4 bg-dark text-white border-secondary p-3 text-center">
+                <div class="modal-body p-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width: 56px; height: 56px; background-color: rgba(220, 53, 69, 0.15);">
+                        <i class="fa-regular fa-trash-can text-danger fa-lg"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Delete Certificate Template?</h5>
+                    <p class="text-muted small mb-4">
+                        Are you sure you want to delete <strong id="deleteTemplateTitle" class="text-white"></strong>? This action cannot be undone.
+                    </p>
+
+                    <form id="deleteTemplateForm" method="POST" action="">
+                        @csrf
+                        @method('DELETE')
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-outline-light rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">Yes, Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    function promptDeleteModal(actionUrl, title) {
+        document.getElementById('deleteTemplateForm').action = actionUrl;
+        document.getElementById('deleteTemplateTitle').innerText = title;
+        const modal = new bootstrap.Modal(document.getElementById('deleteTemplateModal'));
+        modal.show();
+    }
+</script>
+@endpush

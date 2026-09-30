@@ -345,7 +345,7 @@
             </div>
         </div>
 
-        <!-- Member Feedback & Ratings -->
+        <!-- Member Feedback Section (Star rating removed) -->
         <div class="col-12 col-lg-5">
             <div class="admin-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -362,11 +362,7 @@
                         <div class="p-3 glass-box">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="fw-semibold text-white small">{{ $item->user->name ?? 'Anonymous Member' }}</span>
-                                <div class="text-warning small" style="font-size: 0.75rem;">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <i class="fa-{{ $i <= ($item->rating ?? 5) ? 'solid' : 'regular' }} fa-star"></i>
-                                    @endfor
-                                </div>
+                                <span class="text-muted micro-text">{{ $item->created_at ? $item->created_at->diffForHumans() : '' }}</span>
                             </div>
                             <p class="text-subtle small mb-0">{{ $item->comments ?? $item->comment ?? 'No comment provided.' }}</p>
                         </div>

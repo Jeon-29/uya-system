@@ -88,7 +88,6 @@
 
     <div class="mb-4">
         <h4 class="fw-bold mb-1 text-white">{{ $authRole }} Dashboard</h4>
-        <p class="text-muted small mb-0">Welcome back, {{ $authName }}! Here's your overview</p>
     </div>
 
     <!-- Row 1: Clickable Metric Cards -->
@@ -226,11 +225,7 @@
                     </div>
                 </div>
 
-                <div class="text-end pt-3">
-                    <span class="badge border border-secondary text-muted fw-normal px-3 py-1.5" style="font-size: 0.72rem;">
-                        {{ $authRole }} <i class="fa-solid fa-chevron-up ms-1" style="font-size: 0.6rem;"></i>
-                    </span>
-                </div>
+
             </div>
         </div>
     </div>

@@ -10,13 +10,13 @@ class ProposalCampaign extends Model
 {
     use HasFactory;
 
-    // Explicitly declare table name
     protected $table = 'proposal_campaigns';
 
     protected $fillable = [
         'title',
         'current_phase',
         'submission_deadline',
+        'voting_deadline',
         'proposed_date_start',
         'proposed_date_end',
         'is_submission_override',
@@ -28,28 +28,24 @@ class ProposalCampaign extends Model
 
     protected $casts = [
         'submission_deadline'    => 'datetime',
+        'voting_deadline'        => 'datetime',
         'proposed_date_start'    => 'datetime',
         'proposed_date_end'      => 'datetime',
         'is_submission_override' => 'boolean',
         'is_active'              => 'boolean',
     ];
 
-    /**
-     * Determine the effective phase (auto-transitions to 'review' if submission deadline passed).
-     */
     public function getEffectivePhaseAttribute(): string
     {
         if ($this->current_phase === 'submission') {
-            // Check override status
             if ($this->is_submission_override === false) {
-                return 'review'; // Force closed by officer
+                return 'review';
             }
 
             if ($this->is_submission_override === true) {
-                return 'submission'; // Force opened by officer
+                return 'submission';
             }
 
-            // Auto-transition check on submission deadline
             if ($this->submission_deadline && Carbon::now()->greaterThan($this->submission_deadline)) {
                 return 'review';
             }
@@ -58,33 +54,21 @@ class ProposalCampaign extends Model
         return $this->current_phase ?? 'submission';
     }
 
-    /**
-     * Helper to check if new submissions are allowed.
-     */
     public function isSubmissionAllowed(): bool
     {
         return $this->effective_phase === 'submission';
     }
 
-    /**
-     * Helper to check if proposal owners can edit/delete (Locked during Voting and Closed).
-     */
     public function isOwnerModificationAllowed(): bool
     {
         return in_array($this->effective_phase, ['submission', 'review']);
     }
 
-    /**
-     * Helper to check if campaign is in Voting Phase.
-     */
     public function isVotingPhase(): bool
     {
         return $this->effective_phase === 'voting';
     }
 
-    /**
-     * Helper to check if campaign is Closed/Concluded.
-     */
     public function isClosed(): bool
     {
         return $this->effective_phase === 'closed';

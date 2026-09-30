@@ -73,8 +73,14 @@
             color: #555;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.4rem;
+            max-width: 100%;
+        }
+
+        .info-pill span {
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .custom-btn-outline {
@@ -214,7 +220,6 @@
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h2 class="fw-bold mb-1 text-brand">Activity Proposals</h2>
-                <p class="text-muted small mb-0">Submit, review, revise, and vote on member activity proposals.</p>
             </div>
 
             <!-- Create Proposal Button with Phase Check -->
@@ -244,7 +249,7 @@
             </div>
         @endif
 
-        <!-- Workflow Banner with Improved Spacing -->
+        <!-- Dynamic Workflow Banner with Phase-Based Deadlines -->
         <div class="card p-3 px-4 pastel-card mb-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
                 <div class="text-brand fs-5"><i class="fa-solid fa-circle-info"></i></div>
@@ -261,9 +266,26 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-light border px-3.5 py-2 rounded-3 text-end">
-                <span class="text-muted d-block" style="font-size: 0.72rem;">Current module phase</span>
-                <span class="fw-bold text-brand" style="font-size: 0.88rem;">{{ ucfirst($effectivePhase) }}</span>
+
+            <!-- Dynamic Deadline Right Box -->
+            <div class="bg-light border px-3.5 py-2 rounded-3 text-end ms-auto">
+                @if($effectivePhase === 'submission')
+                    <span class="text-muted d-block" style="font-size: 0.72rem;"><i class="fa-regular fa-clock me-1 text-primary"></i> Submission Deadline</span>
+                    <span class="fw-bold text-brand" style="font-size: 0.88rem;">
+                        {{ $activeCampaign?->submission_deadline ? $activeCampaign->submission_deadline->format('F j, Y') : 'N/A' }}
+                    </span>
+                @elseif($effectivePhase === 'review')
+                    <span class="text-muted d-block" style="font-size: 0.72rem;"><i class="fa-solid fa-magnifying-glass me-1 text-info"></i> Review Phase</span>
+                    <span class="fw-bold text-brand" style="font-size: 0.88rem;">Officer Reviewing Proposals</span>
+                @elseif($effectivePhase === 'voting')
+                    <span class="text-muted d-block" style="font-size: 0.72rem;"><i class="fa-regular fa-calendar-check me-1 text-warning"></i> Voting Deadline</span>
+                    <span class="fw-bold text-brand" style="font-size: 0.88rem;">
+                        {{ $activeCampaign?->voting_deadline ? $activeCampaign->voting_deadline->format('F j, Y') : 'Active' }}
+                    </span>
+                @else
+                    <span class="text-muted d-block" style="font-size: 0.72rem;"><i class="fa-solid fa-flag-checkered me-1 text-secondary"></i> Status</span>
+                    <span class="fw-bold text-dark" style="font-size: 0.88rem;">Concluded</span>
+                @endif
             </div>
         </div>
 
@@ -324,17 +346,18 @@
                                             {{ ucfirst(str_replace('_', ' ', $proposal->status)) }}
                                         </span>
 
-                                        <!-- Clean Member Action Dropdown (Locked during Voting and Closed Phases) -->
+                                        <!-- Member Action Dropdown -->
                                         @if($isOwner && $isOwnerModificationAllowed)
                                             <div class="dropdown d-inline">
                                                 <button class="btn btn-action-icon text-secondary border-0 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="fa-solid fa-ellipsis-vertical fs-6"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border">
-                                                    @if (in_array($proposal->status, ['pending', 'needs_revision']))
+                                                    {{-- EDIT PROPOSAL IS ONLY ACCESSIBLE WHEN REVISION IS REQUESTED BY OFFICERS --}}
+                                                    @if ($proposal->status === 'needs_revision')
                                                         <li>
-                                                            <button class="dropdown-item py-1.5 small" onclick="openEditProposalModal({{ $proposal->id }})">
-                                                                <i class="fa-regular fa-pen-to-square me-2 text-primary"></i> Edit Proposal
+                                                            <button class="dropdown-item py-1.5 small text-warning fw-semibold" onclick="openEditProposalModal({{ $proposal->id }})">
+                                                                <i class="fa-regular fa-pen-to-square me-2"></i> Edit Proposal
                                                             </button>
                                                         </li>
                                                     @endif
@@ -376,11 +399,28 @@
                                     {{ Str::limit($proposal->description, 180) }}
                                 </p>
 
-                                <div class="d-flex flex-wrap gap-1.5 mb-3">
-                                    <div class="info-pill"><i class="fa-regular fa-user text-secondary"></i> {{ $proposal->user->name ?? 'Unknown' }}</div>
-                                    <div class="info-pill"><i class="fa-solid fa-location-dot text-secondary"></i> {{ $proposal->location }}</div>
-                                    <div class="info-pill"><i class="fa-regular fa-clock text-secondary"></i> {{ $proposal->duration }}</div>
-                                    <div class="info-pill"><i class="fa-regular fa-calendar text-secondary"></i> {{ $proposal->proposed_date ? $proposal->proposed_date->format('M j') : 'TBD' }}</div>
+                                <!-- Clean Structured Meta Info Grid -->
+                                <div class="d-flex flex-column gap-2 mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="info-pill flex-grow-1" style="min-width: 0;">
+                                            <i class="fa-regular fa-user text-secondary flex-shrink-0"></i>
+                                            <span class="text-truncate">{{ $proposal->user->name ?? 'Unknown' }}</span>
+                                        </div>
+                                        <div class="info-pill flex-shrink-0">
+                                            <i class="fa-regular fa-calendar text-secondary flex-shrink-0"></i>
+                                            <span>{{ $proposal->proposed_date ? $proposal->proposed_date->format('M j') : 'TBD' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="info-pill flex-grow-1" style="min-width: 0;">
+                                            <i class="fa-solid fa-location-dot text-secondary flex-shrink-0"></i>
+                                            <span class="text-truncate">{{ $proposal->location }}</span>
+                                        </div>
+                                        <div class="info-pill flex-shrink-0">
+                                            <i class="fa-regular fa-clock text-secondary flex-shrink-0"></i>
+                                            <span>{{ $proposal->duration }}</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Integrated Interactive Voting Summary -->
@@ -538,11 +578,13 @@
                                 <div class="d-flex flex-column gap-3">
                                     <div class="p-3 rounded-3 card-teal">
                                         <span class="fw-semibold d-block text-uppercase" style="font-size: 0.68rem;"><i class="fa-regular fa-clock me-1"></i> Submission Deadline</span>
-                                        <span class="fw-bold d-block mt-1" style="font-size: 0.88rem;">{{ $activeCampaign?->submission_deadline ? $activeCampaign->submission_deadline->format('F j, Y') : 'September 27, 2026' }}</span>
+                                        <span class="fw-bold d-block mt-1" style="font-size: 0.88rem;">{{ $activeCampaign?->submission_deadline ? $activeCampaign->submission_deadline->format('F j, Y') : 'N/A' }}</span>
                                     </div>
                                     <div class="p-3 rounded-3 card-amber">
                                         <span class="fw-semibold d-block text-uppercase" style="font-size: 0.68rem;"><i class="fa-regular fa-calendar-check me-1"></i> Voting Deadline</span>
-                                        <span class="fw-bold d-block mt-1" style="font-size: 0.88rem;" id="rightColVotingDeadline">Select a proposed date</span>
+                                        <span class="fw-bold d-block mt-1" style="font-size: 0.88rem;">
+                                            {{ $activeCampaign?->voting_deadline ? $activeCampaign->voting_deadline->format('F j, Y') : 'To be set by Officers during Voting Phase' }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -697,21 +739,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('createProposedDate')?.addEventListener('change', function() {
-            const proposedVal = this.value;
-            const rightColDeadline = document.getElementById('rightColVotingDeadline');
-
-            if (proposedVal) {
-                let d = new Date(proposedVal);
-                d.setDate(d.getDate() - 7);
-
-                if (rightColDeadline) {
-                    const options = { month: 'long', day: 'numeric', year: 'numeric' };
-                    rightColDeadline.textContent = d.toLocaleDateString('en-US', options);
-                }
-            }
-        });
-
         function openFeedbackModal(voteType, proposalId, proposalTitle) {
             const noticeBox = document.getElementById('voteSelectionNotice');
             const label = voteType === 'yes' ? 'YES' : 'NO';

@@ -172,6 +172,8 @@
                 @forelse($activities as $activity)
                     @php
                         $userFeedback = $activity->feedback->where('user_id', auth()->id())->first();
+                        $userParticipant = $activity->participants->where('user_id', auth()->id())->first();
+                        $hasAttended = $userParticipant && in_array($userParticipant->status, ['attended', 'late']);
                     @endphp
                     <div class="col-12">
                         <div class="card p-3 p-md-4 activity-item shadow-sm">
@@ -205,9 +207,13 @@
                                             <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-light border rounded-pill py-2.5 fw-semibold text-success w-50 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
                                                 <i class="fa-solid fa-check-double"></i> Feedback Added
                                             </a>
-                                        @else
+                                        @elseif($hasAttended)
                                             <button type="button" onclick="openIndexFeedbackModal({{ $activity->id }}, '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill py-2.5 fw-semibold custom-btn-filled w-50 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
                                                 <i class="fa-regular fa-comment-dots"></i> Add Feedback
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-secondary bg-opacity-25 text-muted border-0 rounded-pill py-2.5 fw-semibold w-50 d-flex align-items-center justify-content-center gap-1.5 cursor-not-allowed" disabled style="font-size: 0.82rem;">
+                                                <i class="fa-solid fa-lock"></i> Feedback Locked
                                             </button>
                                         @endif
                                     </div>

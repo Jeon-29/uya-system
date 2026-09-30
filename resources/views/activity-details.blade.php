@@ -346,12 +346,20 @@
                                 </p>
                             </div>
                         </div>
-                    @else
+                    @elseif($hasAttended)
                         <div class="detail-subcard d-flex flex-column gap-3">
                             <span class="text-muted small">Share your thoughts or experience regarding this activity.</span>
                             <button onclick="openFeedbackModal()" class="btn rounded-pill py-2.5 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2 shadow-sm w-100" style="font-size: 0.85rem;">
                                 <i class="fa-regular fa-comment-dots"></i> Add Feedback
                             </button>
+                        </div>
+                    @else
+                        <div class="detail-subcard text-center text-muted py-4">
+                            <i class="fa-solid fa-lock text-brand opacity-50 fa-2x mb-2 d-block"></i>
+                            <span class="fw-semibold text-dark d-block mb-1" style="font-size: 0.9rem;">Feedback Unavailable</span>
+                            <span class="small d-block text-muted" style="font-size: 0.78rem;">
+                                You can submit feedback after attending and verifying your QR check-in for this activity.
+                            </span>
                         </div>
                     @endif
                 </div>
@@ -360,7 +368,43 @@
 
     </div>
 
+    <!-- DETAILS PAGE FEEDBACK MODAL -->
+    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">Add Activity Feedback</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form method="POST" action="{{ route('activities.feedback.store', $activity->id) }}">
+                    @csrf
+                    <div class="mb-3">
+                        <span class="text-muted d-block mb-1" style="font-size: 0.75rem;">Activity</span>
+                        <h6 class="fw-bold text-brand mb-0" style="font-size: 0.95rem;">{{ $activity->title }}</h6>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-semibold" style="font-size: 0.85rem;">Your Feedback</label>
+                        <textarea name="comments" class="form-control rounded-4 p-3 shadow-none border" rows="3" placeholder="Share your thoughts about this activity..." required style="font-size: 0.88rem; resize: none;"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light border rounded-pill py-2 w-50 fw-semibold text-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn custom-btn-filled rounded-pill py-2 w-50 fw-semibold shadow-sm">Submit Feedback</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openFeedbackModal() {
+            const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+            modal.show();
+        }
+    </script>
 </body>
 </html>

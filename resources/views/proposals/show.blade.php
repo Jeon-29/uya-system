@@ -58,15 +58,15 @@
         }
 
         .btn-edit-icon {
-            color: var(--uya-dark-teal);
-            background-color: #f0f7f9;
-            border: 1px solid #cce3e8;
+            color: #854d0e;
+            background-color: #fefce8;
+            border: 1px solid #fef08a;
         }
 
         .btn-edit-icon:hover {
-            background-color: var(--uya-dark-teal);
+            background-color: #eab308;
             color: #ffffff;
-            border-color: var(--uya-dark-teal);
+            border-color: #eab308;
         }
 
         .btn-delete-icon {
@@ -131,9 +131,9 @@
                                 {{ ucfirst(str_replace('_', ' ', $proposal->status)) }}
                             </span>
 
-                            <!-- Top-Right Action Buttons for Proposer -->
-                            @if ($isOwner && in_array($proposal->status, ['pending', 'needs_revision']))
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#editProposalModal" class="btn btn-action-icon btn-edit-icon" title="Edit Proposal">
+                            <!-- Top-Right Action Buttons for Proposer: Edit is only accessible when revision is requested -->
+                            @if ($isOwner && $proposal->status === 'needs_revision')
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#editProposalModal" class="btn btn-action-icon btn-edit-icon" title="Edit Proposal (Feedback Received)">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
                             @endif
@@ -267,7 +267,7 @@
     </div>
 
     <!-- EDIT PROPOSAL MODAL -->
-    @if ($isOwner && in_array($proposal->status, ['pending', 'needs_revision']))
+    @if ($isOwner && $proposal->status === 'needs_revision')
         <div class="modal fade" id="editProposalModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
                 <div class="modal-content rounded-4 shadow-lg border-0 p-3">

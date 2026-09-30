@@ -80,26 +80,46 @@ class ProposalController extends Controller
     }
 
     /**
-     * Admin view details of a proposal.
+     * Display proposal detailed view for Officers/Admins.
      */
     public function show($id)
     {
-        $proposal = Proposal::with(['user', 'revisions.officer', 'votes.user', 'campaign'])->findOrFail($id);
+        $proposal = Proposal::with(['user', 'votes.user', 'revisions.officer', 'campaign'])->findOrFail($id);
+        $activeCampaign = ProposalCampaign::where('is_active', true)->first();
 
         $yesFeedback = $proposal->votes()->where('vote_type', 'yes')->whereNotNull('feedback')->get();
         $noFeedback  = $proposal->votes()->where('vote_type', 'no')->whereNotNull('feedback')->get();
 
-        return view('admin.proposals.show', compact('proposal', 'yesFeedback', 'noFeedback'));
+        return view('admin.proposals.show', compact('proposal', 'activeCampaign', 'yesFeedback', 'noFeedback'));
     }
 
     /**
-     * Update active campaign schedule settings, manual overrides, and approval threshold.
+     * Toggle supporting document validation status.
+     */
+    public function toggleDocumentValidation($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+
+        $newStatus = !$proposal->is_document_validated;
+        $proposal->update([
+            'is_document_validated' => $newStatus,
+        ]);
+
+        $statusText = $newStatus ? 'validated' : 'unvalidated';
+        ActivityLog::record('Updated Document Validation', "Marked supporting document for proposal '{$proposal->title}' as {$statusText}.");
+
+        return back()->with('success', "Supporting document marked as {$statusText}.");
+    }
+
+    /**
+     * Update active campaign schedule settings, manual overrides, and voting deadline.
      */
     public function updateSchedule(Request $request)
     {
         $validated = $request->validate([
             'current_phase'          => 'required|in:submission,review,voting,closed',
             'submission_deadline'   => 'required|date',
+            'voting_deadline'       => 'nullable|date',
             'proposed_date_start'    => 'required|date',
             'proposed_date_end'      => 'required|date|after_or_equal:proposed_date_start',
             'is_submission_override' => 'nullable|in:auto,force_open,force_close',
@@ -109,7 +129,7 @@ class ProposalController extends Controller
         $overrideValue = match ($request->input('is_submission_override')) {
             'force_open'  => true,
             'force_close' => false,
-            default       => null, // 'auto'
+            default       => null,
         };
 
         $campaign = ProposalCampaign::firstOrCreate(['is_active' => true], [
@@ -123,172 +143,194 @@ class ProposalController extends Controller
         $campaign->update([
             'current_phase'          => $validated['current_phase'],
             'submission_deadline'    => $validated['submission_deadline'],
+            'voting_deadline'        => $validated['voting_deadline'] ?? null,
             'proposed_date_start'    => $validated['proposed_date_start'],
             'proposed_date_end'      => $validated['proposed_date_end'],
             'is_submission_override' => $overrideValue,
             'required_approval_rate' => $validated['required_approval_rate'],
         ]);
 
-        ActivityLog::record('Updated Campaign Settings', "Updated campaign phase to {$campaign->current_phase} and approval rate threshold to {$campaign->required_approval_rate}%.");
+        ActivityLog::record('Updated Campaign Settings', "Updated campaign phase to {$campaign->current_phase} and schedule settings.");
 
-        return back()->with('success', 'Proposal schedule settings and voting targets updated successfully!');
+        return back()->with('success', 'Proposal schedule settings and campaign deadlines updated successfully!');
     }
 
     /**
-     * Validate or invalidate supporting PDF document.
+     * Request revision for a submitted proposal.
      */
-    public function toggleDocumentValidation(Proposal $proposal)
+    public function requestRevision(Request $request, $id)
     {
-        $proposal->update([
-            'is_document_validated' => !$proposal->is_document_validated,
-        ]);
-
-        $statusText = $proposal->is_document_validated ? 'validated' : 'unvalidated';
-        ActivityLog::record('Toggled Document Validation', "Marked supporting document for \"{$proposal->title}\" as {$statusText}.");
-
-        return back()->with('success', "Supporting document marked as {$statusText}.");
-    }
-
-    /**
-     * Request revisions from author.
-     */
-    public function requestRevision(Request $request, Proposal $proposal)
-    {
-        $validated = $request->validate([
+        $request->validate([
             'feedback' => 'required|string|max:1000',
         ]);
 
-        $proposal->update(['status' => 'needs_revision']);
+        $proposal = Proposal::findOrFail($id);
 
-        ProposalRevision::create([
-            'proposal_id' => $proposal->id,
-            'officer_id'  => auth()->id(),
-            'feedback'    => $validated['feedback'],
+        $proposal->revisions()->create([
+            'officer_id' => auth()->id(),
+            'feedback'   => $request->feedback,
         ]);
 
-        ActivityLog::record('Requested Proposal Revision', "Requested revision for: \"{$proposal->title}\".");
+        $proposal->update([
+            'status' => 'needs_revision',
+        ]);
 
-        $proposal->user->notify(new ProposalRevisionRequestedNotification($proposal, $validated['feedback']));
-
-        return back()->with('success', 'Revision request sent to the author.');
-    }
-
-    /**
-     * Approve proposal for community voting.
-     */
-    public function approveForVoting(Proposal $proposal)
-    {
-        $proposal->update(['status' => 'active']);
-
-        ActivityLog::record('Approved Proposal for Voting', "Approved proposal for community vote: \"{$proposal->title}\".");
-
-        $proposal->user->notify(new ProposalStatusUpdatedNotification($proposal, 'Approved for community voting!'));
-
-        return back()->with('success', 'Proposal is now active for community voting.');
-    }
-
-    /**
-     * Reject proposal.
-     */
-    public function reject(Proposal $proposal)
-    {
-        $proposal->update(['status' => 'rejected']);
-
-        ActivityLog::record('Rejected Proposal', "Rejected proposal: \"{$proposal->title}\".");
-
-        $proposal->user->notify(new ProposalStatusUpdatedNotification($proposal, 'Declined during review.'));
-
-        return back()->with('success', 'Proposal marked as rejected.');
-    }
-
-    /**
-     * Archive proposal (Admin side).
-     */
-    public function archive(Proposal $proposal)
-    {
-        $proposal->update(['status' => 'archived']);
-
-        ActivityLog::record('Archived Proposal', "Archived proposal: \"{$proposal->title}\".");
-
-        return back()->with('success', 'Proposal has been moved to Archives.');
-    }
-
-    /**
-     * Restore an archived proposal (Admin side).
-     */
-    public function restore(Proposal $proposal)
-    {
-        if ($proposal->status !== 'archived') {
-            return back()->with('error', 'Only archived proposals can be restored.');
+        if ($proposal->user) {
+            $proposal->user->notify(new ProposalRevisionRequestedNotification($proposal, $request->feedback));
         }
 
-        $newStatus = $proposal->activity_id ? 'completed' : 'pending';
-        $proposal->update(['status' => $newStatus]);
+        ActivityLog::record('Requested Proposal Revision', "Requested revisions for proposal '{$proposal->title}'.");
 
-        ActivityLog::record('Restored Archived Proposal', "Restored archived proposal: \"{$proposal->title}\" back to {$newStatus}.");
-
-        return redirect()->route('admin.proposals.index', ['tab' => 'pending'])
-            ->with('success', "Proposal \"{$proposal->title}\" has been restored successfully.");
+        return back()->with('success', 'Revision request and feedback submitted successfully.');
     }
 
     /**
-     * Admin delete a proposal.
+     * Approve proposal for voting or execution.
      */
-    public function destroy(Proposal $proposal)
+    public function approve($id)
     {
-        if (!in_array($proposal->status, ['rejected', 'archived'])) {
-            return back()->with('error', 'Only rejected or archived proposals can be deleted by administrators.');
+        return $this->approveForVoting($id);
+    }
+
+    /**
+     * Approve proposal for voting.
+     */
+    public function approveForVoting($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+
+        $proposal->update([
+            'status'                 => 'active',
+            'is_document_validated' => true,
+        ]);
+
+        if ($proposal->user) {
+            $proposal->user->notify(new ProposalStatusUpdatedNotification($proposal, 'active'));
         }
+
+        ActivityLog::record('Approved Proposal', "Approved proposal '{$proposal->title}' for voting.");
+
+        return back()->with('success', 'Proposal approved and released for voting!');
+    }
+
+    /**
+     * Reject a proposal.
+     */
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:1000',
+        ]);
+
+        $proposal = Proposal::findOrFail($id);
+
+        $proposal->update([
+            'status' => 'rejected',
+        ]);
+
+        if ($request->filled('reason')) {
+            $proposal->revisions()->create([
+                'officer_id' => auth()->id(),
+                'feedback'   => 'Rejection Reason: ' . $request->reason,
+            ]);
+        }
+
+        if ($proposal->user) {
+            $proposal->user->notify(new ProposalStatusUpdatedNotification($proposal, 'rejected'));
+        }
+
+        ActivityLog::record('Rejected Proposal', "Rejected proposal '{$proposal->title}'.");
+
+        return back()->with('success', 'Proposal rejected successfully.');
+    }
+
+    /**
+     * Convert an approved proposal directly into an official Activity.
+     */
+    public function convertToActivity($id)
+    {
+        $proposal = Proposal::with('user')->findOrFail($id);
+
+        $activity = Activity::create([
+            'title'          => $proposal->title,
+            'description'    => $proposal->description,
+            'date'           => $proposal->proposed_date,
+            'location'       => $proposal->location,
+            'duration'       => $proposal->duration,
+            'budget'         => $proposal->estimated_budget,
+            'organizer_name' => $proposal->user->name ?? 'UYA Connect',
+            'status'         => 'upcoming',
+            'created_by'     => auth()->id(),
+        ]);
+
+        $proposal->update([
+            'status' => 'approved_for_execution',
+        ]);
+
+        // Notify active members about the newly scheduled activity
+        $members = User::where('role', 'member')->get();
+        Notification::send($members, new ActivityCreatedNotification($activity));
+
+        ActivityLog::record('Converted Proposal to Activity', "Converted proposal '{$proposal->title}' into Activity #{$activity->id}.");
+
+        return redirect()->route('admin.activities.index')->with('success', 'Proposal successfully converted into an official Activity!');
+    }
+
+    /**
+     * Alias route method for convertToActivity.
+     */
+    public function convert($id)
+    {
+        return $this->convertToActivity($id);
+    }
+
+    /**
+     * Archive a proposal.
+     */
+    public function archive($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+
+        $proposal->update([
+            'status' => 'archived',
+        ]);
+
+        ActivityLog::record('Archived Proposal', "Archived proposal '{$proposal->title}'.");
+
+        return back()->with('success', 'Proposal archived successfully.');
+    }
+
+    /**
+     * Restore an archived proposal to pending state.
+     */
+    public function restore($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+
+        $proposal->update([
+            'status' => 'pending',
+        ]);
+
+        ActivityLog::record('Restored Proposal', "Restored proposal '{$proposal->title}'.");
+
+        return back()->with('success', 'Proposal restored successfully.');
+    }
+
+    /**
+     * Permanently delete a proposal and its supporting document.
+     */
+    public function destroy($id)
+    {
+        $proposal = Proposal::findOrFail($id);
 
         if ($proposal->supporting_document_path) {
             Storage::disk('public')->delete($proposal->supporting_document_path);
         }
 
-        $title = $proposal->title;
         $proposal->delete();
 
-        ActivityLog::record('Deleted Proposal', "Permanently deleted proposal: \"{$title}\".");
+        ActivityLog::record('Deleted Proposal', "Permanently deleted proposal '{$proposal->title}'.");
 
-        return redirect()->route('admin.proposals.index', ['tab' => $proposal->status === 'archived' ? 'archived' : 'rejected'])
-            ->with('success', 'Proposal has been permanently deleted.');
-    }
-
-    /**
-     * One-click conversion of an approved proposal into an official activity.
-     */
-    public function convertToActivity(Proposal $proposal)
-    {
-        if (!in_array($proposal->status, ['active', 'approved_for_execution'])) {
-            return back()->with('error', 'Only active or winning proposals can be converted into activities.');
-        }
-
-        $activity = Activity::create([
-            'title'                => $proposal->title,
-            'organizer_name'       => $proposal->user->name,
-            'date'                 => $proposal->proposed_date->format('Y-m-d') . ' 09:00:00',
-            'location'             => $proposal->location,
-            'budget'               => $proposal->estimated_budget ?? 0.00,
-            'duration'             => $proposal->duration,
-            'status'               => 'upcoming',
-            'description'          => $proposal->description . "\n\n*Origin: Winning Community Proposal by " . $proposal->user->name . "*",
-            'is_registration_open' => true,
-            'is_attendance_open'   => false,
-            'created_by'           => auth()->id(),
-        ]);
-
-        $proposal->update([
-            'activity_id' => $activity->id,
-            'status'      => 'completed',
-        ]);
-
-        ActivityLog::record('Converted Proposal to Activity', "Converted proposal \"{$proposal->title}\" into official Activity #{$activity->id}.");
-
-        $members = User::where('role', 'member')->get();
-        if ($members->count() > 0) {
-            Notification::send($members, new ActivityCreatedNotification($activity));
-        }
-
-        return redirect()->route('admin.activities.show', $activity->id)
-            ->with('success', 'Proposal successfully converted into an official Activity!');
+        return back()->with('success', 'Proposal deleted permanently.');
     }
 }
