@@ -309,7 +309,7 @@
                     <h3 class="fw-bold text-brand mb-1">Create Account</h3>
                     <p class="text-muted small">Join UYA Connect today</p>
                 </div>
-                <form method="POST" action="{{ route('register') }}" novalidate>
+                <form method="POST" action="{{ url('register') }}" novalidate>
                     @csrf
                     <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
