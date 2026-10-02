@@ -7,11 +7,12 @@ use App\Mail\OtpMail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
@@ -92,19 +93,25 @@ class AuthController extends Controller
 
         if (! $user->email_verified_at) {
             $otp = $user->generateOtp();
-            Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+
+            try {
+                Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+                $statusMsg = 'Please verify your email first. We just sent a new code to '.$user->email.'.';
+            } catch (\Throwable $e) {
+                Log::error('Login OTP email failed: '.$e->getMessage());
+                $statusMsg = 'Code generated, but email delivery failed. Please check your connection or resend.';
+            }
 
             $request->session()->put('register_email', $user->email);
 
             return redirect()->route('login')
                 ->with('active_form', 'form-register-otp')
-                ->with('status', 'Please verify your email first. We just sent a new code to '.$user->email.'.');
+                ->with('status', $statusMsg);
         }
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        // Redirect based on user role
         if (in_array($user->role, ['admin', 'officer'])) {
             return redirect()->intended(route('admin.dashboard'));
         }
@@ -134,13 +141,20 @@ class AuthController extends Controller
         $user = User::create($validator->validated());
 
         $otp = $user->generateOtp();
-        Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+            $statusMsg = 'We sent a 6-digit code to '.$user->email.'.';
+        } catch (\Throwable $e) {
+            Log::error('Registration OTP email failed: '.$e->getMessage());
+            $statusMsg = 'Account created! Email delivery failed, but you can request a new code.';
+        }
 
         $request->session()->put('register_email', $user->email);
 
         return redirect()->route('login')
             ->with('active_form', 'form-register-otp')
-            ->with('status', 'We sent a 6-digit code to '.$user->email.'.');
+            ->with('status', $statusMsg);
     }
 
     public function verifyRegistrationOtp(Request $request): RedirectResponse
@@ -191,11 +205,18 @@ class AuthController extends Controller
         }
 
         $otp = $user->generateOtp();
-        Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
+            $statusMsg = 'A new code was sent to '.$user->email.'.';
+        } catch (\Throwable $e) {
+            Log::error('Resend Registration OTP failed: '.$e->getMessage());
+            $statusMsg = 'Failed to send new code. Please try again shortly.';
+        }
 
         return back()
             ->with('active_form', 'form-register-otp')
-            ->with('status', 'A new code was sent to '.$user->email.'.');
+            ->with('status', $statusMsg);
     }
 
     public function sendPasswordOtp(Request $request): RedirectResponse
@@ -214,13 +235,20 @@ class AuthController extends Controller
         $user = User::where('email', $request->input('email'))->first();
 
         $otp = $user->generateOtp();
-        Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
+            $statusMsg = 'We sent a 6-digit code to '.$user->email.'.';
+        } catch (\Throwable $e) {
+            Log::error('Forgot Password OTP email failed: '.$e->getMessage());
+            $statusMsg = 'Code generated, but email delivery failed. Please check your connection or resend.';
+        }
 
         $request->session()->put('reset_email', $user->email);
 
         return redirect()->route('login')
             ->with('active_form', 'form-forgot-otp')
-            ->with('status', 'We sent a 6-digit code to '.$user->email.'.');
+            ->with('status', $statusMsg);
     }
 
     public function verifyPasswordOtp(Request $request): RedirectResponse
@@ -266,11 +294,18 @@ class AuthController extends Controller
         }
 
         $otp = $user->generateOtp();
-        Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
+            $statusMsg = 'A new code was sent to '.$user->email.'.';
+        } catch (\Throwable $e) {
+            Log::error('Resend Password OTP failed: '.$e->getMessage());
+            $statusMsg = 'Failed to send new code. Please try again shortly.';
+        }
 
         return back()
             ->with('active_form', 'form-forgot-otp')
-            ->with('status', 'A new code was sent to '.$user->email.'.');
+            ->with('status', $statusMsg);
     }
 
     public function updatePassword(Request $request): RedirectResponse

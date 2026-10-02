@@ -8,14 +8,10 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OtpMail extends Mailable
+class OtpMail extends Mailable // <-- Standard synchronous Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * @param  string  $otp  The plain 6-digit code to display in the email.
-     * @param  string  $purpose  Either "verification" or "password reset" — used in the copy.
-     */
     public function __construct(
         public string $otp,
         public string $purpose = 'verification',
