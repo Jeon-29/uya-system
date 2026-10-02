@@ -269,7 +269,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ url('login.attempt') }}" novalidate>
+                <form method="POST" action="{{ route('login.attempt') }}" novalidate>
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Email</label>
