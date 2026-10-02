@@ -85,7 +85,7 @@
             "php": "8.4.1"
         },
         "process-timeout": 1800,
-        "platform-check": false
+        "platform-check": true
     },
     "minimum-stability": "stable",
     "prefer-stable": true
