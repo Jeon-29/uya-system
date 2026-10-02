@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +24,19 @@ class AppServiceProvider extends ServiceProvider
     {
         date_default_timezone_set('Asia/Manila');
         Carbon::setLocale('en');
+
+        // Force HTTPS and trust Railway proxy headers in production
+        if (config('app.env') === 'production' || env('RAILWAY_ENVIRONMENT')) {
+            URL::forceScheme('https');
+
+            Request::setTrustedProxies(
+                ['*'],
+                Request::HEADER_X_FORWARDED_FOR |
+                Request::HEADER_X_FORWARDED_HOST |
+                Request::HEADER_X_FORWARDED_PORT |
+                Request::HEADER_X_FORWARDED_PROTO |
+                Request::HEADER_X_FORWARDED_AWS_ELB
+            );
+        }
     }
 }
