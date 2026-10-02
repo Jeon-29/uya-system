@@ -22,4 +22,7 @@ cmds = [
     'php artisan view:cache',
     'php artisan storage:link --force',
     'php artisan migrate --force'
+    'php artisan db:seed --force'
 ]
+
+QUEUE_CONNECTION=sync

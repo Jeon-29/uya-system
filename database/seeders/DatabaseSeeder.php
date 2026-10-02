@@ -17,18 +17,32 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            // Admins
+            // Main Admin Account
+            [
+                'name' => 'UYA Admin',
+                'email' => 'admin@uyaconnect.com',
+                'password' => Hash::make('Admin123!'),
+                'role' => 'admin',
+                'gender' => 'Male',
+                'age' => 25,
+                'contact_number' => '09123456789',
+                'address' => 'Silang, Cavite',
+                'email_verified_at' => now(),
+            ],
+            // Additional Admins
             [
                 'name' => 'Nayeon',
                 'email' => 'nayeon@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'admin',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Jihyo',
                 'email' => 'jihyo@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'admin',
+                'email_verified_at' => now(),
             ],
             // Officers
             [
@@ -36,12 +50,14 @@ class DatabaseSeeder extends Seeder
                 'email' => 'jeongyeon@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'officer',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'JYP',
                 'email' => 'jyp@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'officer',
+                'email_verified_at' => now(),
             ],
             // Members
             [
@@ -49,36 +65,43 @@ class DatabaseSeeder extends Seeder
                 'email' => 'momo@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'email_verified_at' => now(),
             ],
             [
-                'name' => 'Sana',
+                'name' => 'Sana Minatozaki',
                 'email' => 'sana@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'address' => 'Taguig City',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Mina',
                 'email' => 'mina@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Dahyun',
                 'email' => 'dahyun@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Chaeyoung',
                 'email' => 'chaeyoung@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Tzuyu',
                 'email' => 'tzuyu@gmail.com',
                 'password' => Hash::make('12345678'),
                 'role' => 'member',
+                'email_verified_at' => now(),
             ],
         ];
 
