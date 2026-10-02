@@ -1,82 +1,30 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-
-class Campaign extends Model
+return new class extends Migration
 {
-    protected $fillable = [
-        'current_phase',
-        'submission_deadline',
-        'proposed_date_start',
-        'proposed_date_end',
-        'is_submission_override',
-        'required_yes_votes',
-        'total_voters_target',
-    ];
-
-    protected $casts = [
-        'submission_deadline' => 'datetime',
-        'proposed_date_start' => 'datetime',
-        'proposed_date_end' => 'datetime',
-        'is_submission_override' => 'boolean',
-    ];
-
     /**
-     * Determine effective current phase (handles auto-transition from submission -> review on deadline).
+     * Run the migrations.
      */
-    public function getEffectivePhaseAttribute(): string
+    public function up(): void
     {
-        // If phase is set to submission, check if deadline passed (and no force-open override is active)
-        if ($this->current_phase === 'submission') {
-            if ($this->is_submission_override === false) {
-                return 'review'; // Force closed by admin
+        Schema::table('proposal_campaigns', function (Blueprint $table) {
+            if (!Schema::hasColumn('proposal_campaigns', 'is_submission_override')) {
+                $table->boolean('is_submission_override')->default(false);
             }
-
-            if ($this->is_submission_override === true) {
-                return 'submission'; // Force opened by admin
-            }
-
-            // Auto-check deadline
-            if ($this->submission_deadline && Carbon::now()->greaterThan($this->submission_deadline)) {
-                return 'review';
-            }
-        }
-
-        return $this->current_phase ?? 'submission';
+        });
     }
 
     /**
-     * Helper to check if members can submit new proposals.
+     * Reverse the migrations.
      */
-    public function isSubmissionAllowed(): bool
+    public function down(): void
     {
-        return $this->effective_phase === 'submission';
+        Schema::table('proposal_campaigns', function (Blueprint $table) {
+            $table->dropColumn('is_submission_override');
+        });
     }
-
-    /**
-     * Helper to check if owner can edit/delete (locked during Voting & Closed).
-     */
-    public function isOwnerModificationAllowed(): bool
-    {
-        return in_array($this->effective_phase, ['submission', 'review']);
-    }
-
-    /**
-     * Helper to check if campaign is in Voting phase.
-     */
-    public function isVotingPhase(): bool
-    {
-        return $this->effective_phase === 'voting';
-    }
-
-    /**
-     * Helper to check if campaign is Concluded/Closed.
-     */
-    public function isClosed(): bool
-    {
-        return $this->effective_phase === 'closed';
-    }
-}
+};
