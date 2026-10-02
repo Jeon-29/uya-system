@@ -269,7 +269,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login.attempt') }}" novalidate>
+                <form method="POST" action="{{ url('login.attempt') }}" novalidate>
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Email</label>
@@ -411,7 +411,7 @@
                         <strong>{{ $registerEmail ?? 'your email' }}</strong>
                     </p>
                 </div>
-                <form method="POST" action="{{ route('register.verify') }}" class="otp-form" novalidate>
+                <form method="POST" action="{{ url('register.verify') }}" class="otp-form" novalidate>
                     @csrf
                     <input type="hidden" name="otp">
                     <div class="otp-inputs d-flex justify-content-center gap-2 mb-2">
@@ -427,7 +427,7 @@
                     @enderror
                     <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm">Verify Email</button>
                 </form>
-                <form method="POST" action="{{ route('register.resend') }}" class="text-center small mb-2">
+                <form method="POST" action="{{ url('register.resend') }}" class="text-center small mb-2">
                     @csrf
                     <button type="submit" class="btn btn-link link-brand p-0">Resend code</button>
                 </form>
@@ -443,7 +443,7 @@
                     <h3 class="fw-bold text-brand mb-1">Forgot Password</h3>
                     <p class="text-muted small">Enter the email linked to your account to receive an OTP</p>
                 </div>
-                <form method="POST" action="{{ route('password.email') }}" novalidate>
+                <form method="POST" action="{{ url('password.email') }}" novalidate>
                     @csrf
                     <div class="mb-4">
                         <label class="form-label">Registered Email</label>
@@ -471,7 +471,7 @@
                         <strong>{{ $resetEmail ?? 'your email' }}</strong>
                     </p>
                 </div>
-                <form method="POST" action="{{ route('password.verify') }}" class="otp-form" novalidate>
+                <form method="POST" action="{{ url('password.verify') }}" class="otp-form" novalidate>
                     @csrf
                     <input type="hidden" name="otp">
                     <div class="otp-inputs d-flex justify-content-center gap-2 mb-2">
@@ -487,7 +487,7 @@
                     @enderror
                     <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm">Verify OTP</button>
                 </form>
-                <form method="POST" action="{{ route('password.resend') }}" class="text-center small mb-2">
+                <form method="POST" action="{{ url('password.resend') }}" class="text-center small mb-2">
                     @csrf
                     <button type="submit" class="btn btn-link link-brand p-0">Resend code</button>
                 </form>
@@ -503,7 +503,7 @@
                     <h3 class="fw-bold text-brand mb-1">Create New Password</h3>
                     <p class="text-muted small">Set and confirm your new password</p>
                 </div>
-                <form method="POST" action="{{ route('password.update') }}" novalidate>
+                <form method="POST" action="{{ url('password.update') }}" novalidate>
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">New Password</label>
