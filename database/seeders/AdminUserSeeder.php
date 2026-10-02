@@ -13,18 +13,30 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@uyaconnect.com'],
-            [
-                'name' => 'UYA Admin',
-                'password' => Hash::make('12345678'), // Change to your desired secure password
-                'role' => 'admin',
-                'gender' => 'Male',
-                'age' => 25,
-                'contact_number' => '09123456789',
-                'address' => 'GMA, Cavite',
-                'email_verified_at' => now(),
-            ]
-        );
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
+
+        if (! $email || ! $password) {
+            $this->command?->warn('ADMIN_EMAIL or ADMIN_PASSWORD not set; skipping admin seed.');
+            return;
+        }
+
+        $user = User::firstOrNew(['email' => $email]);
+
+        // Only set the password when the admin is first created,
+        // so a later deploy never overwrites a password changed in the app.
+        if (! $user->exists) {
+            $user->password = Hash::make($password);
+        }
+
+        $user->forceFill([
+            'name' => 'UYA Admin',
+            'role' => 'admin',
+            'gender' => 'Male',
+            'age' => 25,
+            'contact_number' => '09123456789',
+            'address' => 'GMA, Cavite',
+            'email_verified_at' => now(),
+        ])->save();
     }
 }
