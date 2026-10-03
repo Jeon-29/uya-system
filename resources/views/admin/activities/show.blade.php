@@ -15,6 +15,17 @@
         border-radius: 12px;
     }
 
+    /* Header: info on the left, registration/attendance controls pinned to the right */
+    .activity-header { display: flex; flex-direction: column; gap: 16px; }
+    .activity-controls { white-space: nowrap; }
+    .toggle-btn { display: inline-flex; align-items: center; gap: 6px; }
+    .toggle-btn i { font-size: 1.3rem; vertical-align: middle; margin-right: 0 !important; }
+    @media (min-width: 992px) {
+        .activity-header { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 24px; }
+        .activity-header-info { flex: 1 1 auto; min-width: 0; }
+        .activity-controls { flex: 0 0 auto; }
+    }
+
     .admin-modal .modal-content {
         background-color: var(--admin-card-bg);
         border: 1px solid var(--admin-border);
@@ -155,22 +166,22 @@
 
     <!-- Main Banner Overview Card -->
     <div class="admin-card mb-4">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
+        <div class="activity-header mb-3">
+            <div class="activity-header-info">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                     <h4 class="fw-bold text-white mb-0">{{ $activity->title }}</h4>
                     <span class="badge-status-pill-{{ $activity->status }}">{{ ucfirst($activity->status) }}</span>
                 </div>
                 <p class="text-subtle small mb-0">{{ $activity->description }}</p>
             </div>
 
-            <div class="d-flex align-items-center gap-3 text-subtle small glass-box p-3">
+            <div class="activity-controls d-flex align-items-center gap-3 text-subtle small glass-box p-3">
                 <div>
                     <span class="d-block text-muted" style="font-size: 0.7rem;">Registration</span>
                     @if($activity->status === 'completed')
                         <span class="fw-semibold text-danger" style="font-size: 0.82rem;"><i class="fa-solid fa-lock me-1"></i> Locked</span>
                     @else
-                        <button type="button" onclick="confirmToggle('registration', {{ $activity->is_registration_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-registration', $activity->id) }}')" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_registration_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
+                        <button type="button" onclick="confirmToggle('registration', {{ $activity->is_registration_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-registration', $activity->id) }}')" class="toggle-btn btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_registration_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
                             <i class="fa-solid {{ $activity->is_registration_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
                             {{ $activity->is_registration_open ? 'Open' : 'Closed' }}
                         </button>
@@ -181,7 +192,7 @@
                     @if($activity->status === 'completed')
                         <span class="fw-semibold text-danger" style="font-size: 0.82rem;"><i class="fa-solid fa-lock me-1"></i> Locked</span>
                     @else
-                        <button type="button" onclick="confirmToggle('attendance', {{ $activity->is_attendance_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-attendance', $activity->id) }}')" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_attendance_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
+                        <button type="button" onclick="confirmToggle('attendance', {{ $activity->is_attendance_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-attendance', $activity->id) }}')" class="toggle-btn btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_attendance_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
                             <i class="fa-solid {{ $activity->is_attendance_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
                             {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
                         </button>
