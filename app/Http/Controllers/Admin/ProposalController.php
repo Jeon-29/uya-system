@@ -134,26 +134,33 @@ class ProposalController extends Controller
 
         // current_phase is included in the defaults so the first save on a fresh
         // database (no campaign row yet) doesn't fail with "no default value".
-        $campaign = ProposalCampaign::firstOrCreate(['is_active' => true], [
-            'title'                  => 'Current Campaign',
-            'current_phase'          => 'submission',
-            'submission_deadline'    => now()->addDays(7),
-            'proposed_date_start'    => now()->addDays(10),
-            'proposed_date_end'      => now()->addDays(30),
-            'required_approval_rate' => 60.00,
-        ]);
+        try {
+            $campaign = ProposalCampaign::firstOrCreate(['is_active' => true], [
+                'title'                  => 'Current Campaign',
+                'current_phase'          => 'submission',
+                'submission_deadline'    => now()->addDays(7),
+                'proposed_date_start'    => now()->addDays(10),
+                'proposed_date_end'      => now()->addDays(30),
+                'required_approval_rate' => 60.00,
+            ]);
 
-        $campaign->update([
-            'current_phase'          => $validated['current_phase'],
-            'submission_deadline'    => $validated['submission_deadline'],
-            'voting_deadline'        => $validated['voting_deadline'] ?? null,
-            'proposed_date_start'    => $validated['proposed_date_start'],
-            'proposed_date_end'      => $validated['proposed_date_end'],
-            'is_submission_override' => $overrideValue,
-            'required_approval_rate' => $validated['required_approval_rate'],
-        ]);
+            $campaign->update([
+                'current_phase'          => $validated['current_phase'],
+                'submission_deadline'    => $validated['submission_deadline'],
+                'voting_deadline'        => $validated['voting_deadline'] ?? null,
+                'proposed_date_start'    => $validated['proposed_date_start'],
+                'proposed_date_end'      => $validated['proposed_date_end'],
+                'is_submission_override' => $overrideValue,
+                'required_approval_rate' => $validated['required_approval_rate'],
+            ]);
 
-        ActivityLog::record('Updated Campaign Settings', "Updated campaign phase to {$campaign->current_phase} and schedule settings.");
+            ActivityLog::record('Updated Campaign Settings', "Updated campaign phase to {$campaign->current_phase} and schedule settings.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Schedule save failed: ' . $e->getMessage());
+
+            // TEMPORARY DIAGNOSTIC: shows the real error on screen. Remove this line once fixed.
+            return response('Schedule save failed: ' . $e->getMessage(), 500);
+        }
 
         return back()->with('success', 'Proposal schedule settings and campaign deadlines updated successfully!');
     }
