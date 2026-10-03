@@ -145,12 +145,9 @@
                                 <i class="fa-solid fa-xmark me-1"></i> Reject Proposal
                             </button>
                         @elseif(in_array($proposal->status, ['active', 'approved_for_execution']))
-                            <form method="POST" action="{{ route('admin.proposals.convert', $proposal->id) }}">
-                                @csrf
-                                <button type="submit" class="btn btn-success rounded-pill py-2 fw-semibold w-100">
-                                    <i class="fa-solid fa-rocket me-1"></i> Convert to Official Activity
-                                </button>
-                            </form>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#convertProposalModal" class="btn btn-success rounded-pill py-2 fw-semibold w-100">
+                                <i class="fa-solid fa-rocket me-1"></i> Convert to Official Activity
+                            </button>
                         @elseif($proposal->status === 'rejected')
                             <form method="POST" action="{{ route('admin.proposals.destroy', $proposal->id) }}" onsubmit="return confirm('Are you sure you want to permanently delete this rejected proposal?');">
                                 @csrf
@@ -291,6 +288,30 @@
                     @csrf
                     @method('PATCH')
                     <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-semibold">Confirm Approval</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONVERT TO ACTIVITY CONFIRMATION MODAL -->
+<div class="modal fade" id="convertProposalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content text-white p-3" style="background-color: var(--admin-card-bg); border-radius: 14px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-success"><i class="fa-solid fa-rocket me-2"></i>Convert to Activity</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="text-subtle small mb-0">
+                    Are you sure you want to convert "<strong>{{ $proposal->title }}</strong>" into an official activity? All members will be notified about the new activity.
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ route('admin.proposals.convert', $proposal->id) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-semibold">Confirm Conversion</button>
                 </form>
             </div>
         </div>
