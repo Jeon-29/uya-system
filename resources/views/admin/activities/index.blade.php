@@ -15,6 +15,22 @@
         border-color: rgba(99, 102, 241, 0.35);
     }
 
+    /* Activity card: compact two-column meta grid */
+    .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+    .meta-item { min-width: 0; }
+    .meta-label { display: flex; align-items: center; gap: 6px; font-size: 0.66rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--admin-text-muted); margin-bottom: 3px; }
+    .meta-label i { font-size: 0.72rem; opacity: 0.8; }
+    .meta-value { display: block; font-size: 0.84rem; font-weight: 500; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-desc { font-size: 0.82rem; line-height: 1.5; color: var(--admin-text-subtle); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(2 * 1.5 * 0.82rem); margin-bottom: 16px; }
+    .status-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .status-chip { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 10px; border: 1px solid transparent; }
+    .status-chip-label { font-size: 0.66rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--admin-text-muted); }
+    .status-chip-value { font-size: 0.82rem; font-weight: 600; }
+    .status-chip.is-open { background-color: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
+    .status-chip.is-open .status-chip-value { color: #4ade80; }
+    .status-chip.is-closed { background-color: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); }
+    .status-chip.is-closed .status-chip-value { color: #fb7185; }
+
     .badge-status-upcoming { background-color: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 12px; }
     .badge-status-ongoing { background-color: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 12px; }
     .badge-status-completed { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 12px; }
@@ -104,38 +120,55 @@
                 <div class="col-12 col-md-6 col-xl-4">
                     <div class="activity-card h-100 d-flex flex-column justify-content-between">
                         <div>
-                            <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                            <div class="d-flex justify-content-between align-items-start mb-3 gap-2">
                                 <h5 class="fw-bold text-white mb-0" style="font-size: 1.05rem;">{{ $activity->title }}</h5>
                                 <span class="badge badge-status-{{ $activity->status }}">{{ ucfirst($activity->status) }}</span>
                             </div>
 
-                            <div class="d-flex flex-column gap-1.5 text-subtle small mb-3" style="font-size: 0.8rem;">
-                                <div><i class="fa-regular fa-calendar me-2 opacity-75"></i> {{ $activity->date->format('D, M j, Y') }}</div>
-                                <div><i class="fa-regular fa-clock me-2 opacity-75"></i> {{ $activity->date->format('g:i A') }}</div>
-                                <div><i class="fa-solid fa-location-dot me-2 opacity-75"></i> {{ $activity->location ?? 'TBD' }}</div>
-                                <div><i class="fa-regular fa-user me-2 opacity-75"></i> Organized by {{ $activity->organizer_name ?? 'Admin' }}</div>
-                                <div><i class="fa-solid fa-peso-sign me-2 opacity-75"></i> Budget: ₱{{ number_format($activity->budget, 2) }}</div>
-                                <div><i class="fa-solid fa-certificate me-2 opacity-75 text-primary"></i> Template: {{ $activity->certificateTemplate->title ?? 'None Assigned' }}</div>
+                            <div class="meta-grid mb-3">
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-regular fa-calendar"></i> Date</span>
+                                    <span class="meta-value">{{ $activity->date->format('D, M j, Y') }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-regular fa-clock"></i> Time</span>
+                                    <span class="meta-value">{{ $activity->date->format('g:i A') }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-solid fa-location-dot"></i> Location</span>
+                                    <span class="meta-value" title="{{ $activity->location ?? 'TBD' }}">{{ $activity->location ?? 'TBD' }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-regular fa-user"></i> Organizer</span>
+                                    <span class="meta-value" title="{{ $activity->organizer_name ?? 'Admin' }}">{{ $activity->organizer_name ?? 'Admin' }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-solid fa-peso-sign"></i> Budget</span>
+                                    <span class="meta-value">&#8369;{{ number_format($activity->budget, 2) }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label"><i class="fa-solid fa-certificate text-primary"></i> Certificate</span>
+                                    <span class="meta-value" title="{{ $activity->certificateTemplate->title ?? 'None assigned' }}">{{ $activity->certificateTemplate->title ?? 'None assigned' }}</span>
+                                </div>
                             </div>
 
-                            <p class="text-subtle small mb-4 line-clamp-2" style="font-size: 0.82rem; line-height: 1.5;">
-                                {{ $activity->description }}
-                            </p>
+                            <p class="card-desc">{{ $activity->description ?: 'No description provided.' }}</p>
 
-                            <div class="d-flex justify-content-between align-items-center small text-subtle mb-1">
-                                <span>Registration:</span>
-                                <span class="fw-semibold {{ $activity->is_registration_open ? 'text-success' : 'text-danger' }}">
-                                    <i class="fa-solid {{ $activity->is_registration_open ? 'fa-lock-open me-1' : 'fa-lock me-1' }}"></i>
-                                    {{ $activity->is_registration_open ? 'Open' : 'Closed' }}
-                                </span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center small text-subtle mb-3">
-                                <span>Attendance:</span>
-                                <span class="fw-semibold {{ $activity->is_attendance_open ? 'text-success' : 'text-danger' }}">
-                                    <i class="fa-solid {{ $activity->is_attendance_open ? 'fa-lock-open me-1' : 'fa-lock me-1' }}"></i>
-                                    {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
-                                </span>
+                            <div class="status-row">
+                                <div class="status-chip {{ $activity->is_registration_open ? 'is-open' : 'is-closed' }}">
+                                    <span class="status-chip-label">Registration</span>
+                                    <span class="status-chip-value">
+                                        <i class="fa-solid {{ $activity->is_registration_open ? 'fa-lock-open' : 'fa-lock' }} me-1"></i>
+                                        {{ $activity->is_registration_open ? 'Open' : 'Closed' }}
+                                    </span>
+                                </div>
+                                <div class="status-chip {{ $activity->is_attendance_open ? 'is-open' : 'is-closed' }}">
+                                    <span class="status-chip-label">Attendance</span>
+                                    <span class="status-chip-value">
+                                        <i class="fa-solid {{ $activity->is_attendance_open ? 'fa-lock-open' : 'fa-lock' }} me-1"></i>
+                                        {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

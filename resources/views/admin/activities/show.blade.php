@@ -170,14 +170,10 @@
                     @if($activity->status === 'completed')
                         <span class="fw-semibold text-danger" style="font-size: 0.82rem;"><i class="fa-solid fa-lock me-1"></i> Locked</span>
                     @else
-                        <form method="POST" action="{{ route('admin.activities.toggle-registration', $activity->id) }}" class="m-0">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_registration_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
-                                <i class="fa-solid {{ $activity->is_registration_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
-                                {{ $activity->is_registration_open ? 'Open' : 'Closed' }}
-                            </button>
-                        </form>
+                        <button type="button" onclick="confirmToggle('registration', {{ $activity->is_registration_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-registration', $activity->id) }}')" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_registration_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
+                            <i class="fa-solid {{ $activity->is_registration_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
+                            {{ $activity->is_registration_open ? 'Open' : 'Closed' }}
+                        </button>
                     @endif
                 </div>
                 <div class="border-start border-white border-opacity-10 ps-3">
@@ -185,14 +181,10 @@
                     @if($activity->status === 'completed')
                         <span class="fw-semibold text-danger" style="font-size: 0.82rem;"><i class="fa-solid fa-lock me-1"></i> Locked</span>
                     @else
-                        <form method="POST" action="{{ route('admin.activities.toggle-attendance', $activity->id) }}" class="m-0">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_attendance_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
-                                <i class="fa-solid {{ $activity->is_attendance_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
-                                {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
-                            </button>
-                        </form>
+                        <button type="button" onclick="confirmToggle('attendance', {{ $activity->is_attendance_open ? 'true' : 'false' }}, '{{ route('admin.activities.toggle-attendance', $activity->id) }}')" class="btn btn-link p-0 text-decoration-none shadow-none fw-semibold {{ $activity->is_attendance_open ? 'text-success' : 'text-danger' }}" style="font-size: 0.82rem;">
+                            <i class="fa-solid {{ $activity->is_attendance_open ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} me-1"></i>
+                            {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
+                        </button>
                     @endif
                 </div>
             </div>
@@ -524,6 +516,29 @@
             </div>
         </div>
     </div>
+    <!-- REGISTRATION / ATTENDANCE TOGGLE CONFIRMATION MODAL -->
+    <div class="modal fade admin-modal" id="toggleConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3 text-center">
+                <div class="modal-body p-4">
+                    <div id="toggleModalIconWrap" class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px;">
+                        <i id="toggleModalIcon" class="fa-solid fa-lg"></i>
+                    </div>
+                    <h5 id="toggleModalTitle" class="fw-bold text-white mb-2"></h5>
+                    <p id="toggleModalMessage" class="text-subtle small mb-4"></p>
+
+                    <form id="toggleConfirmForm" method="POST" action="">
+                        @csrf
+                        @method('PATCH')
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-outline-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" id="toggleModalConfirmBtn" class="btn rounded-3 px-4 fw-semibold"></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -539,6 +554,44 @@
     function confirmCompleteModal() {
         const modal = new bootstrap.Modal(document.getElementById('completeModal'));
         modal.show();
+    }
+
+    function confirmToggle(type, isOpen, url) {
+        const closing = isOpen;
+        const copy = {
+            registration: {
+                label: 'Registration',
+                close: 'Members will no longer be able to register for this activity. You can reopen registration at any time.',
+                open: 'Members will be able to register for this activity again.'
+            },
+            attendance: {
+                label: 'Attendance Check-in',
+                close: 'Members will no longer be able to check in, and QR check-in will be turned off. You can reopen it at any time.',
+                open: 'Members will be able to check in with the QR code, and registered participants will be notified. An upcoming activity will be marked as ongoing.'
+            }
+        }[type];
+
+        const wrap = document.getElementById('toggleModalIconWrap');
+        const icon = document.getElementById('toggleModalIcon');
+        const btn = document.getElementById('toggleModalConfirmBtn');
+
+        document.getElementById('toggleConfirmForm').action = url;
+        document.getElementById('toggleModalTitle').textContent = (closing ? 'Close ' : 'Open ') + copy.label + '?';
+        document.getElementById('toggleModalMessage').textContent = closing ? copy.close : copy.open;
+
+        if (closing) {
+            wrap.style.backgroundColor = 'rgba(244, 63, 94, 0.15)';
+            icon.className = 'fa-solid fa-lock fa-lg text-danger';
+            btn.className = 'btn btn-danger rounded-3 px-4 fw-semibold';
+            btn.textContent = 'Yes, Close';
+        } else {
+            wrap.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
+            icon.className = 'fa-solid fa-lock-open fa-lg text-success';
+            btn.className = 'btn btn-success rounded-3 px-4 fw-semibold';
+            btn.textContent = 'Yes, Open';
+        }
+
+        new bootstrap.Modal(document.getElementById('toggleConfirmModal')).show();
     }
 
     function confirmDeletePhotoModal() {
