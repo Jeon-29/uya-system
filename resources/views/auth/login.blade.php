@@ -161,6 +161,35 @@
             border: 1px solid #ced4da;
         }
 
+        /* Status toast: top-centered over the form panel on desktop, pinned to the top of the screen on mobile */
+        .status-toast {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 1rem 0 0;
+            z-index: 10;
+            max-width: 90%;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .status-toast.hide-toast {
+            opacity: 0;
+            transform: translate(-50%, -12px);
+            pointer-events: none;
+        }
+
+        @media (max-width: 991px) {
+            .status-toast {
+                position: fixed;
+                top: calc(env(safe-area-inset-top, 0px) + 12px);
+                margin: 0;
+                z-index: 1080;
+                width: max-content;
+                max-width: calc(100vw - 32px);
+            }
+        }
+
         @media (max-width: 991px) {
             .auth-container {
                 flex-direction: column;
@@ -249,8 +278,7 @@
         <div class="col-lg-7 right-panel">
 
             @if (session('status'))
-                <div class="alert alert-success position-absolute top-0 start-50 translate-middle-x mt-3 shadow-sm"
-                    style="z-index: 10; max-width: 90%;">
+                <div id="statusToast" class="alert alert-success status-toast shadow-sm mb-0" role="alert">
                     {{ session('status') }}
                 </div>
             @endif
@@ -356,9 +384,9 @@
                     <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
                             <label class="form-label">Contact Number</label>
-                            <input type="text" name="contact_number" value="{{ old('contact_number') }}"
+                            <input type="text" name="contact_number" id="register-contact" value="{{ old('contact_number') }}"
                                 class="form-control @error('contact_number', 'register') is-invalid @enderror"
-                                placeholder="Enter contact number">
+                                placeholder="Enter contact number" inputmode="numeric" pattern="[0-9]*" maxlength="15">
                             @error('contact_number', 'register')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -550,6 +578,33 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Status toast: fade out and remove after 3 seconds
+            const statusToast = document.getElementById('statusToast');
+            if (statusToast) {
+                setTimeout(() => {
+                    statusToast.classList.add('hide-toast');
+                    setTimeout(() => statusToast.remove(), 500);
+                }, 3000);
+            }
+
+            // Contact number: digits only (typing, pasting, and mobile keyboards)
+            const contactInput = document.getElementById('register-contact');
+            if (contactInput) {
+                const keepDigits = () => {
+                    const cleaned = contactInput.value.replace(/\D/g, '');
+                    if (cleaned !== contactInput.value) {
+                        contactInput.value = cleaned;
+                    }
+                };
+                contactInput.addEventListener('keydown', (e) => {
+                    if (e.key.length === 1 && !/\d/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                    }
+                });
+                contactInput.addEventListener('input', keepDigits);
+                keepDigits();
+            }
+
             // Password show/hide toggles
             document.querySelectorAll('.password-toggle').forEach(icon => {
                 icon.addEventListener('click', function() {
