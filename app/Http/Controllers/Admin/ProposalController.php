@@ -132,8 +132,11 @@ class ProposalController extends Controller
             default       => null,
         };
 
+        // current_phase is included in the defaults so the first save on a fresh
+        // database (no campaign row yet) doesn't fail with "no default value".
         $campaign = ProposalCampaign::firstOrCreate(['is_active' => true], [
-            'title'                   => 'Current Campaign',
+            'title'                  => 'Current Campaign',
+            'current_phase'          => 'submission',
             'submission_deadline'    => now()->addDays(7),
             'proposed_date_start'    => now()->addDays(10),
             'proposed_date_end'      => now()->addDays(30),
