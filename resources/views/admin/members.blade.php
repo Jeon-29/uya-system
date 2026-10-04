@@ -228,7 +228,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" placeholder="Enter email address" required>
+                            <input type="email" id="add_email" name="email" class="form-control" placeholder="Enter email address" autocomplete="off" required>
                         </div>
 
                         <div class="mb-3">
@@ -278,7 +278,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" id="edit_email" name="email" class="form-control" required>
+                            <input type="email" id="edit_email" name="email" class="form-control" autocomplete="off" required>
                         </div>
 
                         <div class="mb-3">
@@ -380,11 +380,139 @@
     let editModalInstance = null;
     let editConfirmModalInstance = null;
 
+    const EMAIL_CHECK_URL = "{{ route('admin.members.check-email') }}";
+    let editMemberId = null;
+    let editOriginalEmail = '';
+    let addEmailChecker = null;
+    let editEmailChecker = null;
+
+    /**
+     * Live "email already used" check. Debounced, ignores stale responses,
+     * and disables the submit button while the typed email is taken.
+     * The server-side unique rules in MemberController still enforce this on submit.
+     */
+    function createEmailChecker(input, submitBtn, getIgnoreId, getOriginalEmail) {
+        const feedback = document.createElement('div');
+        feedback.className = 'form-text';
+        feedback.style.fontSize = '0.78rem';
+        feedback.style.display = 'none';
+        input.insertAdjacentElement('afterend', feedback);
+
+        let timer = null;
+        let latest = 0;
+
+        function show(kind, message) {
+            input.classList.remove('is-valid', 'is-invalid');
+            feedback.classList.remove('text-success', 'text-danger', 'text-muted');
+
+            if (!kind) {
+                feedback.style.display = 'none';
+                feedback.textContent = '';
+                return;
+            }
+
+            feedback.style.display = 'block';
+            feedback.textContent = message;
+
+            if (kind === 'taken') {
+                input.classList.add('is-invalid');
+                feedback.classList.add('text-danger');
+            } else if (kind === 'available') {
+                input.classList.add('is-valid');
+                feedback.classList.add('text-success');
+            } else {
+                feedback.classList.add('text-muted');
+            }
+        }
+
+        function reset() {
+            clearTimeout(timer);
+            latest++;
+            show(null);
+            submitBtn.disabled = false;
+        }
+
+        input.addEventListener('input', () => {
+            clearTimeout(timer);
+            latest++;
+            submitBtn.disabled = false;
+
+            const value = input.value.trim();
+            if (!value || !input.checkValidity()) {
+                show(null);
+                return;
+            }
+
+            const original = getOriginalEmail ? getOriginalEmail() : '';
+            if (original && value.toLowerCase() === original) {
+                show(null);
+                return;
+            }
+
+            show('checking', 'Checking email...');
+            const thisRequest = latest;
+
+            timer = setTimeout(async () => {
+                try {
+                    const params = new URLSearchParams({ email: value });
+                    const ignoreId = getIgnoreId ? getIgnoreId() : null;
+                    if (ignoreId) {
+                        params.append('ignore_id', ignoreId);
+                    }
+
+                    const response = await fetch(EMAIL_CHECK_URL + '?' + params.toString(), {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        credentials: 'same-origin'
+                    });
+                    if (!response.ok) throw new Error('Request failed');
+
+                    const data = await response.json();
+                    if (thisRequest !== latest) return; // a newer keystroke superseded this check
+
+                    if (data.available) {
+                        show('available', data.message);
+                        submitBtn.disabled = false;
+                    } else {
+                        show('taken', data.message);
+                        submitBtn.disabled = true;
+                    }
+                } catch (error) {
+                    // If the check can't run, don't block the admin; the server still validates on submit.
+                    if (thisRequest === latest) show(null);
+                }
+            }, 400);
+        });
+
+        return { reset };
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        addEmailChecker = createEmailChecker(
+            document.getElementById('add_email'),
+            document.querySelector('#addMemberModal button[type="submit"]'),
+            null,
+            null
+        );
+
+        editEmailChecker = createEmailChecker(
+            document.getElementById('edit_email'),
+            document.querySelector('#editMemberModal .btn-purple'),
+            () => editMemberId,
+            () => editOriginalEmail
+        );
+
+        document.getElementById('addMemberModal').addEventListener('hidden.bs.modal', () => addEmailChecker.reset());
+    });
+
     function editMember(data) {
         document.getElementById('editMemberForm').action = '/admin/members/' + data.id;
         document.getElementById('edit_name').value = data.name;
         document.getElementById('edit_email').value = data.email;
         document.getElementById('edit_role').value = data.role || 'member';
+
+        editMemberId = data.id;
+        editOriginalEmail = (data.email || '').trim().toLowerCase();
+        if (editEmailChecker) editEmailChecker.reset();
 
         editModalInstance = new bootstrap.Modal(document.getElementById('editMemberModal'));
         editModalInstance.show();

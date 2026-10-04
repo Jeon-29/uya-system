@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class MemberController extends Controller
@@ -29,6 +31,38 @@ class MemberController extends Controller
                          ->withQueryString();
 
         return view('admin.members', compact('members'));
+    }
+
+    /**
+     * Live email availability check for the Add / Edit Member modals.
+     * Pass ignore_id when editing so the member's own email isn't reported as taken.
+     */
+    public function checkEmail(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email'     => ['required', 'email', 'max:255'],
+            'ignore_id' => ['nullable', 'integer'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'available' => false,
+                'message'   => 'Please enter a valid email address.',
+            ]);
+        }
+
+        $email = trim($request->input('email'));
+
+        $exists = User::where('email', $email)
+            ->when($request->filled('ignore_id'), function ($query) use ($request) {
+                $query->where('id', '!=', (int) $request->input('ignore_id'));
+            })
+            ->exists();
+
+        return response()->json([
+            'available' => ! $exists,
+            'message'   => $exists ? 'This email is already registered.' : 'Email is available.',
+        ]);
     }
 
     public function store(Request $request)

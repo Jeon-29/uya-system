@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/members', [MemberController::class, 'index'])->name('members');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store');
         Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
+        Route::get('/members/check-email', [MemberController::class, 'checkEmail'])->name('members.check-email');
         Route::patch('/members/{member}/toggle-status', [MemberController::class, 'toggleStatus'])->name('members.toggle-status');
         Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
 
