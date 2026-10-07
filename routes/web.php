@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::put('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
 
     /*
     |--------------------------------------------------------------------------

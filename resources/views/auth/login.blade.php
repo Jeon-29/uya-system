@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UYA Connect</title>
+    <title>UYA</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Bootstrap 5 CSS -->
@@ -154,6 +154,7 @@
         .otp-inputs input {
             width: 45px;
             height: 45px;
+            padding: 0;
             text-align: center;
             font-size: 1.2rem;
             font-weight: bold;
@@ -270,7 +271,7 @@
                         style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </div>
-            <h2 class="fw-bold mb-1">UYA Connect</h2>
+            <h2 class="fw-bold mb-1">Union of Youth Alliance</h2>
             <p class="text-white-50 small px-4">Sub Heading Here</p>
         </div>
 
@@ -335,7 +336,7 @@
             <div class="form-section {{ $activeForm === 'form-register' ? 'active' : '' }}" id="form-register">
                 <div class="text-center mb-3">
                     <h3 class="fw-bold text-brand mb-1">Create Account</h3>
-                    <p class="text-muted small">Join UYA Connect today</p>
+                    <p class="text-muted small">Join UYA today</p>
                 </div>
                 <form method="POST" action="{{ route('register') }}" novalidate>
                     @csrf
@@ -622,6 +623,9 @@
                 const hidden = form.querySelector('input[name="otp"]');
 
                 digits.forEach((digit, index) => {
+                    // Select the existing digit on focus so typing replaces it instead of being blocked by maxlength
+                    digit.addEventListener('focus', () => digit.select());
+
                     digit.addEventListener('input', () => {
                         digit.value = digit.value.replace(/[^0-9]/g, '');
                         if (digit.value && index < digits.length - 1) {

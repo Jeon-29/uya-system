@@ -41,14 +41,24 @@
             }
         }
 
-        .pastel-card {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            border-radius: 18px;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.03);
+        /* Primary Outer Liquid Glass Panels */
+        .pastel-card,
+        .proposal-item {
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+            transition: all 0.25 ease;
         }
 
-        /* EXACT TAB STYLES FROM ACTIVITIES.BLADE.PHP */
+        .proposal-item:hover {
+            border-color: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12) !important;
+            transform: translateY(-2px);
+        }
+
         /* Desktop Navigation Tabs (>= 768px) */
         @media (min-width: 768px) {
             .mobile-segmented-toggle {
@@ -112,24 +122,16 @@
             border-color: var(--uya-dark-teal);
         }
 
-        .proposal-item {
-            background-color: #ffffff;
-            border: 1px solid #dce5e8 !important;
-            border-radius: 18px;
-            transition: all 0.2s ease;
-        }
-
-        .proposal-item:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            border-color: var(--uya-light-blue) !important;
-        }
-
-        /* Clean Balanced 2x2 Sub-Cards */
-        .subcard-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+        /* Liquid Glass Subcards inside primary cards */
+        .glass-subcard {
+            background: rgba(255, 255, 255, 0.45) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.7) !important;
             border-radius: 12px;
             padding: 0.6rem 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
         }
 
         .subcard-label {
@@ -137,7 +139,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            color: #64748b;
+            color: #475569;
             display: block;
             margin-bottom: 2px;
         }
@@ -145,29 +147,38 @@
         .subcard-value {
             font-size: 0.82rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f172a;
             margin-bottom: 0;
             line-height: 1.25;
         }
 
+        /* Refined Buttons */
         .custom-btn-outline {
-            border-color: var(--uya-dark-teal);
+            border: 2px solid var(--uya-dark-teal);
             color: var(--uya-dark-teal);
-            background-color: #ffffff;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            transition: all 0.2s ease;
         }
 
         .custom-btn-outline:hover {
             background-color: var(--uya-dark-teal);
             color: #fff;
+            box-shadow: 0 4px 12px rgba(34, 77, 91, 0.2);
         }
 
         .custom-btn-filled {
             background-color: var(--uya-dark-teal);
             color: #fff;
             border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(34, 77, 91, 0.2);
+            transition: background-color 0.2s ease;
         }
 
         .custom-btn-filled:hover {
@@ -176,19 +187,19 @@
         }
 
         .card-teal {
-            background-color: #f0f7f9;
+            background-color: rgba(240, 247, 249, 0.8);
             border: 1px solid #cce3e8;
             color: #193a44;
         }
         .card-amber {
-            background-color: #fefce8;
+            background-color: rgba(254, 252, 232, 0.8);
             border: 1px solid #fef08a;
             color: #854d0e;
         }
 
         .modal-sidebar-container {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 12px;
         }
 
@@ -201,20 +212,24 @@
             justify-content: center;
             transition: all 0.2s ease;
             font-size: 0.72rem;
-            border: 1px solid transparent;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.6);
         }
 
         .btn-action-icon:hover {
-            background-color: #f1f5f9;
+            background-color: #ffffff;
             border-color: #cbd5e1;
         }
 
-        /* Voting Container with Corrected Spacing */
+        /* Voting Glass Container */
         .voting-compact-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.45) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.7) !important;
             border-radius: 14px;
             padding: 0.75rem 0.85rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         .vote-btn-option {
@@ -225,25 +240,24 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #ffffff;
             transition: all 0.2s ease;
             cursor: pointer;
         }
 
         .vote-btn-yes {
-            background-color: #e8f8f0;
+            background-color: rgba(232, 248, 240, 0.85);
             border-color: rgba(25, 135, 84, 0.25);
-            color: #198754;
+            color: #15803d;
         }
 
         .vote-btn-yes:hover {
-            background-color: #198754;
+            background-color: #15803d;
             color: #ffffff;
-            border-color: #198754;
+            border-color: #15803d;
         }
 
         .vote-btn-no {
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.7);
             border-color: rgba(220, 53, 69, 0.25);
             color: #dc3545;
         }
@@ -257,6 +271,15 @@
         .vote-btn-disabled {
             cursor: default !important;
             opacity: 0.85;
+        }
+
+        /* Glass Modal Popups */
+        .glass-modal-content {
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 20px 50px rgba(34, 77, 91, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
         }
     </style>
 </head>
@@ -286,13 +309,13 @@
             <div class="flex-shrink-0">
                 @if($isSubmissionAllowed)
                     <button type="button" data-bs-toggle="modal" data-bs-target="#createProposalModal"
-                        class="btn rounded-pill px-3 py-1.5 py-md-2 px-md-3.5 fw-semibold custom-btn-filled d-flex align-items-center gap-1.5 shadow-sm"
+                        class="btn rounded-pill px-3 py-1.5 py-md-2 px-md-3.5 fw-bold custom-btn-filled d-flex align-items-center gap-1.5 shadow-sm"
                         style="font-size: 0.82rem;">
                         <i class="fa-solid fa-plus"></i> <span class="d-inline">Create Proposal</span>
                     </button>
                 @else
                     <button type="button" disabled
-                        class="btn rounded-pill px-3 py-1.5 py-md-2 px-md-3.5 fw-semibold btn-secondary d-flex align-items-center gap-1.5 shadow-sm opacity-75"
+                        class="btn rounded-pill px-3 py-1.5 py-md-2 px-md-3.5 fw-bold btn-secondary d-flex align-items-center gap-1.5 shadow-sm opacity-75"
                         style="font-size: 0.82rem;" title="Submissions are currently closed.">
                         <i class="fa-solid fa-lock"></i> <span>Closed</span>
                     </button>
@@ -306,7 +329,7 @@
                 <i class="fa-solid fa-flag-checkered text-warning fs-4"></i>
                 <div>
                     <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">Campaign Concluded</h6>
-                    <p class="mb-0 text-muted small" style="font-size: 0.78rem;">This proposal campaign has been officially concluded. Voting and new submissions are closed.</p>
+                    <p class="mb-0 text-white-50 small" style="font-size: 0.78rem;">This proposal campaign has been officially concluded. Voting and new submissions are closed.</p>
                 </div>
             </div>
         @endif
@@ -320,33 +343,33 @@
                         <h6 class="fw-bold text-brand mb-0" style="font-size: 0.9rem;">Proposal Workflow</h6>
                     </div>
                     <div class="d-flex align-items-center gap-1.5 flex-wrap overflow-x-auto pb-1">
-                        <span class="badge rounded-pill {{ $effectivePhase === 'submission' ? 'bg-primary text-white fw-bold shadow-sm' : 'bg-light text-dark border' }} px-2.5 py-1" style="font-size: 0.68rem;">Submission</span>
-                        <span class="text-muted small">→</span>
-                        <span class="badge rounded-pill {{ $effectivePhase === 'review' ? 'bg-primary text-white fw-bold shadow-sm' : 'bg-light text-dark border' }} px-2.5 py-1" style="font-size: 0.68rem;">Review</span>
-                        <span class="text-muted small">→</span>
-                        <span class="badge rounded-pill {{ $effectivePhase === 'voting' ? 'bg-warning text-dark fw-bold shadow-sm' : 'bg-light text-dark border' }} px-2.5 py-1" style="font-size: 0.68rem;">Voting</span>
-                        <span class="text-muted small">→</span>
-                        <span class="badge rounded-pill {{ $effectivePhase === 'closed' ? 'bg-dark text-white fw-bold shadow-sm' : 'bg-light text-dark border' }} px-2.5 py-1" style="font-size: 0.68rem;">Closed</span>
+                        <span class="badge rounded-pill {{ $effectivePhase === 'submission' ? 'bg-primary text-white fw-bold shadow-sm' : 'glass-subcard text-dark border-0 py-1' }} px-2.5 py-1" style="font-size: 0.68rem;">Submission</span>
+                        <span class="text-dark small fw-bold">→</span>
+                        <span class="badge rounded-pill {{ $effectivePhase === 'review' ? 'bg-primary text-white fw-bold shadow-sm' : 'glass-subcard text-dark border-0 py-1' }} px-2.5 py-1" style="font-size: 0.68rem;">Review</span>
+                        <span class="text-dark small fw-bold">→</span>
+                        <span class="badge rounded-pill {{ $effectivePhase === 'voting' ? 'bg-warning text-dark fw-bold shadow-sm' : 'glass-subcard text-dark border-0 py-1' }} px-2.5 py-1" style="font-size: 0.68rem;">Voting</span>
+                        <span class="text-dark small fw-bold">→</span>
+                        <span class="badge rounded-pill {{ $effectivePhase === 'closed' ? 'bg-dark text-white fw-bold shadow-sm' : 'glass-subcard text-dark border-0 py-1' }} px-2.5 py-1" style="font-size: 0.68rem;">Closed</span>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
-                    <div class="bg-light border px-2.5 py-1.5 rounded-3 text-md-end">
+                    <div class="glass-subcard px-2.5 py-1.5 text-md-end">
                         @if($effectivePhase === 'submission')
-                            <span class="text-muted d-block" style="font-size: 0.68rem;"><i class="fa-regular fa-clock me-1 text-primary"></i> Submission Deadline</span>
+                            <span class="text-secondary fw-semibold d-block" style="font-size: 0.68rem;"><i class="fa-regular fa-clock me-1 text-primary"></i> Submission Deadline</span>
                             <span class="fw-bold text-brand" style="font-size: 0.82rem;">
                                 {{ $activeCampaign?->submission_deadline ? $activeCampaign->submission_deadline->format('F j, Y') : 'N/A' }}
                             </span>
                         @elseif($effectivePhase === 'review')
-                            <span class="text-muted d-block" style="font-size: 0.68rem;"><i class="fa-solid fa-magnifying-glass me-1 text-info"></i> Review Phase</span>
+                            <span class="text-secondary fw-semibold d-block" style="font-size: 0.68rem;"><i class="fa-solid fa-magnifying-glass me-1 text-info"></i> Review Phase</span>
                             <span class="fw-bold text-brand" style="font-size: 0.82rem;">Officer Reviewing Proposals</span>
                         @elseif($effectivePhase === 'voting')
-                            <span class="text-muted d-block" style="font-size: 0.68rem;"><i class="fa-regular fa-calendar-check me-1 text-warning"></i> Voting Deadline</span>
+                            <span class="text-secondary fw-semibold d-block" style="font-size: 0.68rem;"><i class="fa-regular fa-calendar-check me-1 text-warning"></i> Voting Deadline</span>
                             <span class="fw-bold text-brand" style="font-size: 0.82rem;">
                                 {{ $activeCampaign?->voting_deadline ? $activeCampaign->voting_deadline->format('F j, Y') : 'Active' }}
                             </span>
                         @else
-                            <span class="text-muted d-block" style="font-size: 0.68rem;"><i class="fa-solid fa-flag-checkered me-1 text-secondary"></i> Status</span>
+                            <span class="text-secondary fw-semibold d-block" style="font-size: 0.68rem;"><i class="fa-solid fa-flag-checkered me-1 text-secondary"></i> Status</span>
                             <span class="fw-bold text-dark" style="font-size: 0.82rem;">Concluded</span>
                         @endif
                     </div>
@@ -354,7 +377,7 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs Bar (Exact match to activities.blade.php) -->
+        <!-- Navigation Tabs Bar -->
         <div class="mb-4">
             <!-- Mobile Segmented Toggle (< 768px) -->
             <div class="mobile-segmented-toggle">
@@ -382,8 +405,8 @@
             @if($proposals->isEmpty())
                 <div class="col-12">
                     <div class="card p-4 text-center pastel-card">
-                        <i class="fa-regular fa-folder-open text-muted fs-2 mb-2"></i>
-                        <p class="text-muted small mb-0">No proposals found in this section.</p>
+                        <i class="fa-regular fa-folder-open text-brand opacity-75 fs-2 mb-2"></i>
+                        <p class="text-dark fw-semibold small mb-0">No proposals found in this section.</p>
                     </div>
                 </div>
             @else
@@ -418,13 +441,13 @@
 
                                     @if($isOwner && $isOwnerModificationAllowed)
                                         <div class="dropdown d-inline">
-                                            <button class="btn btn-action-icon text-secondary border-0 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <button class="btn btn-action-icon text-dark p-0 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border">
                                                 @if ($proposal->status === 'needs_revision')
                                                     <li>
-                                                        <button class="dropdown-item py-1.5 small text-warning fw-semibold" onclick="openEditProposalModal({{ $proposal->id }})">
+                                                        <button class="dropdown-item py-1.5 small text-warning fw-bold" onclick="openEditProposalModal({{ $proposal->id }})">
                                                             <i class="fa-regular fa-pen-to-square me-2"></i> Edit Proposal
                                                         </button>
                                                     </li>
@@ -432,7 +455,7 @@
 
                                                 @if ($proposal->status !== 'archived')
                                                     <li>
-                                                        <button class="dropdown-item py-1.5 small" onclick="openArchiveProposalModal({{ $proposal->id }}, '{{ addslashes($proposal->title) }}')">
+                                                        <button class="dropdown-item py-1.5 small text-dark fw-semibold" onclick="openArchiveProposalModal({{ $proposal->id }}, '{{ addslashes($proposal->title) }}')">
                                                             <i class="fa-solid fa-box-archive me-2 text-secondary"></i> Archive
                                                         </button>
                                                     </li>
@@ -441,7 +464,7 @@
                                                         <form method="POST" action="{{ url('/proposals/' . $proposal->id . '/restore') }}">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="dropdown-item py-1.5 small text-success fw-semibold">
+                                                            <button type="submit" class="dropdown-item py-1.5 small text-success fw-bold">
                                                                 <i class="fa-solid fa-rotate-left me-2"></i> Restore
                                                             </button>
                                                         </form>
@@ -451,7 +474,7 @@
                                                 @if (in_array($proposal->status, ['pending', 'needs_revision', 'rejected', 'archived']))
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
-                                                        <button class="dropdown-item py-1.5 small text-danger fw-semibold" onclick="openDeleteProposalModal({{ $proposal->id }}, '{{ addslashes($proposal->title) }}')">
+                                                        <button class="dropdown-item py-1.5 small text-danger fw-bold" onclick="openDeleteProposalModal({{ $proposal->id }}, '{{ addslashes($proposal->title) }}')">
                                                             <i class="fa-regular fa-trash-can me-2"></i> Delete
                                                         </button>
                                                     </li>
@@ -464,14 +487,14 @@
                                 <!-- Full Width Title -->
                                 <h5 class="fw-bold mb-2 text-brand text-wrap" style="font-size: 1rem; line-height: 1.35;">{{ $proposal->title }}</h5>
 
-                                <p class="text-muted small mb-3" style="font-size: 0.8rem; line-height: 1.45;">
+                                <p class="text-dark small mb-3 fw-medium" style="font-size: 0.8rem; line-height: 1.45;">
                                     {{ Str::limit($proposal->description, 130) }}
                                 </p>
 
-                                <!-- Clean 2x2 Sub-Cards Grid with Fixed Spacing -->
+                                <!-- Clean Liquid Glass 2x2 Sub-Cards Grid -->
                                 <div class="row g-2 mb-3">
                                     <div class="col-6">
-                                        <div class="subcard-box h-100">
+                                        <div class="glass-subcard h-100">
                                             <span class="subcard-label">PROPOSER</span>
                                             <div class="subcard-value d-flex align-items-center gap-1.5 overflow-hidden">
                                                 <i class="fa-regular fa-user text-brand flex-shrink-0"></i>
@@ -481,7 +504,7 @@
                                     </div>
 
                                     <div class="col-6">
-                                        <div class="subcard-box h-100">
+                                        <div class="glass-subcard h-100">
                                             <span class="subcard-label">DATE</span>
                                             <div class="subcard-value d-flex align-items-center gap-1.5">
                                                 <i class="fa-regular fa-calendar text-brand flex-shrink-0"></i>
@@ -491,7 +514,7 @@
                                     </div>
 
                                     <div class="col-6">
-                                        <div class="subcard-box h-100">
+                                        <div class="glass-subcard h-100">
                                             <span class="subcard-label">LOCATION</span>
                                             <div class="subcard-value d-flex align-items-center gap-1.5 overflow-hidden">
                                                 <i class="fa-solid fa-location-dot text-brand flex-shrink-0"></i>
@@ -501,7 +524,7 @@
                                     </div>
 
                                     <div class="col-6">
-                                        <div class="subcard-box h-100">
+                                        <div class="glass-subcard h-100">
                                             <span class="subcard-label">DURATION</span>
                                             <div class="subcard-value d-flex align-items-center gap-1.5 overflow-hidden">
                                                 <i class="fa-regular fa-clock text-brand flex-shrink-0"></i>
@@ -511,37 +534,37 @@
                                     </div>
                                 </div>
 
-                                <!-- Integrated Voting Card with Fixed Margin -->
+                                <!-- Integrated Liquid Glass Voting Card -->
                                 <div class="voting-compact-box mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.72rem;">
                                         <span class="text-brand fw-bold">Voting Summary</span>
-                                        <span class="text-muted">{{ $proposal->totalVotesCount() }} total votes</span>
+                                        <span class="text-dark fw-semibold">{{ $proposal->totalVotesCount() }} total votes</span>
                                     </div>
 
                                     <div class="row g-2 mb-2">
                                         <div class="col-6">
                                             @if($canVote)
-                                                <button type="button" onclick="openFeedbackModal('yes', {{ $proposal->id }}, '{{ addslashes($proposal->title) }}')" class="vote-btn-option vote-btn-yes">
-                                                    <span class="fw-semibold" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-up me-1"></i> Yes</span>
-                                                    <span class="fw-bold" style="font-size: 0.82rem;">{{ $proposal->yesVotesCount() }}</span>
+                                                <button type="button" onclick="openFeedbackModal('yes', {{ $proposal->id }}, '{{ addslashes($proposal->title) }}')" class="vote-btn-option vote-btn-yes fw-bold">
+                                                    <span style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-up me-1"></i> Yes</span>
+                                                    <span style="font-size: 0.82rem;">{{ $proposal->yesVotesCount() }}</span>
                                                 </button>
                                             @else
-                                                <div class="vote-btn-option vote-btn-yes vote-btn-disabled">
-                                                    <span class="fw-semibold" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-up me-1"></i> Yes</span>
-                                                    <span class="fw-bold" style="font-size: 0.82rem;">{{ $proposal->yesVotesCount() }}</span>
+                                                <div class="vote-btn-option vote-btn-yes vote-btn-disabled fw-bold">
+                                                    <span style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-up me-1"></i> Yes</span>
+                                                    <span style="font-size: 0.82rem;">{{ $proposal->yesVotesCount() }}</span>
                                                 </div>
                                             @endif
                                         </div>
                                         <div class="col-6">
                                             @if($canVote)
-                                                <button type="button" onclick="openFeedbackModal('no', {{ $proposal->id }}, '{{ addslashes($proposal->title) }}')" class="vote-btn-option vote-btn-no">
-                                                    <span class="fw-semibold" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-down me-1"></i> No</span>
-                                                    <span class="fw-bold" style="font-size: 0.82rem;">{{ $proposal->noVotesCount() }}</span>
+                                                <button type="button" onclick="openFeedbackModal('no', {{ $proposal->id }}, '{{ addslashes($proposal->title) }}')" class="vote-btn-option vote-btn-no fw-bold">
+                                                    <span style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-down me-1"></i> No</span>
+                                                    <span style="font-size: 0.82rem;">{{ $proposal->noVotesCount() }}</span>
                                                 </button>
                                             @else
-                                                <div class="vote-btn-option vote-btn-no vote-btn-disabled">
-                                                    <span class="fw-semibold" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-down me-1"></i> No</span>
-                                                    <span class="fw-bold" style="font-size: 0.82rem;">{{ $proposal->noVotesCount() }}</span>
+                                                <div class="vote-btn-option vote-btn-no vote-btn-disabled fw-bold">
+                                                    <span style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-down me-1"></i> No</span>
+                                                    <span style="font-size: 0.82rem;">{{ $proposal->noVotesCount() }}</span>
                                                 </div>
                                             @endif
                                         </div>
@@ -551,18 +574,18 @@
                                         <div class="progress flex-grow-1" style="height: 5px;">
                                             <div class="progress-bar bg-{{ $proposal->approvalRatePercentage() >= 60 ? 'success' : 'danger' }}" role="progressbar" style="width: {{ $proposal->approvalRatePercentage() }}%;"></div>
                                         </div>
-                                        <span class="text-muted fw-bold" style="font-size: 0.68rem;">{{ $proposal->approvalRatePercentage() }}%</span>
+                                        <span class="text-dark fw-bold" style="font-size: 0.68rem;">{{ $proposal->approvalRatePercentage() }}%</span>
                                     </div>
 
                                     <div class="text-center mt-1" style="font-size: 0.68rem;">
                                         @if($canVote)
-                                            <span class="text-primary fw-semibold"><i class="fa-solid fa-hand-pointer me-1"></i> Click Yes or No above to vote</span>
+                                            <span class="text-primary fw-bold"><i class="fa-solid fa-hand-pointer me-1"></i> Click Yes or No above to vote</span>
                                         @elseif($isOwner)
-                                            <span class="text-muted"><i class="fa-solid fa-lock me-1"></i> Self-voting locked</span>
+                                            <span class="text-dark fw-semibold"><i class="fa-solid fa-lock me-1"></i> Self-voting locked</span>
                                         @elseif($hasVoted)
-                                            <span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i> You voted {{ strtoupper($userVote->vote_type) }}</span>
+                                            <span class="text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i> You voted {{ strtoupper($userVote->vote_type) }}</span>
                                         @else
-                                            <span class="text-muted">Voting closed</span>
+                                            <span class="text-dark fw-semibold">Voting closed</span>
                                         @endif
                                     </div>
                                 </div>
@@ -570,7 +593,7 @@
 
                             <!-- Single Action Button -->
                             <div>
-                                <a href="{{ route('proposals.show', $proposal->id) }}" class="btn btn-sm rounded-pill py-2 w-100 fw-bold custom-btn-outline" style="font-size: 0.82rem;">
+                                <a href="{{ route('proposals.show', $proposal->id) }}" class="btn btn-sm rounded-pill py-2 w-100 custom-btn-outline" style="font-size: 0.82rem;">
                                     View Details
                                 </a>
                             </div>
@@ -601,12 +624,12 @@
     <!-- CREATE PROPOSAL MODAL -->
     <div class="modal fade" id="createProposalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4 glass-modal-content">
 
-                <div class="d-flex justify-content-between align-items-start border-bottom pb-2.5 mb-3">
+                <div class="d-flex justify-content-between align-items-start border-bottom pb-2.5 mb-3 border-secondary border-opacity-10">
                     <div>
                         <h5 class="fw-bold text-brand mb-0.5" style="font-size: 1.1rem;">Create New Proposal</h5>
-                        <p class="text-muted mb-0" style="font-size: 0.78rem;">Submit a proposal for a new activity or program.</p>
+                        <p class="text-dark fw-semibold mb-0" style="font-size: 0.78rem;">Submit a proposal for a new activity or program.</p>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -616,29 +639,29 @@
                     <div class="row g-2.5">
                         <div class="col-12 col-lg-7">
                             <div class="mb-2">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Proposal Title *</label>
-                                <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" name="title" value="{{ old('title') }}" placeholder="e.g., Beach Cleanup Activity" required>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Proposal Title *</label>
+                                <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" name="title" value="{{ old('title') }}" placeholder="e.g., Beach Cleanup Activity" required>
                             </div>
 
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
-                                    <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Location *</label>
-                                    <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" name="location" value="{{ old('location') }}" placeholder="e.g., Silang, Cavite" required>
+                                    <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Location *</label>
+                                    <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" name="location" value="{{ old('location') }}" placeholder="e.g., Silang, Cavite" required>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Duration *</label>
-                                    <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" name="duration" value="{{ old('duration') }}" placeholder="e.g., 3 hours" required>
+                                    <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Duration *</label>
+                                    <input type="text" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" name="duration" value="{{ old('duration') }}" placeholder="e.g., 3 hours" required>
                                 </div>
                             </div>
 
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
-                                    <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Budget *</label>
-                                    <input type="number" step="0.01" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" name="estimated_budget" value="{{ old('estimated_budget') }}" placeholder="e.g., 15000" required>
+                                    <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Budget *</label>
+                                    <input type="number" step="0.01" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" name="estimated_budget" value="{{ old('estimated_budget') }}" placeholder="e.g., 15000" required>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Proposed Date *</label>
-                                    <input type="date" id="createProposedDate" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" name="proposed_date" value="{{ old('proposed_date') }}"
+                                    <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Proposed Date *</label>
+                                    <input type="date" id="createProposedDate" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" name="proposed_date" value="{{ old('proposed_date') }}"
                                         min="{{ $activeCampaign?->proposed_date_start ? $activeCampaign->proposed_date_start->format('Y-m-d') : '' }}"
                                         max="{{ $activeCampaign?->proposed_date_end ? $activeCampaign->proposed_date_end->format('Y-m-d') : '' }}"
                                         required>
@@ -646,24 +669,24 @@
                             </div>
 
                             <div class="mb-2">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Description *</label>
-                                <textarea class="form-control rounded-3 p-2.5 shadow-none border" rows="3" style="font-size: 0.82rem; resize: none;" name="description" placeholder="Describe your proposal in detail..." required>{{ old('description') }}</textarea>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Description *</label>
+                                <textarea class="form-control rounded-3 p-2.5 shadow-none border bg-light" rows="3" style="font-size: 0.82rem; resize: none;" name="description" placeholder="Describe your proposal in detail..." required>{{ old('description') }}</textarea>
                             </div>
 
                             <div class="mb-2">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.78rem;">Supporting Document *</label>
-                                <input type="file" name="supporting_document" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border" style="font-size: 0.82rem;" required>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Supporting Document *</label>
+                                <input type="file" name="supporting_document" class="form-control rounded-3 py-1.5 px-2.5 shadow-none border bg-light" style="font-size: 0.82rem;" required>
                             </div>
                         </div>
 
                         <div class="col-12 col-lg-5">
                             <div class="p-3 modal-sidebar-container d-flex flex-column gap-2 h-100">
                                 <div class="p-2.5 rounded-3 card-teal">
-                                    <span class="fw-semibold d-block text-uppercase" style="font-size: 0.65rem;"><i class="fa-regular fa-clock me-1"></i> SUBMISSION DEADLINE</span>
+                                    <span class="fw-bold d-block text-uppercase" style="font-size: 0.65rem;"><i class="fa-regular fa-clock me-1"></i> SUBMISSION DEADLINE</span>
                                     <span class="fw-bold d-block mt-0.5" style="font-size: 0.82rem;">{{ $activeCampaign?->submission_deadline ? $activeCampaign->submission_deadline->format('F j, Y') : 'N/A' }}</span>
                                 </div>
                                 <div class="p-2.5 rounded-3 card-amber">
-                                    <span class="fw-semibold d-block text-uppercase" style="font-size: 0.65rem;"><i class="fa-regular fa-calendar-check me-1"></i> VOTING DEADLINE</span>
+                                    <span class="fw-bold d-block text-uppercase" style="font-size: 0.65rem;"><i class="fa-regular fa-calendar-check me-1"></i> VOTING DEADLINE</span>
                                     <span class="fw-bold d-block mt-0.5" style="font-size: 0.82rem;">
                                         {{ $activeCampaign?->voting_deadline ? $activeCampaign->voting_deadline->format('F j, Y') : 'Set during Voting Phase' }}
                                     </span>
@@ -672,9 +695,9 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2 pt-2.5 mt-2 border-top">
-                        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn rounded-pill px-4 py-1.5 fw-semibold text-white shadow-sm custom-btn-filled" style="font-size: 0.8rem;">Submit Proposal</button>
+                    <div class="d-flex justify-content-end gap-2 pt-2.5 mt-2 border-top border-secondary border-opacity-10">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn rounded-pill px-4 py-1.5 fw-bold text-white shadow-sm custom-btn-filled" style="font-size: 0.8rem;">Submit Proposal</button>
                     </div>
                 </form>
             </div>
@@ -684,8 +707,8 @@
     <!-- EDIT PROPOSAL MODAL -->
     <div class="modal fade" id="editProposalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-brand mb-0" style="font-size: 1.05rem;">Edit Proposal</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -694,45 +717,45 @@
                     @csrf
                     @method('PUT')
                     <div class="mb-2">
-                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Proposal Title *</label>
-                        <input type="text" id="editTitle" name="title" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                        <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Proposal Title *</label>
+                        <input type="text" id="editTitle" name="title" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                     </div>
 
                     <div class="row g-2 mb-2">
                         <div class="col-6">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Location *</label>
-                            <input type="text" id="editLocation" name="location" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Location *</label>
+                            <input type="text" id="editLocation" name="location" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Duration *</label>
-                            <input type="text" id="editDuration" name="duration" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Duration *</label>
+                            <input type="text" id="editDuration" name="duration" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                         </div>
                     </div>
 
                     <div class="row g-2 mb-2">
                         <div class="col-6">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Proposed Date *</label>
-                            <input type="date" id="editDate" name="proposed_date" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Proposed Date *</label>
+                            <input type="date" id="editDate" name="proposed_date" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Estimated Budget</label>
-                            <input type="text" id="editBudget" name="estimated_budget" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;">
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Estimated Budget</label>
+                            <input type="text" id="editBudget" name="estimated_budget" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;">
                         </div>
                     </div>
 
                     <div class="mb-2">
-                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Description *</label>
-                        <textarea id="editDescription" name="description" class="form-control rounded-4 p-2.5 shadow-none border" rows="3" style="font-size: 0.85rem; resize: none;" required></textarea>
+                        <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Description *</label>
+                        <textarea id="editDescription" name="description" class="form-control rounded-4 p-2.5 shadow-none border bg-light" rows="3" style="font-size: 0.85rem; resize: none;" required></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Supporting Document <span class="text-muted fw-normal">(optional)</span></label>
-                        <input type="file" name="supporting_document" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;">
+                        <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Supporting Document <span class="text-secondary fw-semibold">(optional)</span></label>
+                        <input type="file" name="supporting_document" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;">
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn rounded-pill px-3 py-1.5 fw-semibold text-dark shadow-sm" style="font-size: 0.8rem; background-color: var(--uya-gold);">Update Proposal</button>
+                    <div class="d-flex justify-content-end gap-2 pt-2 border-top border-secondary border-opacity-10">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn rounded-pill px-3 py-1.5 fw-bold text-dark shadow-sm" style="font-size: 0.8rem; background-color: var(--uya-gold);">Update Proposal</button>
                     </div>
                 </form>
             </div>
@@ -742,20 +765,20 @@
     <!-- ARCHIVE PROPOSAL MODAL -->
     <div class="modal fade" id="archiveProposalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;"><i class="fa-solid fa-box-archive me-1 text-secondary"></i> Archive Proposal</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="py-2 text-secondary" style="font-size: 0.85rem;" id="archiveModalText">
+                <div class="py-2 text-dark fw-medium" style="font-size: 0.85rem;" id="archiveModalText">
                     Are you sure you want to archive this proposal? It will be hidden from the public feed.
                 </div>
                 <form id="archiveProposalForm" method="POST" action="">
                     @csrf
                     @method('PATCH')
-                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-secondary rounded-pill px-3 py-1.5 fw-semibold shadow-sm" style="font-size: 0.8rem;">Archive Proposal</button>
+                    <div class="d-flex justify-content-end gap-2 pt-2 border-top border-secondary border-opacity-10">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-secondary rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="font-size: 0.8rem;">Archive Proposal</button>
                     </div>
                 </form>
             </div>
@@ -765,20 +788,20 @@
     <!-- DELETE PROPOSAL MODAL -->
     <div class="modal fade" id="deleteProposalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-danger mb-0" style="font-size: 1.05rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i> Delete Proposal</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="py-2 text-secondary" style="font-size: 0.85rem;" id="deleteModalText">
+                <div class="py-2 text-dark fw-medium" style="font-size: 0.85rem;" id="deleteModalText">
                     Are you sure you want to delete this proposal?
                 </div>
                 <form id="deleteProposalForm" method="POST" action="">
                     @csrf
                     @method('DELETE')
-                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger rounded-pill px-3 py-1.5 fw-semibold shadow-sm" style="font-size: 0.8rem;">Delete Proposal</button>
+                    <div class="d-flex justify-content-end gap-2 pt-2 border-top border-secondary border-opacity-10">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="font-size: 0.8rem;">Delete Proposal</button>
                     </div>
                 </form>
             </div>
@@ -788,8 +811,8 @@
     <!-- VOTE FEEDBACK MODAL -->
     <div class="modal fade" id="voteFeedbackModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Share your thoughts</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -798,18 +821,18 @@
                     @csrf
                     <input type="hidden" name="vote_type" id="voteValue" value="">
 
-                    <div class="p-2.5 rounded-3 mb-2 border bg-light" id="voteSelectionNotice" style="font-size: 0.8rem; line-height: 1.3;">
+                    <div class="p-2.5 rounded-3 mb-2 border bg-light text-dark fw-semibold" id="voteSelectionNotice" style="font-size: 0.8rem; line-height: 1.3;">
                         Add short feedback so the proposer can understand your vote.
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Thoughts on this proposal (Optional - Proposer only)</label>
-                        <textarea name="feedback" class="form-control rounded-4 p-2.5 shadow-none border" rows="3" placeholder="Example: Great idea for local youth!" style="font-size: 0.85rem; resize: none;"></textarea>
+                        <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Thoughts on this proposal (Optional - Proposer only)</label>
+                        <textarea name="feedback" class="form-control rounded-4 p-2.5 shadow-none border bg-light" rows="3" placeholder="Example: Great idea for local youth!" style="font-size: 0.85rem; resize: none;"></textarea>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light border rounded-pill py-1.5 w-50 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn rounded-pill py-1.5 w-50 fw-semibold text-white shadow-sm d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.8rem; background-color: var(--uya-dark-teal);">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill py-1.5 w-50 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn rounded-pill py-1.5 w-50 fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.8rem; background-color: var(--uya-dark-teal);">
                             <i class="fa-regular fa-comment-dots"></i> Submit Vote
                         </button>
                     </div>

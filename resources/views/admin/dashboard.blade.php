@@ -104,7 +104,7 @@
         </div>
 
         <div class="col-6 col-md-6 col-xl-3">
-            <a href="{{ route('activities') }}" class="admin-card admin-card-clickable stat-card h-100">
+            <a href="{{ route('admin.activities.index') }}" class="admin-card admin-card-clickable stat-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="stat-card-title">Total Activities</span>
                     <i class="fa-regular fa-calendar-days stat-card-icon"></i>
@@ -140,7 +140,7 @@
     <!-- Row 2: Status Pill Summaries -->
     <div class="row g-2 g-md-3 mb-4">
         <div class="col-4">
-            <a href="{{ route('proposals') }}" class="status-pill-card text-decoration-none">
+            <a href="{{ route('admin.proposals.index') }}" class="status-pill-card text-decoration-none">
                 <div class="status-icon-box status-icon-approved">
                     <i class="fa-solid fa-check"></i>
                 </div>
@@ -152,7 +152,7 @@
         </div>
 
         <div class="col-4">
-            <a href="{{ route('proposals') }}" class="status-pill-card text-decoration-none">
+            <a href="{{ route('admin.proposals.index') }}" class="status-pill-card text-decoration-none">
                 <div class="status-icon-box status-icon-pending">
                     <i class="fa-regular fa-clock"></i>
                 </div>
@@ -164,7 +164,7 @@
         </div>
 
         <div class="col-4">
-            <a href="{{ route('proposals') }}" class="status-pill-card text-decoration-none">
+            <a href="{{ route('admin.proposals.index') }}" class="status-pill-card text-decoration-none">
                 <div class="status-icon-box status-icon-rejected">
                     <i class="fa-solid fa-xmark"></i>
                 </div>

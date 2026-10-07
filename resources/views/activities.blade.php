@@ -43,11 +43,22 @@
             }
         }
 
-        .pastel-card-primary {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
-            border-radius: 16px;
+        /* Custom Liquid Glass Card Layout */
+        .pastel-card-primary,
+        .activity-item {
+            background: rgba(255, 255, 255, 0.19) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(4.2px) !important;
+            -webkit-backdrop-filter: blur(4.2px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.36) !important;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            border-color: rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.15) !important;
+            transform: translateY(-2px);
         }
 
         /* Desktop Navigation Tabs (>= 768px) */
@@ -117,24 +128,16 @@
             border-color: var(--uya-dark-teal);
         }
 
-        .activity-item {
-            background-color: #ffffff;
-            border: 1px solid #dce5e8 !important;
-            transition: all 0.2s ease;
-            border-radius: 16px;
-        }
-        .activity-item:hover {
-            border-color: var(--uya-light-blue) !important;
-            box-shadow: 0 6px 16px rgba(34, 77, 91, 0.08);
-        }
-
+        /* Refined Buttons for Sharp Contrast */
         .custom-btn-outline {
-            border-color: var(--uya-dark-teal);
+            border: 2px solid var(--uya-dark-teal);
             color: var(--uya-dark-teal);
             background-color: #ffffff;
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            transition: all 0.2s ease;
         }
         .custom-btn-outline:hover {
             background-color: var(--uya-dark-teal);
@@ -145,6 +148,9 @@
             background-color: var(--uya-dark-teal);
             color: #fff;
             border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(34, 77, 91, 0.2);
+            transition: background-color 0.2s ease;
         }
         .custom-btn-filled:hover {
             background-color: #193a44;
@@ -170,30 +176,38 @@
             overflow: hidden;
         }
 
-        /* Clean Metadata Box Container */
+        /* High-contrast readable metadata box container */
         .meta-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
             border-radius: 10px;
             padding: 8px 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
         .meta-label {
             font-size: 0.62rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            color: #64748b;
+            color: #475569;
             display: block;
             margin-bottom: 2px;
         }
         .meta-val {
             font-size: 0.8rem;
-            font-weight: 600;
-            color: #1e293b;
+            font-weight: 700;
+            color: #0f172a;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 0;
+        }
+
+        /* Solid Modal Content for Readability */
+        .glass-modal-content {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
         }
 
         #reader {
@@ -214,7 +228,7 @@
         <div class="row mb-3 align-items-center g-3">
             <div class="col-12 col-md-6">
                 <h2 class="fw-bold mb-1 text-brand fs-3 fs-md-2">Activities</h2>
-                <p class="text-muted small mb-0">Browse and join community activities.</p>
+                <p class="text-secondary small mb-0">Browse and join community activities.</p>
             </div>
             <div class="col-12 col-md-6">
                 <form method="GET" action="{{ route('activities') }}">
@@ -281,7 +295,7 @@
                                     </span>
                                 </div>
 
-                                <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.83rem;">{{ $activity->description }}</p>
+                                <p class="text-dark small mb-3 line-clamp-2 fw-medium" style="font-size: 0.83rem;">{{ $activity->description }}</p>
 
                                 <!-- Individual Sub-Containers for Info -->
                                 <div class="row g-2 mb-3">
@@ -313,19 +327,19 @@
                             </div>
 
                             <div class="d-flex flex-column gap-2 mt-auto">
-                                <hr class="text-muted opacity-25 my-1">
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-outline">View Details</a>
+                                <hr class="text-secondary opacity-25 my-1">
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-2 custom-btn-outline">View Details</a>
 
                                 @if($userFeedback)
-                                    <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-light border rounded-pill py-2 fw-semibold text-success w-100 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
+                                    <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-light border rounded-pill py-2 fw-bold text-success w-100 d-flex align-items-center justify-content-center gap-1.5 shadow-sm">
                                         <i class="fa-solid fa-check-double"></i> Feedback Added
                                     </a>
                                 @elseif($hasAttended)
-                                    <button type="button" onclick="openIndexFeedbackModal({{ $activity->id }}, '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill py-2 fw-semibold custom-btn-filled w-100 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
+                                    <button type="button" onclick="openIndexFeedbackModal({{ $activity->id }}, '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill py-2 custom-btn-filled w-100 d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
                                         <i class="fa-regular fa-comment-dots"></i> Add Feedback
                                     </button>
                                 @else
-                                    <button type="button" class="btn btn-sm btn-secondary bg-opacity-25 text-muted border-0 rounded-pill py-2 fw-semibold w-100 d-flex align-items-center justify-content-center gap-1.5 cursor-not-allowed" disabled style="font-size: 0.82rem;">
+                                    <button type="button" class="btn btn-sm btn-secondary bg-opacity-50 text-dark border-0 rounded-pill py-2 fw-bold w-100 d-flex align-items-center justify-content-center gap-1.5 cursor-not-allowed" disabled style="font-size: 0.82rem;">
                                         <i class="fa-solid fa-lock"></i> Feedback Locked
                                     </button>
                                 @endif
@@ -334,8 +348,8 @@
                     </div>
                 @empty
                     <div class="col-12">
-                        <div class="card p-5 text-center text-muted pastel-card-primary">
-                            <i class="fa-solid fa-box-archive fa-2x mb-2 opacity-50 d-block"></i>
+                        <div class="card p-5 text-center text-dark fw-semibold pastel-card-primary">
+                            <i class="fa-solid fa-box-archive fa-2x mb-2 opacity-75 d-block"></i>
                             No finished activities found.
                         </div>
                     </div>
@@ -363,7 +377,7 @@
                                     </span>
                                 </div>
 
-                                <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.83rem;">{{ $activity->description }}</p>
+                                <p class="text-dark small mb-3 line-clamp-2 fw-medium" style="font-size: 0.83rem;">{{ $activity->description }}</p>
 
                                 <!-- Individual Sub-Containers for Info -->
                                 <div class="row g-2 mb-2">
@@ -395,7 +409,7 @@
 
                                 <div class="mb-3" style="font-size: 0.75rem;">
                                     @if($activity->registration_deadline)
-                                        <span class="{{ $isDeadlinePassed ? 'text-danger fw-semibold' : 'text-muted' }}">
+                                        <span class="{{ $isDeadlinePassed ? 'text-danger fw-bold' : 'text-dark fw-semibold' }}">
                                             <i class="fa-solid fa-hourglass-start me-1"></i>
                                             {{ $isDeadlinePassed ? 'Deadline Passed' : 'Closes: ' . $activity->registration_deadline->format('M j, g:i A') }}
                                         </span>
@@ -404,27 +418,27 @@
                             </div>
 
                             <div class="d-flex flex-column gap-2 mt-auto">
-                                <hr class="text-muted opacity-25 my-1">
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-outline">View Details</a>
+                                <hr class="text-secondary opacity-25 my-1">
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-2 custom-btn-outline">View Details</a>
 
                                 @if($isAttended)
-                                    <button class="btn btn-sm rounded-pill w-100 py-2 fw-semibold border-0 text-white {{ $userParticipant->status === 'late' ? 'bg-warning text-dark' : 'bg-success' }}" style="font-size: 0.8rem;" disabled>
+                                    <button class="btn btn-sm rounded-pill w-100 py-2 fw-bold border-0 text-white {{ $userParticipant->status === 'late' ? 'bg-warning text-dark' : 'bg-success' }}" style="font-size: 0.8rem;" disabled>
                                         <i class="fa-solid {{ $userParticipant->status === 'late' ? 'fa-clock' : 'fa-check' }} me-1"></i>
                                         Attendance Verified
                                     </button>
                                 @elseif($isRegistered)
                                     @if($activity->is_attendance_open)
-                                        <button onclick="openQRScanner()" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2">
+                                        <button onclick="openQRScanner()" class="btn btn-sm rounded-pill w-100 py-2 custom-btn-filled d-flex align-items-center justify-content-center gap-2">
                                             <i class="fa-solid fa-camera"></i> Scan QR Code
                                         </button>
                                     @else
                                         <div class="d-flex gap-2 align-items-center">
-                                            <div class="btn btn-sm rounded-pill flex-grow-1 py-2 fw-semibold border-0 text-white d-flex align-items-center justify-content-center gap-1.5" style="background-color: #15803d; font-size: 0.8rem; cursor: default;">
+                                            <div class="btn btn-sm rounded-pill flex-grow-1 py-2 fw-bold border-0 text-white d-flex align-items-center justify-content-center gap-1.5 shadow-sm" style="background-color: #15803d; font-size: 0.8rem; cursor: default;">
                                                 <i class="fa-solid fa-user-check"></i> Registered
                                             </div>
                                             <button type="button"
                                                     onclick="promptCancelModal('{{ route('activities.cancel', $activity->id) }}', '{{ addslashes($activity->title) }}')"
-                                                    class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0"
+                                                    class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0 shadow-sm bg-white"
                                                     style="width: 34px; height: 34px;"
                                                     title="Cancel Registration">
                                                 <i class="fa-solid fa-xmark"></i>
@@ -433,11 +447,11 @@
                                     @endif
                                 @else
                                     @if($canRegister)
-                                        <button type="button" onclick="promptJoinModal('{{ route('activities.join', $activity->id) }}', '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill w-100 py-2 fw-semibold custom-btn-filled">
+                                        <button type="button" onclick="promptJoinModal('{{ route('activities.join', $activity->id) }}', '{{ addslashes($activity->title) }}')" class="btn btn-sm rounded-pill w-100 py-2 custom-btn-filled">
                                             Join Activity
                                         </button>
                                     @else
-                                        <button class="btn btn-sm rounded-pill w-100 py-2 fw-semibold bg-secondary bg-opacity-25 text-muted border-0 cursor-not-allowed" disabled style="font-size: 0.8rem;">
+                                        <button class="btn btn-sm rounded-pill w-100 py-2 fw-bold bg-secondary bg-opacity-50 text-dark border-0 cursor-not-allowed" disabled style="font-size: 0.8rem;">
                                             {{ $isDeadlinePassed ? 'Deadline Passed' : 'Registration Closed' }}
                                         </button>
                                     @endif
@@ -446,8 +460,8 @@
                         </div>
                     </div>
                 @empty
-                    <div class="col-12 text-center text-muted py-5">
-                        <i class="fa-regular fa-calendar-xmark fa-2x mb-2 opacity-50 d-block"></i>
+                    <div class="col-12 text-center text-dark fw-semibold py-5">
+                        <i class="fa-regular fa-calendar-xmark fa-2x mb-2 opacity-75 d-block"></i>
                         No activities found for this tab.
                     </div>
                 @endforelse
@@ -465,8 +479,8 @@
     <!-- INDEX PAGE FEEDBACK MODAL -->
     <div class="modal fade" id="indexFeedbackModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">Add Activity Feedback</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -474,18 +488,18 @@
                 <form id="indexFeedbackForm" method="POST" action="">
                     @csrf
                     <div class="mb-3">
-                        <span class="text-muted d-block mb-1" style="font-size: 0.75rem;">Activity</span>
+                        <span class="text-secondary d-block mb-1 fw-semibold" style="font-size: 0.75rem;">Activity</span>
                         <h6 id="indexFeedbackActivityTitle" class="fw-bold text-brand mb-0" style="font-size: 0.95rem;"></h6>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label text-dark fw-semibold" style="font-size: 0.85rem;">Your Feedback</label>
-                        <textarea name="comments" class="form-control rounded-4 p-3 shadow-none border" rows="3" placeholder="Share your thoughts about this activity..." required style="font-size: 0.88rem; resize: none;"></textarea>
+                        <label class="form-label text-dark fw-bold" style="font-size: 0.85rem;">Your Feedback</label>
+                        <textarea name="comments" class="form-control rounded-4 p-3 shadow-none border bg-light" rows="3" placeholder="Share your thoughts about this activity..." required style="font-size: 0.88rem; resize: none;"></textarea>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light border rounded-pill py-2 w-50 fw-semibold text-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn custom-btn-filled rounded-pill py-2 w-50 fw-semibold shadow-sm">Submit Feedback</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill py-2 w-50 fw-bold shadow-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn custom-btn-filled rounded-pill py-2 w-50 shadow-sm">Submit Feedback</button>
                     </div>
                 </form>
             </div>
@@ -495,19 +509,19 @@
     <!-- JOIN CONFIRMATION MODAL -->
     <div class="modal fade" id="joinConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content rounded-4 border-0 p-3 text-center">
+            <div class="modal-content rounded-4 border-0 p-3 text-center glass-modal-content">
                 <div class="modal-body p-4">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; background-color: rgba(34, 77, 91, 0.15);">
                         <i class="fa-solid fa-calendar-plus text-brand fa-lg"></i>
                     </div>
                     <h5 class="fw-bold text-brand mb-2">Confirm Registration</h5>
-                    <p class="text-muted small mb-4">Are you sure you want to register for <strong id="joinActivityTitle" class="text-dark"></strong>?</p>
+                    <p class="text-dark small mb-4 fw-medium">Are you sure you want to register for <strong id="joinActivityTitle" class="text-dark"></strong>?</p>
 
                     <form id="joinForm" method="POST" action="">
                         @csrf
                         <div class="d-flex gap-2 justify-content-center">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn custom-btn-filled rounded-pill px-4 fw-semibold">Yes, Join</button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn custom-btn-filled rounded-pill px-4 shadow-sm">Yes, Join</button>
                         </div>
                     </form>
                 </div>
@@ -518,19 +532,19 @@
     <!-- CANCEL REGISTRATION CONFIRMATION MODAL -->
     <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-            <div class="modal-content rounded-4 border-0 p-3 text-center">
+            <div class="modal-content rounded-4 border-0 p-3 text-center glass-modal-content">
                 <div class="modal-body p-4">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; background-color: rgba(220, 53, 69, 0.15);">
                         <i class="fa-solid fa-user-xmark text-danger fa-lg"></i>
                     </div>
                     <h5 class="fw-bold text-danger mb-2">Cancel Registration?</h5>
-                    <p class="text-muted small mb-4">Are you sure you want to cancel your registration for <strong id="cancelActivityTitle" class="text-dark"></strong>? Your spot will be released.</p>
+                    <p class="text-dark small mb-4 fw-medium">Are you sure you want to cancel your registration for <strong id="cancelActivityTitle" class="text-dark"></strong>? Your spot will be released.</p>
 
                     <form id="cancelForm" method="POST" action="">
                         @csrf
                         <div class="d-flex gap-2 justify-content-center">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Keep Slot</button>
-                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">Yes, Cancel</button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold" data-bs-dismiss="modal">Keep Slot</button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Yes, Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -541,8 +555,8 @@
     <!-- LIVE CAMERA QR SCANNER MODAL -->
     <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-4 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 border-secondary border-opacity-10">
                     <div class="d-flex align-items-center gap-2 text-brand fw-bold">
                         <i class="fa-solid fa-camera fa-lg"></i>
                         <span style="font-size: 1.1rem;">Scan Attendance QR Code</span>
@@ -553,13 +567,13 @@
                 <div id="reader" class="mb-3"></div>
 
                 <form id="qrScanForm" onsubmit="submitQrToken(event)">
-                    <input type="text" id="qrTokenInput" class="form-control rounded-pill text-center mb-3 d-none" placeholder="Paste or scan QR token code..." required style="font-size: 0.85rem;">
-                    <button type="submit" id="btnSubmitScan" class="btn custom-btn-filled rounded-pill py-2 w-100 fw-semibold mb-2">
+                    <input type="text" id="qrTokenInput" class="form-control rounded-pill text-center mb-3 d-none bg-light" placeholder="Paste or scan QR token code..." required style="font-size: 0.85rem;">
+                    <button type="submit" id="btnSubmitScan" class="btn custom-btn-filled rounded-pill py-2 w-100 mb-2 shadow-sm">
                         Verify Attendance
                     </button>
                 </form>
 
-                <button type="button" class="btn btn-outline-dark rounded-pill py-2 w-100 fw-semibold" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-outline-dark rounded-pill py-2 w-100 fw-bold shadow-sm bg-light" data-bs-dismiss="modal">
                     Cancel
                 </button>
             </div>
@@ -569,13 +583,13 @@
     <!-- SMART ATTENDANCE VERIFICATION FEEDBACK MODAL -->
     <div class="modal fade" id="attendanceFeedbackModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-            <div class="modal-content rounded-4 border-0 p-4 text-center">
+            <div class="modal-content rounded-4 border-0 p-4 text-center glass-modal-content">
                 <div id="feedbackIconContainer" class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
                     <i id="feedbackIcon" class="fa-solid fa-3x"></i>
                 </div>
                 <h5 id="feedbackTitle" class="fw-bold mb-2"></h5>
-                <p id="feedbackMessage" class="text-muted small mb-4"></p>
-                <button type="button" onclick="window.location.reload()" class="btn custom-btn-filled rounded-pill w-100 py-2 fw-semibold">
+                <p id="feedbackMessage" class="text-dark small mb-4 fw-medium"></p>
+                <button type="button" onclick="window.location.reload()" class="btn custom-btn-filled rounded-pill w-100 py-2 shadow-sm">
                     Done
                 </button>
             </div>

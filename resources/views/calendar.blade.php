@@ -38,11 +38,14 @@
             }
         }
 
+        /* Liquid Glass Layout */
         .pastel-card-primary {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.19) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(4.2px) !important;
+            -webkit-backdrop-filter: blur(4.2px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.36) !important;
         }
 
         .cal-week-row {
@@ -54,8 +57,10 @@
         .cal-day-cell {
             flex: 1;
             min-width: 0;
-            background-color: #f8fafb;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 10px;
             min-height: 95px;
             padding: 8px 6px;
@@ -64,42 +69,55 @@
             transition: all 0.2s ease;
         }
         .cal-day-cell:hover {
-            background-color: #edf2f7;
-            border-color: var(--uya-light-blue);
+            background: rgba(255, 255, 255, 0.75);
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(34, 77, 91, 0.08);
         }
         .cal-day-cell.other-month {
-            opacity: 0.4;
-            background-color: #f1f5f9;
+            opacity: 0.45;
+            background: rgba(241, 245, 249, 0.3);
         }
         .cal-day-cell.active-today {
-            border: 2px solid #dc3545;
-            background-color: #fff5f5;
+            border: 2px solid #dc3545 !important;
+            background: rgba(255, 245, 245, 0.85) !important;
         }
         .cal-day-cell.selected-cell {
             border: 2px solid var(--uya-dark-teal) !important;
-            background-color: #f0f7f9 !important;
+            background: rgba(240, 247, 249, 0.85) !important;
         }
         .event-pill {
             font-size: 0.65rem;
             padding: 2px 6px;
             border-radius: 4px;
-            font-weight: 600;
+            font-weight: 700;
             display: block;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-top: 3px;
             background-color: var(--uya-gold);
-            color: #000;
+            color: #0f172a;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
+        /* Solid High-Contrast Inner Subcard */
+        .glass-inner-subcard {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Refined Custom Button */
         .custom-btn-outline {
-            border-color: var(--uya-dark-teal);
+            border: 2px solid var(--uya-dark-teal);
             color: var(--uya-dark-teal);
             background-color: #ffffff;
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            transition: all 0.2s ease;
         }
         .custom-btn-outline:hover {
             background-color: var(--uya-dark-teal);
@@ -120,8 +138,6 @@
                 align-items: center;
                 justify-content: center;
                 text-align: center;
-                background-color: #ffffff;
-                border: 1px solid #edf2f7;
             }
             .calendar-grid-wrapper.expanded .cal-day-cell {
                 aspect-ratio: 1;
@@ -169,12 +185,12 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <!-- Mobile Expand Button -->
-                            <button id="toggleCalendarBtn" class="btn btn-sm btn-link text-decoration-none text-dark fw-semibold p-0 d-md-none" style="font-size: 0.85rem;">
+                            <button id="toggleCalendarBtn" class="btn btn-sm btn-link text-decoration-none text-dark fw-bold p-0 d-md-none" style="font-size: 0.85rem;">
                                 <span id="toggleText">Expand</span> <i class="fa-solid fa-chevron-down fa-xs ms-1" id="toggleIcon"></i>
                             </button>
 
-                            <a href="{{ route('calendar') }}" class="btn btn-sm btn-light border px-3 py-1 rounded-pill fw-semibold text-decoration-none d-none d-md-inline-block" style="font-size: 0.8rem;">Today</a>
-                            <div class="btn-group border rounded-pill overflow-hidden shadow-sm">
+                            <a href="{{ route('calendar') }}" class="btn btn-sm btn-light border px-3 py-1 rounded-pill fw-bold text-decoration-none d-none d-md-inline-block shadow-sm" style="font-size: 0.8rem; background-color: #ffffff;">Today</a>
+                            <div class="btn-group border rounded-pill overflow-hidden shadow-sm bg-white">
                                 <a href="{{ route('calendar', ['month' => $prevMonth->month, 'year' =>$prevMonth->year]) }}" class="btn btn-sm btn-light px-2 border-0 text-dark"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
                                 <a href="{{ route('calendar', ['month' => $nextMonth->month, 'year' =>$nextMonth->year]) }}" class="btn btn-sm btn-light px-2 border-0 text-dark"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
                             </div>
@@ -182,7 +198,7 @@
                     </div>
 
                     <!-- Weekdays Header -->
-                    <div class="row text-center text-muted fw-bold mb-2 g-0" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                    <div class="row text-center text-dark fw-bold mb-2 g-0" style="font-size: 0.72rem; letter-spacing: 0.5px;">
                         <div class="col">SUN</div>
                         <div class="col">MON</div>
                         <div class="col">TUE</div>
@@ -193,7 +209,7 @@
                     </div>
 
                     <!-- Dynamic Days Grid Generation -->
-                    <div id="calendarGridWrapper" class="calendar-grid-wrapper d-flex flex-column gap-2 text-secondary" style="font-size: 0.85rem;">
+                    <div id="calendarGridWrapper" class="calendar-grid-wrapper d-flex flex-column gap-2" style="font-size: 0.85rem;">
                         @php
                             $period = \Carbon\CarbonPeriod::create($startOfCalendar,$endOfCalendar);
                             $weeks = collect($period)->chunk(7);
@@ -209,9 +225,9 @@
                             }
                         @endphp
 
-                        @foreach ($weeks as $index =>$week)
+                        @foreach ($weeks as $index => $week)
                             @php
-                                $isCurrentWeek = ($index ===$currentWeekIndex);
+                                $isCurrentWeek = ($index === $currentWeekIndex);
                             @endphp
                             <div class="cal-week-row {{ $isCurrentWeek ? 'current-week-row' : '' }} {{ !$isCurrentWeek ? 'extra-week' : '' }}">
                                 @foreach ($week as $date)
@@ -223,7 +239,7 @@
                                     <div class="cal-day-cell text-center text-md-start {{ $isOtherMonth ? 'other-month' : '' }} {{ $isToday ? 'active-today' : '' }}" data-date="{{ $dateString }}">
 
                                         <div class="d-flex justify-content-between align-items-center justify-content-md-between w-100">
-                                            <span class="fw-semibold date-number {{ $isToday ? 'fw-bold text-danger' : 'text-dark' }}" style="font-size: 0.9rem;">{{ $date->format('d') }}</span>
+                                            <span class="fw-bold date-number {{ $isToday ? 'text-danger' : 'text-dark' }}" style="font-size: 0.9rem;">{{ $date->format('d') }}</span>
 
                                             @if($isToday)
                                                 <span class="badge bg-danger text-white px-1 d-none d-md-inline-block" style="font-size: 0.5rem;">Today</span>
@@ -271,24 +287,24 @@
                                 if (isset($event->participants)) {$isJoined = $event->participants->contains('user_id',$authUserId);
                                 }
                             @endphp
-                            <div class="p-3 rounded-3 border bg-light bg-opacity-50">
+                            <div class="p-3 glass-inner-subcard">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $event->title ?? 'Activity' }}</span>
                                     @if($isJoined)
-                                        <span class="badge rounded-pill text-white fw-normal" style="font-size: 0.6rem; background-color: #198754;">Joined</span>
+                                        <span class="badge rounded-pill text-white fw-bold" style="font-size: 0.65rem; background-color: #15803d;">Joined</span>
                                     @elseif($event->status === 'completed')
-                                        <span class="badge rounded-pill text-white fw-normal bg-secondary" style="font-size: 0.6rem;">Completed</span>
+                                        <span class="badge rounded-pill text-white fw-bold bg-secondary" style="font-size: 0.65rem;">Completed</span>
                                     @endif
                                 </div>
-                                <span class="text-muted small d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1"></i> {{ $todayString }} • {{$event->location ?? 'TBD' }}</span>
-                                <p class="text-muted small mb-2" style="font-size: 0.75rem;">{{ $event->description ?? 'No description provided.' }}</p>
+                                <span class="text-secondary fw-semibold small d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1 text-brand"></i> {{ $todayString }} • {{$event->location ?? 'TBD' }}</span>
+                                <p class="text-dark small mb-2 fw-medium" style="font-size: 0.75rem;">{{ $event->description ?? 'No description provided.' }}</p>
 
-                                <a href="{{ route('activities.show', $event->id) }}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline fw-semibold" style="font-size: 0.75rem;">
+                                <a href="{{ route('activities.show', $event->id) }}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline" style="font-size: 0.75rem;">
                                     <i class="fa-regular fa-eye me-1"></i> View Details
                                 </a>
                             </div>
                         @empty
-                            <div class="p-3 rounded-3 border bg-light bg-opacity-50 text-center text-muted small">
+                            <div class="p-3 glass-inner-subcard text-center text-dark fw-semibold small">
                                 No activities scheduled for this date.
                             </div>
                         @endforelse
@@ -307,21 +323,21 @@
                                     $isJoined =$activity->participants->contains('user_id', auth()->id());
                                 }
                             @endphp
-                            <div class="p-3 rounded-3 border bg-light bg-opacity-25">
+                            <div class="p-3 glass-inner-subcard">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $activity->title }}</span>
                                     @if($isJoined)
-                                        <span class="badge rounded-pill text-white fw-normal" style="font-size: 0.6rem; background-color: #198754;">Joined</span>
+                                        <span class="badge rounded-pill text-white fw-bold" style="font-size: 0.65rem; background-color: #15803d;">Joined</span>
                                     @endif
                                 </div>
-                                <span class="text-muted d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($activity->date)->format('n/j/Y') }} • {{$activity->location ?? 'TBD' }}</span>
+                                <span class="text-secondary fw-semibold d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1 text-brand"></i> {{ \Carbon\Carbon::parse($activity->date)->format('n/j/Y') }} • {{$activity->location ?? 'TBD' }}</span>
 
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline fw-semibold" style="font-size: 0.75rem;">
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline" style="font-size: 0.75rem;">
                                     <i class="fa-regular fa-eye me-1"></i> View Details
                                 </a>
                             </div>
                         @empty
-                            <div class="text-muted text-center py-3 small">No upcoming activities found.</div>
+                            <div class="glass-inner-subcard text-dark fw-semibold text-center py-3 small">No upcoming activities found.</div>
                         @endforelse
                     </div>
                 </div>
@@ -386,21 +402,21 @@
                         const isJoined = event.participants && event.participants.some(p => p.user_id === authUserId);
 
                         if (isJoined) {
-                            badgeHtml = `<span class="badge rounded-pill text-white fw-normal" style="font-size: 0.6rem; background-color: #198754;">Joined</span>`;
+                            badgeHtml = `<span class="badge rounded-pill text-white fw-bold" style="font-size: 0.65rem; background-color: #15803d;">Joined</span>`;
                         } else if (event.status === 'completed') {
-                            badgeHtml = `<span class="badge rounded-pill text-white fw-normal bg-secondary" style="font-size: 0.6rem;">Completed</span>`;
+                            badgeHtml = `<span class="badge rounded-pill text-white fw-bold bg-secondary" style="font-size: 0.65rem;">Completed</span>`;
                         }
 
                         container.innerHTML += `
-                            <div class="p-3 rounded-3 border bg-light bg-opacity-50">
+                            <div class="p-3 glass-inner-subcard">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <span class="fw-bold text-dark" style="font-size: 0.85rem;">${event.title || 'Activity'}</span>
                                     ${badgeHtml}
                                 </div>
-                                <span class="text-muted small d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1"></i> ${dateStr} • ${event.location || 'TBD'}</span>
-                                <p class="text-muted small mb-2" style="font-size: 0.75rem;">${event.description || 'No description provided.'}</p>
+                                <span class="text-secondary fw-semibold small d-block mb-2" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar me-1 text-brand"></i> ${dateStr} • ${event.location || 'TBD'}</span>
+                                <p class="text-dark small mb-2 fw-medium" style="font-size: 0.75rem;">${event.description || 'No description provided.'}</p>
 
-                                <a href="/activities/${event.id}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline fw-semibold" style="font-size: 0.75rem;">
+                                <a href="/activities/${event.id}" class="btn btn-sm rounded-pill py-1 px-3 custom-btn-outline" style="font-size: 0.75rem;">
                                     <i class="fa-regular fa-eye me-1"></i> View Details
                                 </a>
                             </div>
@@ -408,7 +424,7 @@
                     });
                 } else {
                     container.innerHTML = `
-                        <div class="p-3 rounded-3 border bg-light bg-opacity-50 text-center text-muted small">
+                        <div class="p-3 glass-inner-subcard text-center text-dark fw-semibold small">
                             No activities scheduled for this date.
                         </div>
                     `;

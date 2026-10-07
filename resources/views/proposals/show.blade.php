@@ -41,18 +41,25 @@
             }
         }
 
+        /* Primary Outer Liquid Glass Panels */
         .pastel-card {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            border-radius: 16px;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.03);
+            background: rgba(255, 255, 255, 0.22) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
         }
 
-        .subcard-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+        /* Nested Liquid Glass Subcards */
+        .glass-subcard {
+            background: rgba(255, 255, 255, 0.45) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.7) !important;
             border-radius: 12px;
             padding: 0.65rem 0.85rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         .subcard-label {
@@ -60,7 +67,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            color: #64748b;
+            color: #475569;
             display: block;
             margin-bottom: 2px;
         }
@@ -68,7 +75,7 @@
         .subcard-value {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f172a;
             margin-bottom: 0;
             line-height: 1.25;
         }
@@ -109,16 +116,19 @@
         }
 
         .feedback-item-card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.75) !important;
             border-radius: 12px;
             padding: 0.85rem 1rem;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         .feedback-item-card:hover {
-            border-color: #cbd5e1;
-            background-color: #ffffff;
+            background: rgba(255, 255, 255, 0.75) !important;
+            border-color: rgba(255, 255, 255, 0.95) !important;
         }
 
         /* Collapsible Smooth Transition for Feedback */
@@ -137,6 +147,15 @@
         .feedback-hidden-inner {
             overflow: hidden;
         }
+
+        /* Glass Modal Styles */
+        .glass-modal-content {
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 20px 50px rgba(34, 77, 91, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+        }
     </style>
 </head>
 
@@ -147,7 +166,7 @@
     <div class="app-container py-2 py-md-4">
         <!-- Back Button -->
         <div class="mb-3">
-            <a href="{{ route('proposals') }}" class="btn btn-light border rounded-pill px-3 py-1.5 text-brand fw-semibold shadow-sm text-decoration-none" style="font-size: 0.85rem;">
+            <a href="{{ route('proposals') }}" class="btn btn-light border rounded-pill px-3 py-1.5 text-brand fw-bold shadow-sm text-decoration-none" style="font-size: 0.85rem; background-color: #ffffff;">
                 <i class="fa-solid fa-arrow-left me-2"></i> Back to Proposals
             </a>
         </div>
@@ -195,7 +214,7 @@
                     <!-- Sub-Card Metadata Grid -->
                     <div class="row g-2 mb-3">
                         <div class="col-6 col-md-4">
-                            <div class="subcard-box h-100">
+                            <div class="glass-subcard h-100">
                                 <span class="subcard-label">PROPOSER</span>
                                 <div class="subcard-value d-flex align-items-center gap-2 overflow-hidden">
                                     <i class="fa-regular fa-user text-brand flex-shrink-0 me-1"></i>
@@ -205,7 +224,7 @@
                         </div>
 
                         <div class="col-6 col-md-4">
-                            <div class="subcard-box h-100">
+                            <div class="glass-subcard h-100">
                                 <span class="subcard-label">DATE</span>
                                 <div class="subcard-value d-flex align-items-center gap-2">
                                     <i class="fa-regular fa-calendar text-brand flex-shrink-0 me-1"></i>
@@ -215,7 +234,7 @@
                         </div>
 
                         <div class="col-6 col-md-4">
-                            <div class="subcard-box h-100">
+                            <div class="glass-subcard h-100">
                                 <span class="subcard-label">BUDGET</span>
                                 <div class="subcard-value d-flex align-items-center gap-2">
                                     <i class="fa-solid fa-coins text-brand flex-shrink-0 me-1"></i>
@@ -225,7 +244,7 @@
                         </div>
 
                         <div class="col-6 col-md-4">
-                            <div class="subcard-box h-100">
+                            <div class="glass-subcard h-100">
                                 <span class="subcard-label">DURATION</span>
                                 <div class="subcard-value d-flex align-items-center gap-2 overflow-hidden">
                                     <i class="fa-regular fa-clock text-brand flex-shrink-0 me-1"></i>
@@ -236,7 +255,7 @@
 
                         <!-- Location Sub-Card -->
                         <div class="col-12 col-md-8">
-                            <div class="subcard-box h-100">
+                            <div class="glass-subcard h-100">
                                 <span class="subcard-label">LOCATION</span>
                                 <div class="subcard-value d-flex align-items-center gap-2 overflow-hidden">
                                     <i class="fa-solid fa-location-dot text-brand flex-shrink-0 me-1"></i>
@@ -247,16 +266,16 @@
                     </div>
 
                     <h6 class="fw-bold text-brand mb-1.5" style="font-size: 0.9rem;">Description</h6>
-                    <p class="text-secondary small mb-3" style="line-height: 1.5; font-size: 0.85rem; white-space: pre-line;">{{ $proposal->description }}</p>
+                    <p class="text-dark small mb-3 fw-medium" style="line-height: 1.5; font-size: 0.85rem; white-space: pre-line;">{{ $proposal->description }}</p>
 
-                    <!-- PDF Card - Clean Vertical Margin Adjustment -->
+                    <!-- PDF Card -->
                     @if($proposal->supporting_document_path)
-                        <div class="p-2.5 bg-light rounded-3 border d-flex justify-content-between align-items-center gap-2 mt-3 mb-1">
+                        <div class="glass-subcard p-2.5 d-flex justify-content-between align-items-center gap-2 mt-3 mb-1">
                             <div class="d-flex align-items-center gap-2 overflow-hidden">
                                 <i class="fa-regular fa-file-pdf text-danger fs-5 flex-shrink-0 me-1"></i>
-                                <span class="fw-semibold text-dark small text-truncate" style="font-size: 0.82rem;">Supporting Document</span>
+                                <span class="fw-bold text-dark small text-truncate" style="font-size: 0.82rem;">Supporting Document</span>
                             </div>
-                            <a href="{{ asset('storage/' . $proposal->supporting_document_path) }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-semibold flex-shrink-0" style="font-size: 0.78rem;">
+                            <a href="{{ asset('storage/' . $proposal->supporting_document_path) }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-bold flex-shrink-0 bg-white" style="font-size: 0.78rem;">
                                 View PDF
                             </a>
                         </div>
@@ -267,17 +286,17 @@
                 @if($isOwner)
                     @php
                         $allFeedback = $yesFeedback->concat($noFeedback)->sortByDesc('updated_at');
-                        $visibleFeedback = $allFeedback->take(3);
-                        $extraFeedback = $allFeedback->skip(3);
+                        $visibleFeedback =$allFeedback->take(3);
+                        $extraFeedback =$allFeedback->skip(3);
                     @endphp
 
                     @if($allFeedback->count() > 0)
                         <div class="card p-3 p-md-4 pastel-card mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-bold text-brand mb-0" style="font-size: 0.9rem;">
-                                    <i class="fa-regular fa-comments me-1.5 text-primary"></i> Voter Feedback <span class="text-muted fw-normal" style="font-size: 0.75rem;">(Private)</span>
+                                    <i class="fa-regular fa-comments me-1.5 text-primary"></i> Voter Feedback <span class="text-secondary fw-semibold" style="font-size: 0.75rem;">(Private)</span>
                                 </h6>
-                                <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.68rem;">{{ $allFeedback->count() }} comments</span>
+                                <span class="badge bg-white text-dark border px-2 py-1 fw-bold shadow-sm" style="font-size: 0.68rem;">{{ $allFeedback->count() }} comments</span>
                             </div>
 
                             <div class="d-flex flex-column gap-2 mt-2">
@@ -288,18 +307,18 @@
                                             <div class="d-flex align-items-center gap-1.5">
                                                 <span class="fw-bold text-dark small" style="font-size: 0.82rem;">{{ $vote->user->name ?? 'Member' }}</span>
                                                 @if($vote->vote_type === 'yes')
-                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.65rem;">
                                                         <i class="fa-regular fa-thumbs-up me-1"></i> YES
                                                     </span>
                                                 @else
-                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.65rem;">
                                                         <i class="fa-regular fa-thumbs-down me-1"></i> NO
                                                     </span>
                                                 @endif
                                             </div>
-                                            <span class="text-muted" style="font-size: 0.7rem;">{{ $vote->updated_at->diffForHumans() }}</span>
+                                            <span class="text-secondary fw-semibold" style="font-size: 0.7rem;">{{ $vote->updated_at->diffForHumans() }}</span>
                                         </div>
-                                        <p class="mb-0 text-dark small" style="line-height: 1.4; font-size: 0.82rem;">{{ $vote->feedback }}</p>
+                                        <p class="mb-0 text-dark small fw-medium" style="line-height: 1.4; font-size: 0.82rem;">{{ $vote->feedback }}</p>
                                     </div>
                                 @endforeach
 
@@ -313,18 +332,18 @@
                                                         <div class="d-flex align-items-center gap-1.5">
                                                             <span class="fw-bold text-dark small" style="font-size: 0.82rem;">{{ $vote->user->name ?? 'Member' }}</span>
                                                             @if($vote->vote_type === 'yes')
-                                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">
+                                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.65rem;">
                                                                     <i class="fa-regular fa-thumbs-up me-1"></i> YES
                                                                 </span>
                                                             @else
-                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5 fw-bold" style="font-size: 0.65rem;">
                                                                     <i class="fa-regular fa-thumbs-down me-1"></i> NO
                                                                 </span>
                                                             @endif
                                                         </div>
-                                                        <span class="text-muted" style="font-size: 0.7rem;">{{ $vote->updated_at->diffForHumans() }}</span>
+                                                        <span class="text-secondary fw-semibold" style="font-size: 0.7rem;">{{ $vote->updated_at->diffForHumans() }}</span>
                                                     </div>
-                                                    <p class="mb-0 text-dark small" style="line-height: 1.4; font-size: 0.82rem;">{{ $vote->feedback }}</p>
+                                                    <p class="mb-0 text-dark small fw-medium" style="line-height: 1.4; font-size: 0.82rem;">{{ $vote->feedback }}</p>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -332,7 +351,7 @@
 
                                     <!-- See All Button -->
                                     <div class="text-center pt-2">
-                                        <button type="button" id="toggleFeedbackBtn" onclick="toggleFeedbackList()" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-brand shadow-sm" style="font-size: 0.8rem;">
+                                        <button type="button" id="toggleFeedbackBtn" onclick="toggleFeedbackList()" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-brand shadow-sm" style="font-size: 0.8rem; background-color: #ffffff;">
                                             See All ({{ $allFeedback->count() }}) <i class="fa-solid fa-chevron-down ms-1"></i>
                                         </button>
                                     </div>
@@ -346,18 +365,18 @@
             <!-- Right Column: Voting Results & Officer Feedback -->
             <div class="col-12 col-lg-4">
                 <div class="d-flex flex-column gap-3">
-                    <!-- Voting Results Card - Margin Adjustments -->
+                    <!-- Voting Results Card -->
                     <div class="card p-3 p-md-4 pastel-card">
                         <h6 class="fw-bold text-brand mb-3" style="font-size: 0.9rem;">Voting Results</h6>
                         <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <div class="p-2.5 rounded-3 text-center border border-success border-opacity-25" style="background-color: #e8f8f0;">
+                                <div class="p-2.5 rounded-3 text-center border border-success border-opacity-25" style="background-color: rgba(232, 248, 240, 0.85);">
                                     <span class="text-success d-block small fw-bold mb-1" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-up me-1"></i> YES</span>
                                     <span class="fs-4 fw-bold text-success">{{ $proposal->yesVotesCount() }}</span>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="p-2.5 rounded-3 text-center border border-danger border-opacity-25 bg-white">
+                                <div class="p-2.5 rounded-3 text-center border border-danger border-opacity-25" style="background-color: rgba(255, 255, 255, 0.85);">
                                     <span class="text-danger d-block small fw-bold mb-1" style="font-size: 0.75rem;"><i class="fa-regular fa-thumbs-down me-1"></i> NO</span>
                                     <span class="fs-4 fw-bold text-danger">{{ $proposal->noVotesCount() }}</span>
                                 </div>
@@ -367,7 +386,7 @@
                         <div class="progress mt-2.5 mb-1.5" style="height: 6px;">
                             <div class="progress-bar bg-{{ $proposal->approvalRatePercentage() >= 60 ? 'success' : 'danger' }}" role="progressbar" style="width: {{ $proposal->approvalRatePercentage() }}%;"></div>
                         </div>
-                        <div class="d-flex justify-content-between text-muted small" style="font-size: 0.78rem;">
+                        <div class="d-flex justify-content-between text-secondary fw-semibold small" style="font-size: 0.78rem;">
                             <span>Approval Rate</span>
                             <span class="fw-bold text-dark">{{ $proposal->approvalRatePercentage() }}%</span>
                         </div>
@@ -377,16 +396,16 @@
                     @if ($isOwner && $proposal->revisions && $proposal->revisions->count() > 0)
                         <div class="card p-3 p-md-4 pastel-card border-warning border-opacity-50">
                             <h6 class="fw-bold text-brand mb-2.5" style="font-size: 0.9rem;">
-                                <i class="fa-solid fa-comments me-1.5 text-warning"></i> Officer Revision Requests <span class="text-muted fw-normal" style="font-size: 0.72rem;">(Private)</span>
+                                <i class="fa-solid fa-comments me-1.5 text-warning"></i> Officer Revision Requests <span class="text-secondary fw-semibold" style="font-size: 0.72rem;">(Private)</span>
                             </h6>
                             <div class="d-flex flex-column gap-2 mt-2">
                                 @foreach ($proposal->revisions as $revision)
-                                    <div class="feedback-item-card border-warning border-opacity-25" style="background-color: #fffdf5;">
-                                        <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <div class="feedback-item-card border-warning border-opacity-25" style="background-color: rgba(255, 253, 245, 0.85);">
+                                        <div class="d-flex justify-content-between text-secondary small mb-1">
                                             <span class="fw-bold text-dark" style="font-size: 0.8rem;"><i class="fa-solid fa-user-shield me-1 text-secondary"></i> {{ $revision->officer->name ?? 'Officer' }}</span>
-                                            <span style="font-size: 0.7rem;">{{ $revision->created_at->diffForHumans() }}</span>
+                                            <span class="fw-semibold" style="font-size: 0.7rem;">{{ $revision->created_at->diffForHumans() }}</span>
                                         </div>
-                                        <p class="mb-0 text-dark small" style="line-height: 1.4; font-size: 0.82rem;">{{ $revision->feedback }}</p>
+                                        <p class="mb-0 text-dark small fw-medium" style="line-height: 1.4; font-size: 0.82rem;">{{ $revision->feedback }}</p>
                                     </div>
                                 @endforeach
                             </div>
@@ -401,8 +420,8 @@
     @if ($isOwner && $proposal->status === 'needs_revision')
         <div class="modal fade" id="editProposalModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
-                <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                         <h5 class="fw-bold text-brand mb-0" style="font-size: 1.05rem;">Edit Proposal</h5>
                         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -411,45 +430,45 @@
                         @csrf
                         @method('PUT')
                         <div class="mb-2">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Proposal Title *</label>
-                            <input type="text" name="title" value="{{ $proposal->title }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Proposal Title *</label>
+                            <input type="text" name="title" value="{{ $proposal->title }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                         </div>
 
                         <div class="row g-2 mb-2">
                             <div class="col-6">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Location *</label>
-                                <input type="text" name="location" value="{{ $proposal->location }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Location *</label>
+                                <input type="text" name="location" value="{{ $proposal->location }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                             </div>
                             <div class="col-6">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Duration *</label>
-                                <input type="text" name="duration" value="{{ $proposal->duration }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Duration *</label>
+                                <input type="text" name="duration" value="{{ $proposal->duration }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                             </div>
                         </div>
 
                         <div class="row g-2 mb-2">
                             <div class="col-6">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Proposed Date *</label>
-                                <input type="date" name="proposed_date" value="{{ $proposal->proposed_date ? $proposal->proposed_date->format('Y-m-d') : '' }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;" required>
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Proposed Date *</label>
+                                <input type="date" name="proposed_date" value="{{ $proposal->proposed_date ? $proposal->proposed_date->format('Y-m-d') : '' }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;" required>
                             </div>
                             <div class="col-6">
-                                <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Estimated Budget</label>
-                                <input type="text" name="estimated_budget" value="{{ $proposal->estimated_budget }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;">
+                                <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Estimated Budget</label>
+                                <input type="text" name="estimated_budget" value="{{ $proposal->estimated_budget }}" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;">
                             </div>
                         </div>
 
                         <div class="mb-2">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Description *</label>
-                            <textarea name="description" class="form-control rounded-4 p-2.5 shadow-none border" rows="3" style="font-size: 0.85rem; resize: none;" required>{{ $proposal->description }}</textarea>
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Description *</label>
+                            <textarea name="description" class="form-control rounded-4 p-2.5 shadow-none border bg-light" rows="3" style="font-size: 0.85rem; resize: none;" required>{{ $proposal->description }}</textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-dark fw-semibold mb-1" style="font-size: 0.8rem;">Supporting Document <span class="text-muted fw-normal">(optional)</span></label>
-                            <input type="file" name="supporting_document" class="form-control rounded-pill py-1.5 px-3 shadow-none border" style="font-size: 0.85rem;">
+                            <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.8rem;">Supporting Document <span class="text-secondary fw-semibold">(optional)</span></label>
+                            <input type="file" name="supporting_document" class="form-control rounded-pill py-1.5 px-3 shadow-none border bg-light" style="font-size: 0.85rem;">
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                            <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn rounded-pill px-3 py-1.5 fw-semibold text-dark shadow-sm" style="font-size: 0.8rem; background-color: var(--uya-gold);">Update Proposal</button>
+                        <div class="d-flex justify-content-end gap-2 pt-2 border-top border-secondary border-opacity-10">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn rounded-pill px-3 py-1.5 fw-bold text-dark shadow-sm" style="font-size: 0.8rem; background-color: var(--uya-gold);">Update Proposal</button>
                         </div>
                     </form>
                 </div>
@@ -461,20 +480,20 @@
     @if ($isOwner && in_array($proposal->status, ['pending', 'needs_revision', 'rejected']))
         <div class="modal fade" id="deleteProposalModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-                <div class="modal-content rounded-4 shadow-lg border-0 p-3">
-                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 border-secondary border-opacity-10">
                         <h5 class="fw-bold text-danger mb-0" style="font-size: 1.05rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i> Delete Proposal</h5>
                         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="py-2 text-secondary" style="font-size: 0.85rem;">
+                    <div class="py-2 text-dark fw-medium" style="font-size: 0.85rem;">
                         Are you sure you want to permanently delete proposal "<strong>{{ $proposal->title }}</strong>"? This action cannot be undone.
                     </div>
                     <form method="POST" action="{{ route('proposals.destroy', $proposal->id) }}">
                         @csrf
                         @method('DELETE')
-                        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                            <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-danger rounded-pill px-3 py-1.5 fw-semibold shadow-sm" style="font-size: 0.8rem;">Delete Proposal</button>
+                        <div class="d-flex justify-content-end gap-2 pt-2 border-top border-secondary border-opacity-10">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-3 py-1.5 fw-bold shadow-sm" style="font-size: 0.8rem;">Delete Proposal</button>
                         </div>
                     </form>
                 </div>

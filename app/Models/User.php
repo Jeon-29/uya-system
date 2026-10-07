@@ -22,6 +22,7 @@ use Illuminate\Notifications\Notifiable;
     'password',
     'failed_attempts',
     'locked_until',
+    'profile_photo_path',
 ])]
 #[Hidden(['password', 'remember_token', 'otp_code'])]
 class User extends Authenticatable

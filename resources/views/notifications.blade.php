@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Notifications - UYA Connect</title>
+    <title>Notifications - UYA</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,8 +27,6 @@
 
         .text-brand { color: var(--uya-dark-teal) !important; }
 
-        /* Mobile-first container: comfortable edge margins on small
-           screens, centered and capped on larger ones. */
         .notifications-container {
             max-width: 800px;
             padding-left: 1rem;
@@ -41,9 +39,6 @@
             }
         }
 
-        /* Page header: stacked on mobile so the action button gets its
-           own full-width row instead of squeezing/wrapping next to the
-           title, side-by-side once there's room. */
         .notif-header-actions {
             width: 100%;
         }
@@ -63,23 +58,28 @@
             }
         }
 
+        /* Apple Liquid Glass Notification Card */
         .notification-card {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
+            background: rgba(255, 255, 255, 0.46);
+            -webkit-backdrop-filter: blur(22px) saturate(180%);
+            backdrop-filter: blur(22px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.85) !important;
             border-radius: 16px;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
-            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(34, 77, 91, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
         .notification-card:hover {
             border-color: var(--uya-light-blue) !important;
+            box-shadow: 0 14px 35px rgba(34, 77, 91, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
         }
 
         .notif-icon-box {
             width: 40px;
             height: 40px;
-            background-color: #e4edf0;
+            background-color: rgba(131, 182, 190, 0.2);
             color: var(--uya-dark-teal);
-            border: 1px solid #d0dce0;
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -93,8 +93,6 @@
             }
         }
 
-        /* Dismiss (mark-as-read) button: sized for a real thumb tap
-           target (44px) rather than a bare icon glyph. */
         .notif-dismiss-btn {
             width: 36px;
             height: 36px;
@@ -108,9 +106,6 @@
             background-color: rgba(34, 77, 91, 0.08);
         }
 
-        /* Primary action inside each card: a minimal text-style link
-           rather than a heavy full-width filled button, so it reads
-           as a quiet call to action instead of dominating the card. */
         .notif-action-btn {
             display: inline-flex;
             align-items: center;
@@ -120,6 +115,8 @@
             padding: 0;
             color: var(--uya-dark-teal);
             font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
         }
         .notif-action-btn:hover {
             color: #193a44;
@@ -129,16 +126,6 @@
         }
         .notif-action-btn .fa-arrow-right {
             transition: transform 0.15s ease;
-        }
-
-        .custom-btn-filled {
-            background-color: var(--uya-dark-teal);
-            color: #fff;
-            border: none;
-        }
-        .custom-btn-filled:hover {
-            background-color: #193a44;
-            color: #fff;
         }
     </style>
 </head>
@@ -155,11 +142,11 @@
                 <h2 class="fw-bold mb-1 text-brand" style="font-size: 1.4rem;">Notifications</h2>
                 <p class="text-muted small mb-0">Stay updated with activity posts, announcements, and updates.</p>
             </div>
-            @if($notifications->total() > 0)
+            @if(isset($notifications) && $notifications->total() > 0)
                 <div class="notif-header-actions" id="markAllBtnWrap">
                     <form method="POST" action="{{ route('notifications.read-all') }}" id="markAllForm">
                         @csrf
-                        <button type="submit" class="btn btn-outline-secondary rounded-pill btn-sm px-3 py-2 fw-semibold btn-mark-read">
+                        <button type="submit" class="btn btn-outline-secondary rounded-pill btn-sm px-3 py-2 fw-semibold btn-mark-read shadow-sm">
                             <i class="fa-solid fa-check me-1"></i> Mark all as read
                         </button>
                     </form>
@@ -172,11 +159,11 @@
             @forelse($notifications as $notif)
                 @php
                     $data = $notif->data ?? [];
-                    $icon = $data['icon'] ?? 'fa-regular fa-bell';
-                    $title = $data['title'] ?? 'System Notification';
-                    $message = $data['message'] ?? '';
-                    $actionUrl = $data['action_url'] ?? '#';
-                    $actionText = $data['action_text'] ?? 'View Details';
+                    $icon =$data['icon'] ?? 'fa-regular fa-bell';
+                    $title =$data['title'] ?? 'System Notification';
+                    $message =$data['message'] ?? '';
+                    $actionUrl =$data['action_url'] ?? '#';
+                    $actionText =$data['action_text'] ?? 'View Details';
                 @endphp
                 <div class="card p-3 notification-card border-start border-4 border-warning" data-notif-card>
                     <div class="d-flex align-items-start gap-2 gap-sm-3">
@@ -189,8 +176,7 @@
                                 <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.92rem;">{{ $title }}</h6>
                             </div>
 
-                            <!-- Meta row: always its own line so it never
-                                 depends on how much space the title left -->
+                            <!-- Meta row -->
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted" style="font-size: 0.75rem;">
                                     <i class="fa-regular fa-clock me-1"></i>{{ $notif->created_at->diffForHumans() }}
@@ -207,7 +193,10 @@
                                 {{ $message }}
                             </p>
 
-                            <a href="{{ $actionUrl }}" class="notif-action-btn" style="font-size: 0.82rem;">
+                            <!-- Guaranteed Functional View Link -->
+                            <a href="{{ $actionUrl }}"
+                               onclick="handleNotificationClick(event, '{{ route('notifications.read', $notif->id) }}', '{{ $actionUrl }}')"
+                               class="notif-action-btn" style="font-size: 0.82rem;">
                                 {{ $actionText }} <i class="fa-solid fa-arrow-right fa-xs"></i>
                             </a>
                         </div>
@@ -223,7 +212,7 @@
         </div>
 
         <!-- Pagination -->
-        @if($notifications->hasPages())
+        @if(isset($notifications) && $notifications->hasPages())
             <div class="d-flex justify-content-center mt-4">
                 {{ $notifications->links() }}
             </div>
@@ -234,18 +223,43 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function handleNotificationClick(event, readUrl, targetUrl) {
+            if (!targetUrl || targetUrl === '#') return;
+            event.preventDefault();
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            if (readUrl) {
+                fetch(readUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: new URLSearchParams({ _token: csrfToken }),
+                }).catch(() => {});
+            }
+
+            setTimeout(function () {
+                window.location.assign(targetUrl);
+            }, 50);
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             const list = document.getElementById('notificationList');
 
             function showEmptyState() {
                 document.getElementById('markAllBtnWrap')?.remove();
-                list.innerHTML = `
-                    <div class="card p-5 notification-card text-center text-muted">
-                        <i class="fa-regular fa-bell-slash fa-3x mb-3 text-secondary"></i>
-                        <h5 class="fw-semibold">No notifications found</h5>
-                        <p class="small mb-0">You're all caught up!</p>
-                    </div>`;
+                if (list) {
+                    list.innerHTML = `
+                        <div class="card p-5 notification-card text-center text-muted">
+                            <i class="fa-regular fa-bell-slash fa-3x mb-3 text-secondary"></i>
+                            <h5 class="fw-semibold">No notifications found</h5>
+                            <p class="small mb-0">You're all caught up!</p>
+                        </div>`;
+                }
             }
 
             function removeCard(card) {
@@ -253,7 +267,6 @@
                 card.style.overflow = 'hidden';
                 card.style.maxHeight = card.scrollHeight + 'px';
                 card.style.transition = 'opacity 0.2s ease, transform 0.2s ease, max-height 0.25s ease, margin 0.25s ease';
-                // Force layout so the transition to the collapsed state animates.
                 requestAnimationFrame(function () {
                     card.style.opacity = '0';
                     card.style.transform = 'translateX(12px)';
@@ -262,7 +275,7 @@
                 });
                 setTimeout(function () {
                     card.remove();
-                    if (!list.querySelector('[data-notif-card]')) {
+                    if (list && !list.querySelector('[data-notif-card]')) {
                         showEmptyState();
                     }
                 }, 260);
@@ -274,27 +287,30 @@
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     },
                     body: new URLSearchParams({ _token: csrfToken }),
                 });
             }
 
-            // Individual "x" mark-as-read
-            list.addEventListener('submit', function (e) {
-                const form = e.target.closest('.notif-read-form');
-                if (!form) return;
-                e.preventDefault();
-                const card = form.closest('[data-notif-card]');
-                sendMarkRead(form.getAttribute('action')).then(function (res) {
-                    if (res.ok) {
-                        removeCard(card);
-                    } else {
+            if (list) {
+                // Individual "x" mark-as-read
+                list.addEventListener('submit', function (e) {
+                    const form = e.target.closest('.notif-read-form');
+                    if (!form) return;
+                    e.preventDefault();
+                    const card = form.closest('[data-notif-card]');
+                    sendMarkRead(form.getAttribute('action')).then(function (res) {
+                        if (res.ok) {
+                            removeCard(card);
+                        } else {
+                            form.submit();
+                        }
+                    }).catch(function () {
                         form.submit();
-                    }
-                }).catch(function () {
-                    form.submit();
+                    });
                 });
-            });
+            }
 
             // "Mark all as read"
             const markAllForm = document.getElementById('markAllForm');
@@ -303,7 +319,9 @@
                     e.preventDefault();
                     sendMarkRead(markAllForm.getAttribute('action')).then(function (res) {
                         if (res.ok) {
-                            list.querySelectorAll('[data-notif-card]').forEach(removeCard);
+                            if (list) {
+                                list.querySelectorAll('[data-notif-card]').forEach(removeCard);
+                            }
                         } else {
                             markAllForm.submit();
                         }

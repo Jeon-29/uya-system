@@ -39,45 +39,91 @@
             }
         }
 
-        /* Main Wrapper Cards */
-        .pastel-card-primary {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
-            border-radius: 16px;
-        }
-
-        /* Distinct Inner Sub-cards for Announcements */
-        .announcement-subcard {
-            background-color: #f3f7f9;
-            border: 1px solid #dce5e8 !important;
-            transition: all 0.2s ease;
-        }
-        .announcement-subcard:hover {
-            background-color: #ebf3f6;
-            border-color: var(--uya-light-blue) !important;
-        }
-
-        /* Distinct Inner Sub-cards for Upcoming Activities */
+        /* ============================================================
+           Liquid glass design language (Apple style)
+           ============================================================ */
+        .pastel-card-primary,
+        .announcement-subcard,
         .activity-item {
-            background-color: #f3f7f9;
-            border: 1px solid #dce5e8 !important;
-            transition: all 0.2s ease;
-        }
-        .activity-item:hover {
-            background-color: #ebf3f6;
-            border-color: var(--uya-light-blue) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            background: rgba(255, 255, 255, 0.19);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4.2px);
+            -webkit-backdrop-filter: blur(4.2px);
+            border: 1px solid rgba(255, 255, 255, 0.36) !important;
         }
 
+        /* Corner radii: larger for primary panels */
+        .pastel-card-primary { border-radius: 22px !important; }
+        .announcement-subcard,
+        .activity-item { border-radius: 16px !important; }
+
+        /* Cards inside the panels: subtle hover effects */
+        .announcement-subcard,
+        .activity-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .announcement-subcard:hover,
+        .activity-item:hover {
+            border-color: rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Glassy icon chips on the stat cards */
+        .metric-icon {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Glossy status pill */
+        .glossy-pill {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: #0f172a !important;
+            font-weight: 700;
+        }
+
+        /* Refined button for sharp readability */
         .custom-btn-outline {
-            border-color: var(--uya-dark-teal);
+            border: 2px solid var(--uya-dark-teal);
             color: var(--uya-dark-teal);
-            background-color: #ffffff;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            font-weight: 600;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
         .custom-btn-outline:hover {
-            background-color: var(--uya-dark-teal);
+            background: var(--uya-dark-teal);
+            border-color: var(--uya-dark-teal);
             color: #fff;
+            box-shadow: 0 6px 16px rgba(34, 77, 91, 0.25);
+        }
+
+        /* High-contrast text color helpers */
+        .card-dark-text {
+            color: #0f172a !important;
+        }
+        .card-dark-subtext {
+            color: #334155 !important;
+        }
+        .card-muted-label {
+            color: #475569 !important;
+        }
+
+        /* Browsers without backdrop-filter get a fallback */
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .pastel-card-primary,
+            .announcement-subcard,
+            .activity-item {
+                background: rgba(255, 255, 255, 0.92);
+            }
         }
     </style>
 </head>
@@ -103,11 +149,11 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">My Activities</span>
+                            <span class="text-uppercase card-muted-label fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">My Activities</span>
                             <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['myActivities'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.7rem;">Activities joined</span>
+                            <span class="card-dark-subtext fw-semibold" style="font-size: 0.7rem;">Activities joined</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 metric-icon" style="width: 35px; height: 35px; color: var(--uya-dark-teal);">
                             <i class="fa-regular fa-calendar-days fa-sm"></i>
                         </div>
                     </div>
@@ -118,11 +164,11 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Upcoming</span>
+                            <span class="text-uppercase card-muted-label fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Upcoming</span>
                             <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['upcoming'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.7rem;">Upcoming activities</span>
+                            <span class="card-dark-subtext fw-semibold" style="font-size: 0.7rem;">Upcoming activities</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(216, 178, 87, 0.2); color: var(--uya-gold);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 metric-icon" style="width: 35px; height: 35px; color: var(--uya-gold);">
                             <i class="fa-solid fa-clock fa-sm"></i>
                         </div>
                     </div>
@@ -133,11 +179,11 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Notifications</span>
+                            <span class="text-uppercase card-muted-label fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Notifications</span>
                             <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['notifications'] }}</h2>
-                            <span class="text-muted" style="font-size: 0.7rem;">Active announcements</span>
+                            <span class="card-dark-subtext fw-semibold" style="font-size: 0.7rem;">Active announcements</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(131, 182, 190, 0.2); color: var(--uya-dark-teal);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 metric-icon" style="width: 35px; height: 35px; color: var(--uya-dark-teal);">
                             <i class="fa-regular fa-bell fa-sm"></i>
                         </div>
                     </div>
@@ -148,11 +194,11 @@
                 <div class="card shadow-sm rounded-4 p-2 p-md-3 h-100 pastel-card-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Attendance Rate</span>
+                            <span class="text-uppercase card-muted-label fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Attendance Rate</span>
                             <h2 class="fw-bold mb-0 mt-1 text-brand" style="font-size: 1.3rem;">{{ $stats['attendanceRate'] }}%</h2>
-                            <span class="text-muted" style="font-size: 0.7rem;">Your attendance</span>
+                            <span class="card-dark-subtext fw-semibold" style="font-size: 0.7rem;">Your attendance</span>
                         </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background-color: rgba(40, 167, 69, 0.15); color: #28a745;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 metric-icon" style="width: 35px; height: 35px; color: #15803d;">
                             <i class="fa-solid fa-chart-line fa-sm"></i>
                         </div>
                     </div>
@@ -175,14 +221,14 @@
                         @forelse ($announcements as $announcement)
                             <div class="p-3 rounded-3 announcement-subcard shadow-sm">
                                 <h6 class="fw-bold mb-1 text-brand" style="font-size: 0.9rem;">{{ $announcement->title }}</h6>
-                                <p class="text-muted small mb-2" style="font-size: 0.8rem;">{{ $announcement->content }}</p>
+                                <p class="card-dark-subtext small mb-2 fw-medium" style="font-size: 0.8rem;">{{ $announcement->content }}</p>
                                 <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
-                                    <span class="text-muted fw-semibold">{{ $announcement->author->name ?? 'Admin' }}</span>
-                                    <span class="text-muted">{{ $announcement->created_at->format('M j, Y') }}</span>
+                                    <span class="card-dark-text fw-bold">{{ $announcement->author->name ?? 'Admin' }}</span>
+                                    <span class="card-muted-label fw-semibold">{{ $announcement->created_at->format('M j, Y') }}</span>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-muted small text-center py-3">No announcements yet.</p>
+                            <p class="card-dark-subtext small text-center py-3 fw-medium">No announcements yet.</p>
                         @endforelse
                     </div>
 
@@ -205,17 +251,17 @@
                             <div class="card rounded-3 p-3 activity-item shadow-sm">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h6 class="fw-bold mb-0 text-brand" style="font-size: 0.9rem;">{{ $activity->title }}</h6>
-                                    <span class="badge rounded-pill px-2 py-1" style="background-color: var(--uya-gold); color: #fff; font-size: 0.65rem;">{{ strtoupper($activity->status) }}</span>
+                                    <span class="badge rounded-pill px-2 py-1 glossy-pill" style="font-size: 0.65rem;">{{ strtoupper($activity->status) }}</span>
                                 </div>
-                                <div class="text-muted small d-flex flex-column gap-1 mb-3" style="font-size: 0.8rem;">
-                                    <div><i class="fa-regular fa-calendar me-2 text-secondary"></i> {{ $activity->date->format('D, M j, Y') }}</div>
-                                    <div><i class="fa-solid fa-location-dot me-2 text-secondary"></i> {{ $activity->location }}</div>
-                                    <div><i class="fa-solid fa-users me-2 text-secondary"></i> {{ $activity->participants_count ?? 0 }} participants</div>
+                                <div class="card-dark-subtext small d-flex flex-column gap-1 mb-3 fw-medium" style="font-size: 0.8rem;">
+                                    <div><i class="fa-regular fa-calendar me-2 text-brand"></i> {{ $activity->date->format('D, M j, Y') }}</div>
+                                    <div><i class="fa-solid fa-location-dot me-2 text-brand"></i> {{ $activity->location }}</div>
+                                    <div><i class="fa-solid fa-users me-2 text-brand"></i> {{ $activity->participants_count ?? 0 }} participants</div>
                                 </div>
-                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-1 fw-semibold custom-btn-outline" style="font-size: 0.8rem;">View Activity</a>
+                                <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm rounded-pill w-100 py-1 custom-btn-outline" style="font-size: 0.8rem;">View Activity</a>
                             </div>
                         @empty
-                            <p class="text-muted small text-center py-3">No upcoming activities.</p>
+                            <p class="card-dark-subtext small text-center py-3 fw-medium">No upcoming activities.</p>
                         @endforelse
 
                     </div>

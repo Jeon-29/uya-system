@@ -41,18 +41,22 @@
             }
         }
 
+        /* Custom Liquid Glass Card Layout */
         .pastel-card-primary {
-            background-color: #ffffff;
-            border: 1px solid rgba(131, 182, 190, 0.25) !important;
-            box-shadow: 0 0.25rem 0.75rem rgba(34, 77, 91, 0.04);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.19) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(4.2px) !important;
+            -webkit-backdrop-filter: blur(4.2px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.36) !important;
         }
 
         .detail-subcard {
-            background-color: #f8fafc;
-            border: 1px solid #dce5e8 !important;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1 !important;
             border-radius: 14px;
             padding: 0.75rem 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
         .subcard-label {
@@ -60,7 +64,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #64748b;
+            color: #475569;
             display: block;
             margin-bottom: 0.25rem;
         }
@@ -68,7 +72,7 @@
         .subcard-value {
             font-size: 0.88rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f172a;
             margin-bottom: 0;
             line-height: 1.25;
         }
@@ -99,6 +103,8 @@
             background-color: var(--uya-dark-teal);
             color: #fff;
             border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(34, 77, 91, 0.25);
         }
         .custom-btn-filled:hover {
             background-color: #193a44;
@@ -147,6 +153,13 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 2;
         }
+
+        /* Solid Modal Content for Readability */
+        .glass-modal-content {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -158,7 +171,7 @@
         <!-- Back Button -->
         <div class="row mb-3">
             <div class="col-12">
-                <a href="{{ route('activities') }}" class="btn btn-light border rounded-pill px-3 py-1.5 text-brand fw-semibold shadow-sm text-decoration-none" style="font-size: 0.85rem;">
+                <a href="{{ route('activities') }}" class="btn btn-light border rounded-pill px-3 py-1.5 text-brand fw-bold shadow-sm text-decoration-none" style="font-size: 0.85rem; background-color: #ffffff;">
                     <i class="fa-solid fa-arrow-left me-2"></i> Back to Activities
                 </a>
             </div>
@@ -166,11 +179,9 @@
 
         @php
             $isDeadlinePassed = $activity->registration_deadline && now()->greaterThan($activity->registration_deadline);
-            $canRegister = $activity->is_registration_open && !$isDeadlinePassed && $activity->hasAvailableSlots();
-            $userParticipant = $activity->participants->where('user_id', auth()->id())->first();
-            $hasAttended = $userParticipant && in_array($userParticipant->status, ['attended', 'late']);
-            $userFeedback = $activity->feedback->where('user_id', auth()->id())->first();
-            $groupedPhotos = $activity->photos->groupBy(function ($photo) {
+            $canRegister =$activity->is_registration_open && !$isDeadlinePassed &&$activity->hasAvailableSlots();
+            $userParticipant =$activity->participants->where('user_id', auth()->id())->first();
+            $hasAttended =$userParticipant && in_array($userParticipant->status, ['attended', 'late']);$userFeedback = $activity->feedback->where('user_id', auth()->id())->first();$groupedPhotos = $activity->photos->groupBy(function ($photo) {
                 return $photo->batch_id ?? ('single_' . $photo->id);
             });
         @endphp
@@ -195,7 +206,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <p class="text-muted small mb-3" style="font-size: 0.85rem; line-height: 1.45;">{{ $activity->description }}</p>
+                            <p class="text-dark small mb-3 fw-medium" style="font-size: 0.85rem; line-height: 1.45;">{{ $activity->description }}</p>
 
                             <!-- Attendance & Certificate Verification Card -->
                             @if($activity->status === 'completed')
@@ -207,14 +218,14 @@
                                                     <i class="fa-solid fa-circle-check me-1"></i> Successfully Attended
                                                 </div>
                                             @else
-                                                <div class="text-secondary fw-semibold" style="font-size: 0.83rem;">
+                                                <div class="text-secondary fw-bold" style="font-size: 0.83rem;">
                                                     <i class="fa-solid fa-circle-xmark me-1"></i> Not Verified Present
                                                 </div>
                                             @endif
                                         </div>
 
                                         @if($hasAttended)
-                                            <a href="{{ route('certificates') }}" class="btn btn-sm custom-btn-filled rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                                            <a href="{{ route('certificates') }}" class="btn btn-sm custom-btn-filled rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm" style="font-size: 0.78rem;">
                                                 <i class="fa-solid fa-award"></i> Certificate
                                             </a>
                                         @endif
@@ -271,23 +282,23 @@
                         <div class="col-12 col-lg-4">
                             <div class="detail-subcard d-flex flex-column gap-2">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 0.8rem;">Registration</span>
+                                    <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Registration</span>
                                     <span class="badge {{ $canRegister ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
                                         {{ $canRegister ? 'Open' : 'Closed' }}
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 0.8rem;">Attendance</span>
+                                    <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Attendance</span>
                                     <span class="badge {{ $activity->is_attendance_open ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
                                         {{ $activity->is_attendance_open ? 'Open' : 'Closed' }}
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 0.8rem;">Feedback</span>
+                                    <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Feedback</span>
                                     <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->feedback->count() }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 0.8rem;">Photos</span>
+                                    <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Photos</span>
                                     <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->photos->count() }}</span>
                                 </div>
                             </div>
@@ -332,8 +343,8 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center text-muted py-4 detail-subcard">
-                            <i class="fa-regular fa-images fa-2x mb-2 opacity-50 d-block"></i>
+                        <div class="text-center text-dark fw-semibold py-4 detail-subcard">
+                            <i class="fa-regular fa-images fa-2x mb-2 opacity-75 d-block"></i>
                             No documentation photos uploaded yet.
                         </div>
                     @endif
@@ -364,30 +375,30 @@
 
                                 <div class="d-flex flex-wrap align-items-baseline gap-1.5 overflow-hidden">
                                     <span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">{{ auth()->user()->name }}</span>
-                                    <span class="text-muted small" style="font-size: 0.7rem;">
+                                    <span class="text-secondary small fw-semibold" style="font-size: 0.7rem;">
                                         • {{ $userFeedback->created_at->format('M j, Y') }}
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="px-3 py-2 rounded-3 bg-white border border-light-subtle">
-                                <p class="text-secondary small mb-0" style="font-size: 0.82rem; line-height: 1.4; white-space: pre-line;">
+                            <div class="px-3 py-2 rounded-3 bg-light border border-light-subtle shadow-sm">
+                                <p class="text-dark small mb-0 fw-medium" style="font-size: 0.82rem; line-height: 1.4; white-space: pre-line;">
                                     {{ $userFeedback->comment ?? $userFeedback->comments }}
                                 </p>
                             </div>
                         </div>
                     @elseif($hasAttended)
                         <div class="detail-subcard d-flex flex-column gap-2.5">
-                            <span class="text-muted small" style="font-size: 0.78rem;">Share your thoughts or experience regarding this activity.</span>
-                            <button onclick="openFeedbackModal()" class="btn rounded-pill py-2 fw-semibold custom-btn-filled d-flex align-items-center justify-content-center gap-2 shadow-sm w-100" style="font-size: 0.82rem;">
+                            <span class="text-dark small fw-semibold" style="font-size: 0.78rem;">Share your thoughts or experience regarding this activity.</span>
+                            <button onclick="openFeedbackModal()" class="btn rounded-pill py-2 custom-btn-filled d-flex align-items-center justify-content-center gap-2 shadow-sm w-100" style="font-size: 0.82rem;">
                                 <i class="fa-regular fa-comment-dots"></i> Add Feedback
                             </button>
                         </div>
                     @else
-                        <div class="detail-subcard text-center text-muted py-3">
-                            <i class="fa-solid fa-lock text-brand opacity-50 fa-lg mb-1.5 d-block"></i>
-                            <span class="fw-semibold text-dark d-block mb-1" style="font-size: 0.85rem;">Feedback Unavailable</span>
-                            <span class="small d-block text-muted" style="font-size: 0.75rem;">
+                        <div class="detail-subcard text-center text-dark py-3">
+                            <i class="fa-solid fa-lock text-brand opacity-75 fa-lg mb-1.5 d-block"></i>
+                            <span class="fw-bold text-dark d-block mb-1" style="font-size: 0.85rem;">Feedback Unavailable</span>
+                            <span class="small d-block text-secondary fw-semibold" style="font-size: 0.75rem;">
                                 Submit feedback after attending and verifying your QR check-in.
                             </span>
                         </div>
@@ -437,7 +448,7 @@
                         </div>
 
                         <div class="pt-3 border-top border-white border-opacity-10 d-flex justify-content-end">
-                            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-dismiss="modal" style="font-size: 0.78rem;">Close</button>
+                            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-dismiss="modal" style="font-size: 0.78rem;">Close</button>
                         </div>
                     </div>
                 </div>
@@ -448,8 +459,8 @@
     <!-- DETAILS PAGE FEEDBACK MODAL -->
     <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
-            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 p-md-4 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 border-secondary border-opacity-10">
                     <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">Add Activity Feedback</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -457,18 +468,18 @@
                 <form method="POST" action="{{ route('activities.feedback.store', $activity->id) }}">
                     @csrf
                     <div class="mb-3">
-                        <span class="text-muted d-block mb-1" style="font-size: 0.75rem;">Activity</span>
+                        <span class="text-secondary d-block mb-1 fw-semibold" style="font-size: 0.75rem;">Activity</span>
                         <h6 class="fw-bold text-brand mb-0" style="font-size: 0.95rem;">{{ $activity->title }}</h6>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label text-dark fw-semibold" style="font-size: 0.85rem;">Your Feedback</label>
-                        <textarea name="comments" class="form-control rounded-4 p-3 shadow-none border" rows="3" placeholder="Share your thoughts about this activity..." required style="font-size: 0.88rem; resize: none;"></textarea>
+                        <label class="form-label text-dark fw-bold" style="font-size: 0.85rem;">Your Feedback</label>
+                        <textarea name="comments" class="form-control rounded-4 p-3 shadow-none border bg-light" rows="3" placeholder="Share your thoughts about this activity..." required style="font-size: 0.88rem; resize: none;"></textarea>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light border rounded-pill py-2 w-50 fw-semibold text-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn custom-btn-filled rounded-pill py-2 w-50 fw-semibold shadow-sm">Submit Feedback</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill py-2 w-50 fw-bold shadow-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn custom-btn-filled rounded-pill py-2 w-50 shadow-sm">Submit Feedback</button>
                     </div>
                 </form>
             </div>

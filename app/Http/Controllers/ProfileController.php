@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -78,5 +79,29 @@ class ProfileController extends Controller
         ]);
 
         return back()->with('success', 'Password changed successfully.');
+    }
+
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Max 2MB
+        ]);
+
+        $user = auth()->user();
+
+        // Delete old profile photo if exists
+        if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        // Store new photo in storage/app/public/profile-photos
+        $path = $request->file('profile_photo')->store('profile-photos', 'public');
+
+        // Save path to user model
+        $user->update([
+            'profile_photo_path' => $path,
+        ]);
+
+        return back()->with('status', 'Profile photo updated successfully!');
     }
 }
