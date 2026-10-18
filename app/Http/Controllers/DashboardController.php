@@ -15,6 +15,11 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
+        // Staff accounts belong on the admin dashboard, not the member one
+        if (in_array($user->role, ['admin', 'officer'], true)) {
+            return redirect()->route('admin.dashboard');
+        }
+
         // My Activities: count of activities the user has joined (excluding cancelled)
         $myActivitiesCount = $user->activities()
             ->wherePivotIn('status', ['registered', 'attended'])

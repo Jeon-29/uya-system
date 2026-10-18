@@ -12,9 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
-    ]);
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+
+        // Already-logged-in users who open /login (or /) are sent to the right dashboard for their role,
+        // instead of the default member dashboard.
+        $middleware->redirectUsersTo(function (Request $request) {
+            return in_array($request->user()?->role, ['admin', 'officer'], true)
+                ? route('admin.dashboard')
+                : route('dashboard');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

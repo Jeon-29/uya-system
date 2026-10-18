@@ -32,6 +32,16 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Where a freshly authenticated user belongs: staff go to the admin dashboard, members to the member dashboard.
+     */
+    private function homeFor(User $user): string
+    {
+        return in_array($user->role, ['admin', 'officer'], true)
+            ? route('admin.dashboard')
+            : route('dashboard');
+    }
+
     public function login(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -112,11 +122,14 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        if (in_array($user->role, ['admin', 'officer'])) {
-            return redirect()->intended(route('admin.dashboard'));
+        if (in_array($user->role, ['admin', 'officer'], true)) {
+            // Drop any saved member-page URL so it can't send staff to the member UI
+            $request->session()->forget('url.intended');
+
+            return redirect()->to($this->homeFor($user));
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended($this->homeFor($user));
     }
 
     public function register(Request $request): RedirectResponse
@@ -192,7 +205,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('status', 'Your email has been verified!');
+        return redirect()->to($this->homeFor($user))->with('status', 'Your email has been verified!');
     }
 
     public function resendRegistrationOtp(Request $request): RedirectResponse
