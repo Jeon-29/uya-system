@@ -272,7 +272,7 @@
                 </div>
             </div>
             <h2 class="fw-bold mb-1">Union of Youth Alliance</h2>
-            <p class="text-white-50 small px-4">Sub Heading Here</p>
+            <p class="text-white-50 small px-4">Unite Lead Serve</p>
         </div>
 
         <!-- Right Forms Panel -->
