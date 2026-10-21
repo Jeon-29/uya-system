@@ -31,14 +31,16 @@
             width: 100%;
             max-width: 100%;
             margin: 0 auto;
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-bottom: 2rem;
         }
 
         @media (min-width: 768px) {
             .app-container {
-                padding-left: 1.5rem;
-                padding-right: 1.5rem;
+                padding-left: 2rem;
+                padding-right: 2rem;
+                padding-bottom: 3rem;
             }
         }
 
@@ -114,7 +116,7 @@
             -webkit-backdrop-filter: blur(6px) !important;
             border: 1px solid rgba(255, 255, 255, 0.75) !important;
             border-radius: 12px;
-            padding: 0.65rem 0.85rem;
+            padding: 0.75rem 0.9rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
@@ -125,7 +127,7 @@
             letter-spacing: 0.4px;
             color: #475569;
             display: block;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .subcard-value {
@@ -255,10 +257,10 @@
     <!-- Include Navbar Component -->
     @include('layouts.navbar')
 
-    <div class="app-container py-3">
+    <div class="app-container py-3 py-md-4">
 
         <!-- Header Section with Search -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
                 <h2 class="fw-bold mb-1 text-brand fs-3 fs-md-2">My Certificates</h2>
             </div>
@@ -267,8 +269,8 @@
             <div class="compact-search-bar ms-md-auto">
                 <form method="GET" action="{{ route('certificates') }}">
                     <input type="hidden" name="tab" value="{{ $tab }}">
-                    <div class="input-group bg-white border rounded-pill overflow-hidden px-2.5 py-0.5 shadow-sm">
-                        <span class="input-group-text bg-transparent border-0 text-muted pe-1">
+                    <div class="input-group bg-white border rounded-pill overflow-hidden px-3 py-1 shadow-sm">
+                        <span class="input-group-text bg-transparent border-0 text-muted pe-2">
                             <i class="fa-solid fa-magnifying-glass small"></i>
                         </span>
                         <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control bg-transparent border-0 shadow-none text-dark fw-medium small" style="font-size: 0.85rem;" placeholder="Search certificates...">
@@ -289,14 +291,14 @@
         @endphp
 
         <!-- Compressed 3x1 Statistics Overview Cards -->
-        <div class="row g-2 g-md-3 mb-3 mb-md-4">
+        <div class="row g-2 g-md-3 mb-4">
             <div class="col-4 col-md-4">
                 <div class="stat-card d-flex align-items-center justify-content-between h-100">
                     <div class="stat-icon order-0 order-md-1">
                         <i class="fa-solid fa-ribbon"></i>
                     </div>
                     <div class="order-1 order-md-0">
-                        <span class="text-secondary fw-bold d-block mb-0.5 stat-label" style="font-size: 0.78rem;">Available</span>
+                        <span class="text-secondary fw-bold d-block mb-1 stat-label" style="font-size: 0.78rem;">Available</span>
                         <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $activeCount }}</h2>
                     </div>
                 </div>
@@ -308,7 +310,7 @@
                         <i class="fa-solid fa-qrcode"></i>
                     </div>
                     <div class="order-1 order-md-0">
-                        <span class="text-secondary fw-bold d-block mb-0.5 stat-label" style="font-size: 0.78rem;">Validated</span>
+                        <span class="text-secondary fw-bold d-block mb-1 stat-label" style="font-size: 0.78rem;">Validated</span>
                         <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $validatedAttendanceCount }}</h2>
                     </div>
                 </div>
@@ -320,7 +322,7 @@
                         <i class="fa-regular fa-calendar"></i>
                     </div>
                     <div class="order-1 order-md-0">
-                        <span class="text-secondary fw-bold d-block mb-0.5 stat-label" style="font-size: 0.78rem;">Joined</span>
+                        <span class="text-secondary fw-bold d-block mb-1 stat-label" style="font-size: 0.78rem;">Joined</span>
                         <h2 class="fw-bold mb-0 text-brand fs-4 fs-md-2">{{ $joinedActivitiesCount }}</h2>
                     </div>
                 </div>
@@ -351,7 +353,7 @@
         </div>
 
         <!-- Certificates List -->
-        <div class="d-flex flex-column gap-3.5 mb-4">
+        <div class="d-flex flex-column gap-3 gap-md-4 mb-5">
             @forelse ($certificates as $cert)
                 @php
                     $act =$cert->activity;
@@ -359,7 +361,7 @@
                     $certNo = 'UYA-CERT-' . ($cert->issued_at ? $cert->issued_at->format('Y') : '2026') . '-' . str_pad($cert->id, 3, '0', STR_PAD_LEFT);
                 @endphp
 
-                <div class="card p-3.5 p-md-4 certificate-item shadow-sm">
+                <div class="card p-3 p-md-4 certificate-item shadow-sm border-0">
                     <div class="row align-items-center g-3">
 
                         <!-- Main Info & Metadata Grid -->
@@ -377,8 +379,8 @@
                                 <div class="col-6 col-md-4">
                                     <div class="glass-subcard h-100">
                                         <span class="subcard-label">EVENT DATE</span>
-                                        <div class="subcard-value d-flex align-items-center gap-1.5">
-                                            <i class="fa-regular fa-calendar text-brand flex-shrink-0"></i>
+                                        <div class="subcard-value d-flex align-items-center">
+                                            <i class="fa-regular fa-calendar text-brand flex-shrink-0 me-2"></i>
                                             <span>{{ $eventDate }}</span>
                                         </div>
                                     </div>
@@ -387,8 +389,8 @@
                                 <div class="col-6 col-md-4">
                                     <div class="glass-subcard h-100">
                                         <span class="subcard-label">ISSUED DATE</span>
-                                        <div class="subcard-value d-flex align-items-center gap-1.5">
-                                            <i class="fa-regular fa-file-lines text-brand flex-shrink-0"></i>
+                                        <div class="subcard-value d-flex align-items-center">
+                                            <i class="fa-regular fa-file-lines text-brand flex-shrink-0 me-2"></i>
                                             <span>{{ $issueDate }}</span>
                                         </div>
                                     </div>
@@ -397,8 +399,8 @@
                                 <div class="col-12 col-md-4">
                                     <div class="glass-subcard h-100">
                                         <span class="subcard-label">CERTIFICATE NO.</span>
-                                        <div class="subcard-value d-flex align-items-center gap-1.5 overflow-hidden">
-                                            <i class="fa-solid fa-hashtag text-brand flex-shrink-0"></i>
+                                        <div class="subcard-value d-flex align-items-center overflow-hidden">
+                                            <i class="fa-solid fa-hashtag text-brand flex-shrink-0 me-2"></i>
                                             <span class="text-truncate">{{ $certNo }}</span>
                                         </div>
                                     </div>
@@ -407,17 +409,17 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="col-12 col-lg-4 d-flex justify-content-start justify-content-lg-end align-items-center gap-2 flex-wrap mt-2 mt-lg-0">
+                        <div class="col-12 col-lg-4 d-flex justify-content-start justify-content-lg-end align-items-center gap-2 flex-wrap mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
                             @if($tab === 'active')
-                                <button type="button" class="btn btn-sm rounded-pill px-3 py-2 fw-bold custom-btn-outline gap-1.5 flex-grow-1 flex-md-grow-0" style="font-size: 0.82rem;"
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-2 fw-bold custom-btn-outline d-inline-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="font-size: 0.82rem;"
                                         onclick="previewCertificate('{{ asset('storage/' . $cert->pdf_path) }}', '{{ addslashes($act->title ?? 'Certificate') }}')">
-                                    <i class="fa-regular fa-eye"></i> View
+                                    <i class="fa-regular fa-eye me-1"></i> View
                                 </button>
-                                <a href="{{ route('certificates.download', $cert->id) }}" class="btn btn-sm rounded-pill px-3.5 py-2 fw-bold custom-btn-filled gap-1.5 shadow-sm flex-grow-1 flex-md-grow-0" style="font-size: 0.82rem;">
-                                    <i class="fa-solid fa-download"></i> Download
+                                <a href="{{ route('certificates.download', $cert->id) }}" class="btn btn-sm rounded-pill px-3.5 py-2 fw-bold custom-btn-filled d-inline-flex align-items-center justify-content-center gap-2 shadow-sm flex-grow-1 flex-md-grow-0" style="font-size: 0.82rem;">
+                                    <i class="fa-solid fa-download me-1"></i> Download
                                 </a>
                                 <!-- Archive Button -->
-                                <button type="button" class="btn btn-sm btn-outline-secondary bg-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 p-0 shadow-sm" style="width: 36px; height: 36px;" title="Archive Certificate"
+                                <button type="button" class="btn btn-sm btn-outline-secondary bg-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 p-0 shadow-sm ms-auto ms-md-0" style="width: 38px; height: 38px;" title="Archive Certificate"
                                         onclick="confirmArchive('{{ route('certificates.archive', $cert->id) }}', '{{ addslashes($act->title ?? 'Certificate') }}')">
                                     <i class="fa-solid fa-box-archive"></i>
                                 </button>
@@ -426,14 +428,14 @@
                                 <form method="POST" action="{{ route('certificates.restore', $cert->id) }}" class="flex-grow-1 flex-md-grow-0">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-success bg-white rounded-pill px-3 py-2 fw-bold gap-1.5 w-100 shadow-sm" style="font-size: 0.82rem;">
-                                        <i class="fa-solid fa-rotate-left"></i> Restore
+                                    <button type="submit" class="btn btn-sm btn-outline-success bg-white rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center justify-content-center gap-2 w-100 shadow-sm" style="font-size: 0.82rem;">
+                                        <i class="fa-solid fa-rotate-left me-1"></i> Restore
                                     </button>
                                 </form>
                                 <!-- Permanent Delete Button -->
-                                <button type="button" class="btn btn-sm btn-outline-danger bg-white rounded-pill px-3 py-2 fw-bold gap-1.5 flex-grow-1 flex-md-grow-0 shadow-sm" style="font-size: 0.82rem;"
+                                <button type="button" class="btn btn-sm btn-outline-danger bg-white rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0 shadow-sm" style="font-size: 0.82rem;"
                                         onclick="confirmDelete('{{ route('certificates.destroy', $cert->id) }}', '{{ addslashes($act->title ?? 'Certificate') }}')">
-                                    <i class="fa-solid fa-trash-can"></i> Delete
+                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
                                 </button>
                             @endif
                         </div>

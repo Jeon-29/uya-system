@@ -50,7 +50,7 @@
             backdrop-filter: blur(8px) !important;
             -webkit-backdrop-filter: blur(8px) !important;
             border: 1px solid rgba(255, 255, 255, 0.45) !important;
-            transition: all 0.25 ease;
+            transition: all 0.25s ease;
         }
 
         .proposal-item:hover {
@@ -280,6 +280,16 @@
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.95) !important;
             box-shadow: 0 20px 50px rgba(34, 77, 91, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Template Download Callout Card */
+        .template-download-box {
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px dashed var(--uya-dark-teal);
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
         }
     </style>
 </head>
@@ -671,6 +681,20 @@
                             <div class="mb-2">
                                 <label class="form-label text-dark fw-bold mb-1" style="font-size: 0.78rem;">Description *</label>
                                 <textarea class="form-control rounded-3 p-2.5 shadow-none border bg-light" rows="3" style="font-size: 0.82rem; resize: none;" name="description" placeholder="Describe your proposal in detail..." required>{{ old('description') }}</textarea>
+                            </div>
+
+                            <!-- PROPOSAL TEMPLATE DOWNLOAD CALLOUT -->
+                            <div class="template-download-box mb-2.5 d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-file-word text-brand fs-4"></i>
+                                    <div>
+                                        <span class="fw-bold d-block text-brand" style="font-size: 0.78rem;">Official Proposal Template</span>
+                                        <span class="text-secondary d-block" style="font-size: 0.7rem;">Download & fill out before uploading.</span>
+                                    </div>
+                                </div>
+                                <a href="{{ asset('templates/UYA_Activity_Proposal_Template.pdf') }}" download class="btn btn-sm custom-btn-outline rounded-pill px-3 py-1 fw-bold flex-shrink-0" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-download me-1"></i> Download .PDF
+                                </a>
                             </div>
 
                             <div class="mb-2">

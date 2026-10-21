@@ -162,7 +162,7 @@
             border: 1px solid #ced4da;
         }
 
-        /* Status toast: top-centered over the form panel on desktop, pinned to the top of the screen on mobile */
+        /* Status toast */
         .status-toast {
             position: absolute;
             top: 0;
@@ -178,6 +178,46 @@
             opacity: 0;
             transform: translate(-50%, -12px);
             pointer-events: none;
+        }
+
+        /* Liquid Glass Bottom Privacy Banner */
+        .privacy-banner-glass {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: calc(100% - 2rem);
+            max-width: 560px;
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(34, 77, 91, 0.2);
+            padding: 0.9rem 1.2rem;
+            display: none;
+        }
+
+        /* Glass Modal Custom Styling */
+        .glass-modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 20px 50px rgba(34, 77, 91, 0.25) !important;
+        }
+
+        .privacy-scroll-box {
+            max-height: 280px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.82rem;
+            color: #334155;
+            line-height: 1.5;
         }
 
         @media (max-width: 991px) {
@@ -217,9 +257,6 @@
                 padding: 1.5rem 0;
             }
 
-            /* On mobile the two-pane absolute-centering trick clips tall
-               forms (like Register) above the visible area with no way to
-               scroll back up to them. Switch to normal document flow. */
             .form-section {
                 position: static;
                 top: auto;
@@ -265,10 +302,8 @@
         <!-- Left Branding Panel -->
         <div class="col-lg-5 left-panel">
             <div class="mb-3">
-                <div
-                    style="width: 120px; height: 120px; background-color: #83b6be; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; border: 3px solid var(--uya-gold); box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden;">
-                    <img src="{{ asset('images/logo.jpg') }}" alt="UYA Logo"
-                        style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="width: 120px; height: 120px; background-color: #83b6be; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; border: 3px solid var(--uya-gold); box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="UYA Logo" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </div>
             <h2 class="fw-bold mb-1">Union of Youth Alliance</h2>
@@ -303,8 +338,7 @@
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" name="email" value="{{ old('email') }}"
-                            class="form-control @error('email', 'login') is-invalid @enderror"
-                            placeholder="Enter email" required>
+                            class="form-control @error('email', 'login') is-invalid @enderror" placeholder="Enter email" required>
                         @error('email', 'login')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -353,7 +387,8 @@
                         <div class="col-12 col-md-6">
                             <label class="form-label">Age</label>
                             <input type="number" name="age" value="{{ old('age') }}" min="1" max="120"
-                                class="form-control @error('age', 'register') is-invalid @enderror" placeholder="Enter age">
+                                class="form-control @error('age', 'register') is-invalid @enderror"
+                                placeholder="Enter age">
                             @error('age', 'register')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -385,7 +420,8 @@
                     <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
                             <label class="form-label">Contact Number</label>
-                            <input type="text" name="contact_number" id="register-contact" value="{{ old('contact_number') }}"
+                            <input type="text" name="contact_number" id="register-contact"
+                                value="{{ old('contact_number') }}"
                                 class="form-control @error('contact_number', 'register') is-invalid @enderror"
                                 placeholder="Enter contact number" inputmode="numeric" pattern="[0-9]*" maxlength="15">
                             @error('contact_number', 'register')
@@ -423,7 +459,19 @@
                             <i class="fa-regular fa-eye password-toggle"></i>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 mb-2 shadow-sm">Register</button>
+
+                    <!-- DATA PRIVACY ACT CONSENT CHECKBOX -->
+                    <div class="form-check mb-3 text-start">
+                        <input class="form-check-input @error('privacy_policy', 'register') is-invalid @enderror" type="checkbox" name="privacy_policy" id="privacyPolicyCheck" value="1" required>
+                        <label class="form-check-label small text-muted" for="privacyPolicyCheck" style="font-size: 0.78rem;">
+                            I agree to the <a href="javascript:void(0)" id="triggerPrivacyModal" class="link-brand">Privacy Policy</a> and consent to the processing of my personal data under the <strong>Data Privacy Act of 2012</strong>.
+                        </label>
+                        @error('privacy_policy', 'register')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" id="registerSubmitBtn" class="btn btn-primary w-100 mb-2 shadow-sm" disabled>Register</button>
                     <div class="text-center small">
                         <span class="text-muted">Already have an account?</span>
                         <span class="link-brand ms-1" onclick="switchForm('form-login')">Login</span>
@@ -458,11 +506,10 @@
                 </form>
                 <form method="POST" action="{{ route('register.resend') }}" class="text-center small mb-2">
                     @csrf
-                    <button type="submit" class="btn btn-link link-brand p-0">Resend code</button>
+                    <button type="submit" id="resend-reg-btn" class="btn btn-link link-brand p-0 text-decoration-none">Resend code</button>
                 </form>
                 <div class="text-center small">
-                    <span class="link-brand" onclick="switchForm('form-register')"><i
-                            class="fa-solid fa-arrow-left me-1"></i> Back to registration</span>
+                    <span class="link-brand" onclick="switchForm('form-register')"><i class="fa-solid fa-arrow-left me-1"></i> Back to registration</span>
                 </div>
             </div>
 
@@ -485,8 +532,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm">Send OTP</button>
                     <div class="text-center small">
-                        <span class="link-brand" onclick="switchForm('form-login')"><i
-                                class="fa-solid fa-arrow-left me-1"></i> Back to login</span>
+                        <span class="link-brand" onclick="switchForm('form-login')"><i class="fa-solid fa-arrow-left me-1"></i> Back to login</span>
                     </div>
                 </form>
             </div>
@@ -518,11 +564,10 @@
                 </form>
                 <form method="POST" action="{{ route('password.resend') }}" class="text-center small mb-2">
                     @csrf
-                    <button type="submit" class="btn btn-link link-brand p-0">Resend code</button>
+                    <button type="submit" id="resend-pwd-btn" class="btn btn-link link-brand p-0 text-decoration-none">Resend code</button>
                 </form>
                 <div class="text-center small">
-                    <span class="link-brand" onclick="switchForm('form-forgot-step1')"><i
-                            class="fa-solid fa-arrow-left me-1"></i> Back to email step</span>
+                    <span class="link-brand" onclick="switchForm('form-forgot-step1')"><i class="fa-solid fa-arrow-left me-1"></i> Back to email step</span>
                 </div>
             </div>
 
@@ -557,12 +602,62 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm">Update Password</button>
                     <div class="text-center small">
-                        <span class="link-brand" onclick="switchForm('form-forgot-otp')"><i
-                                class="fa-solid fa-arrow-left me-1"></i> Back to OTP step</span>
+                        <span class="link-brand" onclick="switchForm('form-forgot-otp')"><i class="fa-solid fa-arrow-left me-1"></i> Back to OTP step</span>
                     </div>
                 </form>
             </div>
 
+        </div>
+    </div>
+
+    <!-- FIRST-TIME VISIT PRIVACY & COOKIE BANNER -->
+    <div id="privacyBanner" class="privacy-banner-glass">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <p class="small text-dark mb-0 fw-medium" style="font-size: 0.8rem; line-height: 1.35;">
+                <i class="fa-solid fa-shield-halved text-brand me-1"></i> We protect your personal information under the <strong>Data Privacy Act of 2012</strong>. Read our <a href="{{ route('privacy.policy') }}" target="_blank" class="link-brand">Privacy Policy</a>.
+            </p>
+            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 flex-shrink-0" id="acceptPrivacyBtn" style="font-size: 0.75rem;">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+
+    <!-- DATA PRIVACY ACT AGREEMENT MODAL -->
+    <div class="modal fade" id="dataPrivacyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 p-3 glass-modal-content">
+                <div class="modal-header border-0 pb-2">
+                    <h5 class="modal-title fw-bold text-brand d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-brand fs-4"></i>
+                        Data Privacy Agreement (RA 10173)
+                    </h5>
+                </div>
+                <div class="modal-body py-2">
+                    <p class="small text-muted mb-2">
+                        In compliance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>, please review how the Union of Youth Alliance collects, uses, and protects your personal information:
+                    </p>
+                    <div class="privacy-scroll-box shadow-inner mb-3">
+                        <h6 class="fw-bold text-dark mb-1">1. Information We Collect</h6>
+                        <p class="mb-2">We collect your full name, age, email address, gender, contact number, complete address, profile photo, and activity logs when you register and interact with our platform.</p>
+
+                        <h6 class="fw-bold text-dark mb-1">2. Purpose of Collection</h6>
+                        <p class="mb-2">Your information is strictly processed to verify identity, track activity attendance via QR codes, issue verifiable digital certificates, process community proposals, and deliver official organizational notices.</p>
+
+                        <h6 class="fw-bold text-dark mb-1">3. Security & Protection</h6>
+                        <p class="mb-2">All personal data is encrypted, secured via strict authentication controls, and stored in protected databases. Password hashes and verification tokens are managed with multi-tier fail-safes.</p>
+
+                        <h6 class="fw-bold text-dark mb-1">4. Your Rights as a Data Subject</h6>
+                        <p class="mb-0">Under Republic Act No. 10173, you retain the right to access, request corrections, or ask for the removal of your personal information at any time by contacting our Data Protection Officer.</p>
+                    </div>
+                    <p class="small text-dark fw-bold mb-0 text-center">
+                        By clicking "I Agree", you give consent to the Union of Youth Alliance to collect and process your personal information.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-2 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" id="declinePrivacyBtn">Decline</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="agreePrivacyBtn">I Agree</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -579,6 +674,65 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // ==========================================
+            // DATA PRIVACY MODAL & CHECKBOX LOGIC
+            // ==========================================
+            const privacyCheck = document.getElementById('privacyPolicyCheck');
+            const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+            const triggerPrivacyModal = document.getElementById('triggerPrivacyModal');
+            const dataPrivacyModalEl = document.getElementById('dataPrivacyModal');
+            const dataPrivacyModal = new bootstrap.Modal(dataPrivacyModalEl);
+            const agreePrivacyBtn = document.getElementById('agreePrivacyBtn');
+            const declinePrivacyBtn = document.getElementById('declinePrivacyBtn');
+
+            // Toggle Modal when user interacts with checkbox
+            if (privacyCheck) {
+                privacyCheck.addEventListener('click', function(e) {
+                    if (privacyCheck.checked) {
+                        e.preventDefault(); // Uncheck until agreed in modal
+                        privacyCheck.checked = false;
+                        dataPrivacyModal.show();
+                    } else {
+                        registerSubmitBtn.disabled = true;
+                    }
+                });
+            }
+
+            // Also open modal if clicking the text link
+            if (triggerPrivacyModal) {
+                triggerPrivacyModal.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    dataPrivacyModal.show();
+                });
+            }
+
+            // "I Agree" button handler
+            if (agreePrivacyBtn) {
+                agreePrivacyBtn.addEventListener('click', function() {
+                    privacyCheck.checked = true;
+                    registerSubmitBtn.disabled = false;
+                    dataPrivacyModal.hide();
+                });
+            }
+
+            // "Decline" button handler
+            if (declinePrivacyBtn) {
+                declinePrivacyBtn.addEventListener('click', function() {
+                    privacyCheck.checked = false;
+                    registerSubmitBtn.disabled = true;
+                    dataPrivacyModal.hide();
+                });
+            }
+
+            // Privacy Banner local storage check
+            if (!localStorage.getItem('privacy_acknowledged')) {
+                document.getElementById('privacyBanner').style.display = 'block';
+            }
+            document.getElementById('acceptPrivacyBtn').addEventListener('click', function() {
+                localStorage.setItem('privacy_acknowledged', '1');
+                document.getElementById('privacyBanner').style.display = 'none';
+            });
+
             // Status toast: fade out and remove after 3 seconds
             const statusToast = document.getElementById('statusToast');
             if (statusToast) {
@@ -588,7 +742,7 @@
                 }, 3000);
             }
 
-            // Contact number: digits only (typing, pasting, and mobile keyboards)
+            // Contact number: digits only
             const contactInput = document.getElementById('register-contact');
             if (contactInput) {
                 const keepDigits = () => {
@@ -617,13 +771,12 @@
                 });
             });
 
-            // OTP boxes: auto-advance, backspace support, and packing digits into hidden field
+            // OTP boxes
             document.querySelectorAll('.otp-form').forEach(form => {
                 const digits = form.querySelectorAll('.otp-digit');
                 const hidden = form.querySelector('input[name="otp"]');
 
                 digits.forEach((digit, index) => {
-                    // Select the existing digit on focus so typing replaces it instead of being blocked by maxlength
                     digit.addEventListener('focus', () => digit.select());
 
                     digit.addEventListener('input', () => {
@@ -656,7 +809,7 @@
                 });
             });
 
-            // Register form password strength meter
+            // Password strength meters
             const registerStrengthMeter = document.getElementById('register-strength-meter');
             const registerPasswordInput = document.getElementById('register-password');
 
@@ -681,11 +834,7 @@
                         registerStrengthMeter.style.display = 'none';
                     } else {
                         registerStrengthMeter.style.display = 'block';
-                        registerStrengthMeter.innerHTML = `
-                            <span style="color: ${strengthColors[Math.min(strength - 1, 3)]}">
-                                ${strengthLabels[Math.min(strength - 1, 3)]}
-                            </span>
-                        `;
+                        registerStrengthMeter.innerHTML = `<span style="color: ${strengthColors[Math.min(strength - 1, 3)]}">${strengthLabels[Math.min(strength - 1, 3)]}</span>`;
                         registerStrengthMeter.style.background = strengthBgColors[Math.min(strength - 1, 3)];
                         registerStrengthMeter.style.padding = '4px 8px';
                         registerStrengthMeter.style.borderRadius = '4px';
@@ -695,46 +844,7 @@
                 });
             }
 
-            // Forgot password new strength meter
-            const forgotNewStrengthMeter = document.getElementById('forgot-new-strength-meter');
-            const forgotNewPasswordInput = document.getElementById('forgot-new-password');
-
-            if (forgotNewStrengthMeter && forgotNewPasswordInput) {
-                forgotNewPasswordInput.addEventListener('input', () => {
-                    const value = forgotNewPasswordInput.value;
-                    let strength = 0;
-
-                    if (value.length >= 8) strength++;
-                    if (value.length >= 12) strength++;
-                    if (/[a-z]/.test(value)) strength++;
-                    if (/[A-Z]/.test(value)) strength++;
-                    if (/[0-9]/.test(value)) strength++;
-                    if (/[^a-zA-Z0-9]/.test(value)) strength++;
-
-                    const strengthLabels = ['Too short', 'Weak', 'Medium', 'Strong'];
-                    const strengthColors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745'];
-                    const strengthBgColors = ['rgba(220, 53, 69, 0.1)', 'rgba(253, 126, 20, 0.1)', 'rgba(255, 193, 7, 0.1)', 'rgba(40, 167, 69, 0.1)'];
-
-                    if (value.length === 0) {
-                        forgotNewStrengthMeter.innerHTML = '';
-                        forgotNewStrengthMeter.style.display = 'none';
-                    } else {
-                        forgotNewStrengthMeter.style.display = 'block';
-                        forgotNewStrengthMeter.innerHTML = `
-                            <span style="color: ${strengthColors[Math.min(strength - 1, 3)]}">
-                                ${strengthLabels[Math.min(strength - 1, 3)]}
-                            </span>
-                        `;
-                        forgotNewStrengthMeter.style.background = strengthBgColors[Math.min(strength - 1, 3)];
-                        forgotNewStrengthMeter.style.padding = '4px 8px';
-                        forgotNewStrengthMeter.style.borderRadius = '4px';
-                        forgotNewStrengthMeter.style.marginTop = '4px';
-                        forgotNewStrengthMeter.style.display = 'inline-block';
-                    }
-                });
-            }
-
-            // Real-time inline email validation for Registration
+            // Real-time email check
             const registerEmailInput = document.getElementById('register-email');
             const registerEmailStatus = document.getElementById('register-email-status');
 
@@ -781,6 +891,69 @@
                     }
                 });
             }
+
+            // OTP Cooldown Logic
+            const sessionStatus = {!! json_encode(session('status') ?: '') !!};
+            const activeFormId = {!! json_encode($activeForm) !!};
+
+            function initCooldown(formId, btnId, storageKey) {
+                const btn = document.getElementById(btnId);
+                if (!btn) return;
+
+                if (sessionStatus && (sessionStatus.includes('sent') || sessionStatus.includes('code')) && activeFormId === formId) {
+                    const existing = parseInt(localStorage.getItem(storageKey)) || 0;
+                    if (existing <= Date.now()) {
+                        localStorage.setItem(storageKey, Date.now() + 60000);
+                    }
+                }
+
+                const expiry = parseInt(localStorage.getItem(storageKey)) || 0;
+                if (expiry > Date.now()) {
+                    startTick(btn, expiry, storageKey);
+                } else {
+                    localStorage.removeItem(storageKey);
+                }
+            }
+
+            function startTick(btn, expiry, storageKey) {
+                btn.disabled = true;
+                btn.style.pointerEvents = 'none';
+                btn.style.color = '#6c757d';
+                btn.classList.remove('link-brand');
+
+                const interval = setInterval(() => {
+                    const now = Date.now();
+                    const remaining = Math.ceil((expiry - now) / 1000);
+
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        btn.disabled = false;
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.color = '';
+                        btn.classList.add('link-brand');
+                        btn.textContent = 'Resend code';
+                        localStorage.removeItem(storageKey);
+                    } else {
+                        btn.textContent = `Resend in ${remaining}s`;
+                    }
+                }, 1000);
+            }
+
+            initCooldown('form-register-otp', 'resend-reg-btn', 'reg_otp_cooldown');
+            initCooldown('form-forgot-otp', 'resend-pwd-btn', 'pwd_otp_cooldown');
+
+            // Double click prevention
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const btn = this.querySelector('button[type="submit"].btn-primary');
+                    if (btn) {
+                        setTimeout(() => {
+                            btn.disabled = true;
+                            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Verifying...';
+                        }, 50);
+                    }
+                });
+            });
         });
     </script>
 </body>

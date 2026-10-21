@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Route;
 // Redirect guest root attempts to login page
 Route::redirect('/', '/login');
 
+// Public Privacy Policy Route
+Route::view('/privacy-policy', 'privacy-policy')->name('privacy.policy');
+
 /*
 |--------------------------------------------------------------------------
 | Guest-only: login / register / forgot password

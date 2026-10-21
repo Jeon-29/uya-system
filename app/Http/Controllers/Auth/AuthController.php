@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Cache;
 
 class AuthController extends Controller
 {
@@ -32,9 +34,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Where a freshly authenticated user belongs: staff go to the admin dashboard, members to the member dashboard.
-     */
     private function homeFor(User $user): string
     {
         return in_array($user->role, ['admin', 'officer'], true)
@@ -57,7 +56,6 @@ class AuthController extends Controller
         }
 
         $email = filter_var(trim($request->input('email')), FILTER_SANITIZE_EMAIL);
-
         $user = User::where('email', $email)->first();
 
         if (! $user) {
@@ -83,9 +81,7 @@ class AuthController extends Controller
             $user->increment('failed_attempts');
 
             if ($user->failed_attempts >= 5) {
-                $user->update([
-                    'locked_until' => Carbon::now()->addMinute(),
-                ]);
+                $user->update(['locked_until' => Carbon::now()->addMinute()]);
             }
 
             return back()
@@ -95,10 +91,7 @@ class AuthController extends Controller
         }
 
         if ($user->failed_attempts > 0 || $user->locked_until) {
-            $user->update([
-                'failed_attempts' => 0,
-                'locked_until' => null,
-            ]);
+            $user->update(['failed_attempts' => 0, 'locked_until' => null]);
         }
 
         if (! $user->email_verified_at) {
@@ -107,6 +100,7 @@ class AuthController extends Controller
             try {
                 Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
                 $statusMsg = 'Please verify your email first. We just sent a new code to '.$user->email.'.';
+                RateLimiter::hit("send-otp:{$user->email}", 60); // 60s cooldown
             } catch (\Throwable $e) {
                 Log::error('Login OTP email failed: '.$e->getMessage());
                 $statusMsg = 'Code generated, but email delivery failed. Please check your connection or resend.';
@@ -123,9 +117,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         if (in_array($user->role, ['admin', 'officer'], true)) {
-            // Drop any saved member-page URL so it can't send staff to the member UI
             $request->session()->forget('url.intended');
-
             return redirect()->to($this->homeFor($user));
         }
 
@@ -142,6 +134,7 @@ class AuthController extends Controller
             'contact_number' => ['required', 'string', 'max:30'],
             'address' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'privacy_policy' => ['required', 'accepted'],
         ]);
 
         if ($validator->fails()) {
@@ -152,12 +145,12 @@ class AuthController extends Controller
         }
 
         $user = User::create($validator->validated());
-
         $otp = $user->generateOtp();
 
         try {
             Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
             $statusMsg = 'We sent a 6-digit code to '.$user->email.'.';
+            RateLimiter::hit("send-otp:{$user->email}", 60); // 60s cooldown
         } catch (\Throwable $e) {
             Log::error('Registration OTP email failed: '.$e->getMessage());
             $statusMsg = 'Account created! Email delivery failed, but you can request a new code.';
@@ -177,9 +170,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()
-                ->withErrors($validator, self::BAG_REGISTER_OTP)
-                ->with('active_form', 'form-register-otp');
+            return back()->withErrors($validator, self::BAG_REGISTER_OTP)->with('active_form', 'form-register-otp');
         }
 
         $email = $request->session()->get('register_email');
@@ -191,15 +182,47 @@ class AuthController extends Controller
                 ->withErrors(['name' => 'Your verification session expired. Please register again.'], self::BAG_REGISTER);
         }
 
-        if (! $user->otpMatches($request->input('otp'))) {
+        // Check if user is currently locked out from OTP guesses
+        if (Cache::has("otp_lock_{$email}")) {
+            $minutes = ceil((Cache::get("otp_lock_{$email}") - now()->timestamp) / 60);
             return back()
-                ->withErrors(['otp' => 'That code is invalid or has expired.'], self::BAG_REGISTER_OTP)
+                ->withErrors(['otp' => "Account locked. Please try again in {$minutes} minutes."], self::BAG_REGISTER_OTP)
                 ->with('active_form', 'form-register-otp');
         }
 
+        // Handle Incorrect OTP
+        if (! $user->otpMatches($request->input('otp'))) {
+            // Safely get and increment to avoid cache driver bugs
+            $fails = (int) Cache::get("otp_failures_{$email}", 0) + 1;
+            Cache::put("otp_failures_{$email}", $fails, now()->addHours(1));
+
+            if ($fails > 0 && $fails % 3 === 0) {
+                $user->clearOtp(); // Destroy current OTP
+
+                $penalty = 5; // Base 5 minutes
+                if ($fails == 6) $penalty = 10;
+                if ($fails >= 9) $penalty = 15;
+
+                Cache::put("otp_lock_{$email}", now()->addMinutes($penalty)->timestamp, $penalty * 60);
+
+                return back()
+                    ->withErrors(['otp' => "Too many failed attempts. Locked for {$penalty} minutes."], self::BAG_REGISTER_OTP)
+                    ->with('active_form', 'form-register-otp');
+            }
+
+            $attemptsLeft = 3 - ($fails % 3);
+            return back()
+                ->withErrors(['otp' => "Invalid code. {$attemptsLeft} attempt(s) remaining."], self::BAG_REGISTER_OTP)
+                ->with('active_form', 'form-register-otp');
+        }
+
+        // Success - clear locks
+        Cache::forget("otp_lock_{$email}");
+        Cache::forget("otp_failures_{$email}");
+        RateLimiter::clear("send-otp:{$email}");
+
         $user->forceFill(['email_verified_at' => now()])->save();
         $user->clearOtp();
-
         $request->session()->forget('register_email');
 
         Auth::login($user);
@@ -217,11 +240,27 @@ class AuthController extends Controller
             return redirect()->route('login')->with('active_form', 'form-register');
         }
 
+        // Check verification lockout
+        if (Cache::has("otp_lock_{$email}")) {
+            $minutes = ceil((Cache::get("otp_lock_{$email}") - now()->timestamp) / 60);
+            return back()
+                ->withErrors(['otp' => "Account locked. Wait {$minutes} minutes before resending."], self::BAG_REGISTER_OTP)
+                ->with('active_form', 'form-register-otp');
+        }
+
+        // Check strict 60s resend limit
+        if (RateLimiter::tooManyAttempts("send-otp:{$email}", 1)) {
+            return back()
+                ->withErrors(['otp' => "Please wait 60 seconds before requesting a new code."], self::BAG_REGISTER_OTP)
+                ->with('active_form', 'form-register-otp');
+        }
+
         $otp = $user->generateOtp();
 
         try {
             Mail::to($user->email)->send(new OtpMail($otp, 'verification'));
             $statusMsg = 'A new code was sent to '.$user->email.'.';
+            RateLimiter::hit("send-otp:{$email}", 60);
         } catch (\Throwable $e) {
             Log::error('Resend Registration OTP failed: '.$e->getMessage());
             $statusMsg = 'Failed to send new code. Please try again shortly.';
@@ -245,13 +284,32 @@ class AuthController extends Controller
                 ->with('active_form', 'form-forgot-step1');
         }
 
-        $user = User::where('email', $request->input('email'))->first();
+        $email = $request->input('email');
 
+        // Check verification lockout
+        if (Cache::has("otp_lock_{$email}")) {
+            $minutes = ceil((Cache::get("otp_lock_{$email}") - now()->timestamp) / 60);
+            return back()
+                ->withErrors(['email' => "Account locked. Wait {$minutes} minutes before resending."], self::BAG_FORGOT_EMAIL)
+                ->withInput()
+                ->with('active_form', 'form-forgot-step1');
+        }
+
+        // Check strict 60s send limit
+        if (RateLimiter::tooManyAttempts("send-otp:{$email}", 1)) {
+            return back()
+                ->withErrors(['email' => "Please wait 60 seconds before requesting a code."], self::BAG_FORGOT_EMAIL)
+                ->withInput()
+                ->with('active_form', 'form-forgot-step1');
+        }
+
+        $user = User::where('email', $email)->first();
         $otp = $user->generateOtp();
 
         try {
             Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
             $statusMsg = 'We sent a 6-digit code to '.$user->email.'.';
+            RateLimiter::hit("send-otp:{$email}", 60);
         } catch (\Throwable $e) {
             Log::error('Forgot Password OTP email failed: '.$e->getMessage());
             $statusMsg = 'Code generated, but email delivery failed. Please check your connection or resend.';
@@ -271,9 +329,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()
-                ->withErrors($validator, self::BAG_FORGOT_OTP)
-                ->with('active_form', 'form-forgot-otp');
+            return back()->withErrors($validator, self::BAG_FORGOT_OTP)->with('active_form', 'form-forgot-otp');
         }
 
         $email = $request->session()->get('reset_email');
@@ -285,11 +341,44 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'Your session expired. Please request a new code.'], self::BAG_FORGOT_EMAIL);
         }
 
-        if (! $user->otpMatches($request->input('otp'))) {
+        // Check if user is currently locked out from OTP guesses
+        if (Cache::has("otp_lock_{$email}")) {
+            $minutes = ceil((Cache::get("otp_lock_{$email}") - now()->timestamp) / 60);
             return back()
-                ->withErrors(['otp' => 'That code is invalid or has expired.'], self::BAG_FORGOT_OTP)
+                ->withErrors(['otp' => "Account locked. Please try again in {$minutes} minutes."], self::BAG_FORGOT_OTP)
                 ->with('active_form', 'form-forgot-otp');
         }
+
+        // Handle Incorrect OTP
+        if (! $user->otpMatches($request->input('otp'))) {
+            // Safely get and increment to avoid cache driver bugs
+            $fails = (int) Cache::get("otp_failures_{$email}", 0) + 1;
+            Cache::put("otp_failures_{$email}", $fails, now()->addHours(1));
+
+            if ($fails > 0 && $fails % 3 === 0) {
+                $user->clearOtp(); // Destroy current OTP
+
+                $penalty = 5; // Base 5 minutes
+                if ($fails == 6) $penalty = 10;
+                if ($fails >= 9) $penalty = 15;
+
+                Cache::put("otp_lock_{$email}", now()->addMinutes($penalty)->timestamp, $penalty * 60);
+
+                return back()
+                    ->withErrors(['otp' => "Too many failed attempts. Locked for {$penalty} minutes."], self::BAG_FORGOT_OTP)
+                    ->with('active_form', 'form-forgot-otp');
+            }
+
+            $attemptsLeft = 3 - ($fails % 3);
+            return back()
+                ->withErrors(['otp' => "Invalid code. {$attemptsLeft} attempt(s) remaining."], self::BAG_FORGOT_OTP)
+                ->with('active_form', 'form-forgot-otp');
+        }
+
+        // Success - clear locks
+        Cache::forget("otp_lock_{$email}");
+        Cache::forget("otp_failures_{$email}");
+        RateLimiter::clear("send-otp:{$email}");
 
         $user->clearOtp();
         $request->session()->put('reset_verified', true);
@@ -306,11 +395,27 @@ class AuthController extends Controller
             return redirect()->route('login')->with('active_form', 'form-forgot-step1');
         }
 
+        // Check verification lockout
+        if (Cache::has("otp_lock_{$email}")) {
+            $minutes = ceil((Cache::get("otp_lock_{$email}") - now()->timestamp) / 60);
+            return back()
+                ->withErrors(['otp' => "Account locked. Wait {$minutes} minutes before resending."], self::BAG_FORGOT_OTP)
+                ->with('active_form', 'form-forgot-otp');
+        }
+
+        // Check strict 60s resend limit
+        if (RateLimiter::tooManyAttempts("send-otp:{$email}", 1)) {
+            return back()
+                ->withErrors(['otp' => "Please wait 60 seconds before requesting a new code."], self::BAG_FORGOT_OTP)
+                ->with('active_form', 'form-forgot-otp');
+        }
+
         $otp = $user->generateOtp();
 
         try {
             Mail::to($user->email)->send(new OtpMail($otp, 'password reset'));
             $statusMsg = 'A new code was sent to '.$user->email.'.';
+            RateLimiter::hit("send-otp:{$email}", 60);
         } catch (\Throwable $e) {
             Log::error('Resend Password OTP failed: '.$e->getMessage());
             $statusMsg = 'Failed to send new code. Please try again shortly.';
@@ -355,10 +460,8 @@ class AuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect()->route('login');
     }
 
@@ -369,10 +472,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'available' => false,
-                'message' => 'Invalid email format.',
-            ]);
+            return response()->json(['available' => false, 'message' => 'Invalid email format.']);
         }
 
         $email = filter_var(trim($request->input('email')), FILTER_SANITIZE_EMAIL);
