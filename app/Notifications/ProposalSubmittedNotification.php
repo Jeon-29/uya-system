@@ -24,12 +24,16 @@ class ProposalSubmittedNotification extends Notification
 
     public function toArray($notifiable)
     {
-        return [
-            'type'        => 'proposal_submitted',
-            'title'       => 'New Proposal Submitted',
-            'message'     => "{$this->proposal->user->name} submitted a new proposal: \"{$this->proposal->title}\".",
-            'proposal_id' => $this->proposal->id,
-            'url'         => route('admin.proposals.show', $this->proposal->id),
-        ];
+        $targetUrl = route('admin.proposals.show', $this->proposal->id);
+    return [
+        'type'        => 'proposal_submitted',
+        'title'       => 'New Proposal Submitted',
+        'message'     => "{$this->proposal->user->name} submitted a new proposal: \"{$this->proposal->title}\".",
+        'icon'        => 'fa-regular fa-file-lines',
+        'proposal_id' => $this->proposal->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'Review Proposal',
+    ];
     }
 }

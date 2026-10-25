@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $activity->title }} - UYA Connect</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <style>
         :root {
@@ -111,6 +114,37 @@
             color: #fff;
         }
 
+        /* Exact Scan QR Button Styling matching reference design */
+        .btn-scan-qr {
+            background-color: var(--uya-dark-teal);
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+            padding: 0.65rem 1.25rem;
+            border-radius: 50rem;
+            box-shadow: 0 4px 14px rgba(34, 77, 91, 0.28);
+            transition: all 0.2s ease;
+        }
+        .btn-scan-qr:hover {
+            background-color: #193a44;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(34, 77, 91, 0.35);
+        }
+
+        .btn-action-primary {
+            background-color: var(--uya-dark-teal);
+            color: #ffffff;
+            border: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-action-primary:hover {
+            background-color: #193a44;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
         .ig-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -159,6 +193,15 @@
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* QR Reader Viewport Styling */
+        #qr-reader {
+            border: none !important;
+        }
+        #qr-reader video {
+            border-radius: 16px;
+            object-fit: cover !important;
         }
     </style>
 </head>
@@ -280,7 +323,7 @@
 
                         <!-- Right Summary Widget -->
                         <div class="col-12 col-lg-4">
-                            <div class="detail-subcard d-flex flex-column gap-2">
+                            <div class="detail-subcard d-flex flex-column gap-2 mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Registration</span>
                                     <span class="badge {{ $canRegister ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
@@ -301,6 +344,39 @@
                                     <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Photos</span>
                                     <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->photos->count() }}</span>
                                 </div>
+                            </div>
+
+                            <!-- Registration & Check-In Action Button Block -->
+                            <div class="mt-2">
+                                @if($activity->is_attendance_open && $userParticipant &&$userParticipant->status !== 'cancelled')
+                                    @if($hasAttended)
+                                        <button class="btn btn-success rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;" disabled>
+                                            <i class="fa-solid fa-circle-check"></i> Checked In
+                                        </button>
+                                    @else
+                                        <button onclick="openInPageQRScanner()" class="btn btn-scan-qr w-100 d-flex align-items-center justify-content-center gap-2" style="font-size: 0.92rem;">
+                                            <i class="fa-solid fa-camera"></i> Scan QR Code
+                                        </button>
+                                    @endif
+                                @elseif($userParticipant &&$userParticipant->status !== 'cancelled')
+                                    <form method="POST" action="{{ route('activities.register', $activity->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;" onclick="return confirm('Are you sure you want to cancel your registration?')">
+                                            <i class="fa-solid fa-user-xmark"></i> Cancel Registration
+                                        </button>
+                                    </form>
+                                @elseif($canRegister)
+                                    <form method="POST" action="{{ route('activities.register', $activity->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-action-primary rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-user-plus"></i> Join Activity
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-secondary rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 opacity-75" style="font-size: 0.85rem;" disabled>
+                                        <i class="fa-solid fa-ban"></i> Registration Closed
+                                    </button>
+                                @endif
                             </div>
                         </div>
 
@@ -409,6 +485,41 @@
 
     </div>
 
+    <!-- IN-PAGE QR CODE SCANNER MODAL -->
+    <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-3 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 border-secondary border-opacity-10">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; background-color: var(--uya-dark-teal); font-size: 0.85rem;">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Scan Attendance QR Code</h5>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" onclick="stopQRScanner()"></button>
+                </div>
+
+                <div class="modal-body p-0 text-center">
+                    <p class="text-secondary small mb-3 fw-medium" style="font-size: 0.82rem;">
+                        Align the activity QR code inside the camera frame below to check in.
+                    </p>
+
+                    <!-- Camera Viewport Container -->
+                    <div id="qr-reader" class="rounded-4 overflow-hidden bg-dark shadow-inner mb-3" style="width: 100%; min-height: 280px;"></div>
+
+                    <!-- Scanner Status / Result Feedback -->
+                    <div id="scanStatus" class="alert alert-info py-2 px-3 rounded-pill small mb-0 d-none text-truncate fw-semibold">
+                        Scanning for QR Code...
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3 border-top pt-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold shadow-sm" data-bs-dismiss="modal" onclick="stopQRScanner()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- INSTAGRAM-STYLE LIGHTBOX MODAL POPUP -->
     <div class="modal fade" id="slideshowModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -490,6 +601,71 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentBatchPhotos = [];
+        let html5QrCode = null;
+
+        function openInPageQRScanner() {
+            const modalElem = document.getElementById('qrScannerModal');
+            const qrModal = new bootstrap.Modal(modalElem);
+            qrModal.show();
+
+            const statusElem = document.getElementById('scanStatus');
+            statusElem.classList.remove('d-none', 'alert-danger', 'alert-success');
+            statusElem.classList.add('alert-info');
+            statusElem.innerText = "Initializing camera...";
+
+            setTimeout(() => {
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 220, height: 220 }
+                    },
+                    (decodedText) => {
+                        handleQRScanSuccess(decodedText);
+                    },
+                    (errorMessage) => {
+                        // Keep scanning
+                    }
+                ).then(() => {
+                    statusElem.innerText = "Align QR code inside the frame to check in.";
+                }).catch((err) => {
+                    statusElem.classList.remove('alert-info');
+                    statusElem.classList.add('alert-danger');
+                    statusElem.innerText = "Unable to access camera. Please allow camera permissions.";
+                });
+            }, 300);
+        }
+
+        function stopQRScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                }).catch(() => {});
+            }
+        }
+
+        function handleQRScanSuccess(decodedUrl) {
+            stopQRScanner();
+            const statusElem = document.getElementById('scanStatus');
+            statusElem.classList.remove('alert-info', 'alert-danger');
+            statusElem.classList.add('alert-success');
+            statusElem.innerText = "QR Code detected! Processing check-in...";
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            // Submit scanned attendance via POST/Fetch or direct navigation
+            if (decodedUrl) {
+                window.location.href = decodedUrl;
+            }
+        }
+
+        document.getElementById('qrScannerModal')?.addEventListener('hidden.bs.modal', function () {
+            stopQRScanner();
+        });
 
         function openFeedbackModal() {
             const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));

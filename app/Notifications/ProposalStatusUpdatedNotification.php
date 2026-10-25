@@ -26,12 +26,16 @@ class ProposalStatusUpdatedNotification extends Notification
 
     public function toArray($notifiable)
     {
-        return [
-            'type'        => 'proposal_status_updated',
-            'title'       => 'Proposal Status Update',
-            'message'     => "Your proposal \"{$this->proposal->title}\" status updated: {$this->statusMessage}",
-            'proposal_id' => $this->proposal->id,
-            'url'         => route('proposals.show', $this->proposal->id),
-        ];
+        $targetUrl = route('proposals.show', $this->proposal->id);
+    return [
+        'type'        => 'proposal_status_updated',
+        'title'       => 'Proposal Status Update',
+        'message'     => "Your proposal \"{$this->proposal->title}\" status updated: {$this->statusMessage}",
+        'icon'        => 'fa-regular fa-bell',
+        'proposal_id' => $this->proposal->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'View Proposal',
+    ];
     }
 }

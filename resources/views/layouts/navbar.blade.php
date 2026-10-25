@@ -144,10 +144,31 @@
                             @forelse($unreadNotifs as $notif)
                                 @php
                                     $data = $notif->data ?? [];
-                                    $icon = $data['icon'] ?? 'fa-regular fa-bell';
                                     $title = $data['title'] ?? 'Notification';
                                     $message = $data['message'] ?? '';
-                                    $actionUrl = $data['action_url'] ?? '#';
+                                    $icon = $data['icon'] ?? 'fa-regular fa-bell';
+
+                                    // Support both 'action_url' and 'url'
+                                    $rawUrl = $data['action_url'] ?? $data['url'] ?? '#';
+
+                                    // Dynamic fallback route resolver if rawUrl is '#' or empty
+                                    if ($rawUrl === '#' || empty($rawUrl)) {
+                                        if (isset($data['activity_id'])) {
+                                            $rawUrl = Route::has('activities.show') ? route('activities.show', $data['activity_id']) : route('activities');
+                                        } elseif (isset($data['proposal_id'])) {
+                                            $rawUrl = Route::has('proposals.show') ? route('proposals.show', $data['proposal_id']) : route('proposals');
+                                        } elseif (str_contains(strtolower($title), 'completed') || str_contains(strtolower($title), 'certificate') || str_contains(strtolower($message), 'certificate')) {
+                                            $rawUrl = route('certificates');
+                                        } elseif (str_contains(strtolower($title), 'activity') || str_contains(strtolower($title), 'registration')) {
+                                            $rawUrl = route('activities');
+                                        } elseif (str_contains(strtolower($title), 'announcement')) {
+                                            $rawUrl = route('announcements');
+                                        } else {
+                                            $rawUrl = Route::has('notifications') ? route('notifications') : '#';
+                                        }
+                                    }
+
+                                    $actionUrl = $rawUrl;
                                     $actionText = $data['action_text'] ?? 'View';
                                 @endphp
                                 <div class="p-2.5 mb-2 rounded-3 ref-notif-item position-relative glass-subcard shadow-sm pb-3">
@@ -549,7 +570,7 @@
         }
     });
 
-    // Fix navbar notification popup view link navigation
+    // Reliable navigation handler for notification links
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const notifPopup = document.getElementById('notifPopup');
@@ -559,11 +580,13 @@
                 const viewLink = e.target.closest('.navbar-notif-view-link');
                 if (!viewLink) return;
 
-                const readUrl = viewLink.getAttribute('data-read-url');
                 const targetUrl = viewLink.getAttribute('href');
+                const readUrl = viewLink.getAttribute('data-read-url');
 
                 if (targetUrl && targetUrl !== '#') {
                     e.preventDefault();
+
+                    // Send mark-as-read in background
                     if (readUrl) {
                         fetch(readUrl, {
                             method: 'POST',
@@ -575,7 +598,11 @@
                             body: new URLSearchParams({ _token: csrfToken }),
                         }).catch(() => {});
                     }
-                    window.location.href = targetUrl;
+
+                    // Navigate smoothly after 50ms
+                    setTimeout(function () {
+                        window.location.assign(targetUrl);
+                    }, 50);
                 }
             });
         }
