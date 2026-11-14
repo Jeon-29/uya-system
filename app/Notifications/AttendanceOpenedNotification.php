@@ -28,8 +28,11 @@ class AttendanceOpenedNotification extends Notification
             'type'        => 'attendance_opened',
             'title'       => 'Attendance Check-In Open',
             'message'     => "Attendance check-in for \"{$this->activity->title}\" is now open. Scan your QR code to verify presence.",
+            'icon'        => 'fa-solid fa-qrcode',
             'activity_id' => $this->activity->id,
             'url'         => route('activities.show', $this->activity->id),
+            'action_url'  => route('activities.show', $this->activity->id),
+            'action_text' => 'Check In Now',
         ];
     }
 }

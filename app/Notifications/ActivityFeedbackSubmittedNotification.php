@@ -33,9 +33,12 @@ class ActivityFeedbackSubmittedNotification extends Notification
             'type'        => 'feedback_submitted',
             'title'       => 'New Feedback Submitted',
             'message'     => "{$this->member->name} submitted feedback for \"{$this->activity->title}\".",
+            'icon'        => 'fa-regular fa-comment-dots',
             'comment'     => $this->comment,
             'activity_id' => $this->activity->id,
             'url'         => route('admin.activities.show', $this->activity->id),
+            'action_url'  => route('admin.activities.show', $this->activity->id),
+            'action_text' => 'View Feedback',
         ];
     }
 }

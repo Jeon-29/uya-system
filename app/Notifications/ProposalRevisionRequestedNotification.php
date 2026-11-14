@@ -26,12 +26,16 @@ class ProposalRevisionRequestedNotification extends Notification
 
     public function toArray($notifiable)
     {
-        return [
-            'type'        => 'proposal_revision_requested',
-            'title'       => 'Proposal Revision Requested',
-            'message'     => "An officer requested revisions for \"{$this->proposal->title}\": {$this->feedback}",
-            'proposal_id' => $this->proposal->id,
-            'url'         => route('proposals.show', $this->proposal->id),
-        ];
+        $targetUrl = route('proposals.show', $this->proposal->id);
+    return [
+        'type'        => 'proposal_revision_requested',
+        'title'       => 'Proposal Revision Requested',
+        'message'     => "An officer requested revisions for \"{$this->proposal->title}\": {$this->feedback}",
+        'icon'        => 'fa-solid fa-pen-to-square',
+        'proposal_id' => $this->proposal->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'Edit Proposal',
+    ];
     }
 }

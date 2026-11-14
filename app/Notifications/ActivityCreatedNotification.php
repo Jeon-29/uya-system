@@ -28,8 +28,11 @@ class ActivityCreatedNotification extends Notification
             'type'        => 'activity_created',
             'title'       => 'New Activity Available',
             'message'     => "A new activity \"{$this->activity->title}\" has been published.",
+            'icon'        => 'fa-regular fa-calendar-check',
             'activity_id' => $this->activity->id,
             'url'         => route('activities.show', $this->activity->id),
+            'action_url'  => route('activities.show', $this->activity->id),
+            'action_text' => 'View Activity',
         ];
     }
 }

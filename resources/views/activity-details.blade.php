@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $activity->title }} - UYA Connect</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML5 QR Code Camera Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
         :root {
@@ -105,10 +108,24 @@
             border: none;
             font-weight: 600;
             box-shadow: 0 4px 12px rgba(34, 77, 91, 0.25);
+            transition: background-color 0.2s ease;
         }
         .custom-btn-filled:hover {
             background-color: #193a44;
             color: #fff;
+        }
+
+        .btn-action-primary {
+            background-color: var(--uya-dark-teal);
+            color: #ffffff;
+            border: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-action-primary:hover {
+            background-color: #193a44;
+            color: #ffffff;
+            transform: translateY(-1px);
         }
 
         .ig-grid {
@@ -160,6 +177,13 @@
             border: 1px solid #cbd5e1 !important;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
         }
+
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #000;
+        }
     </style>
 </head>
 <body>
@@ -179,9 +203,11 @@
 
         @php
             $isDeadlinePassed = $activity->registration_deadline && now()->greaterThan($activity->registration_deadline);
-            $canRegister =$activity->is_registration_open && !$isDeadlinePassed &&$activity->hasAvailableSlots();
-            $userParticipant =$activity->participants->where('user_id', auth()->id())->first();
-            $hasAttended =$userParticipant && in_array($userParticipant->status, ['attended', 'late']);$userFeedback = $activity->feedback->where('user_id', auth()->id())->first();$groupedPhotos = $activity->photos->groupBy(function ($photo) {
+            $canRegister = $activity->is_registration_open && !$isDeadlinePassed && $activity->hasAvailableSlots();
+            $userParticipant = $activity->participants->where('user_id', auth()->id())->first();
+            $hasAttended = $userParticipant && in_array($userParticipant->status, ['attended', 'late']);
+            $userFeedback = $activity->feedback->where('user_id', auth()->id())->first();
+            $groupedPhotos = $activity->photos->groupBy(function ($photo) {
                 return $photo->batch_id ?? ('single_' . $photo->id);
             });
         @endphp
@@ -280,7 +306,7 @@
 
                         <!-- Right Summary Widget -->
                         <div class="col-12 col-lg-4">
-                            <div class="detail-subcard d-flex flex-column gap-2">
+                            <div class="detail-subcard d-flex flex-column gap-2 mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="text-secondary fw-semibold" style="font-size: 0.8rem;">Registration</span>
                                     <span class="badge {{ $canRegister ? 'status-badge-green' : 'bg-secondary text-white' }} px-2 py-0.5" style="font-size: 0.65rem;">
@@ -302,6 +328,39 @@
                                     <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $activity->photos->count() }}</span>
                                 </div>
                             </div>
+
+                            <!-- Registration & Check-In Action Button Block -->
+                            <div class="mt-2">
+                                @if($hasAttended)
+                                    <button class="btn btn-success rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;" disabled>
+                                        <i class="fa-solid fa-circle-check"></i> Checked In
+                                    </button>
+                                @elseif($userParticipant && $userParticipant->status !== 'cancelled')
+                                    @if($activity->is_attendance_open)
+                                        <button onclick="openQRScanner()" class="btn custom-btn-filled rounded-pill py-2 w-100 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="font-size: 0.92rem;">
+                                            <i class="fa-solid fa-camera"></i> Scan QR Code
+                                        </button>
+                                    @else
+                                        <form method="POST" action="{{ route('activities.register', $activity->id) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-danger rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;" onclick="return confirm('Are you sure you want to cancel your registration?')">
+                                                <i class="fa-solid fa-user-xmark"></i> Cancel Registration
+                                            </button>
+                                        </form>
+                                    @endif
+                                @elseif($canRegister)
+                                    <form method="POST" action="{{ route('activities.register', $activity->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-action-primary rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-user-plus"></i> Join Activity
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-secondary rounded-pill py-2 w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 opacity-75" style="font-size: 0.85rem;" disabled>
+                                        <i class="fa-solid fa-ban"></i> Registration Closed
+                                    </button>
+                                @endif
+                            </div>
                         </div>
 
                     </div>
@@ -322,9 +381,11 @@
 
                     @if($groupedPhotos->count() > 0)
                         <div class="ig-grid">
-                            @foreach($groupedPhotos as $batchId =>$photos)
+                            @foreach($groupedPhotos as $batchId => $photos)
                                 @php
-                                    $coverPhoto = $photos->first();$photoCount = $photos->count();$batchJson = json_encode($photos->map(function($p) {
+                                    $coverPhoto = $photos->first();
+                                    $photoCount = $photos->count();
+                                    $batchJson = json_encode($photos->map(function($p) {
                                         return [
                                             'id' => $p->id,
                                             'url' => asset('storage/' . $p->photo_path),
@@ -409,6 +470,50 @@
 
     </div>
 
+    <!-- LIVE CAMERA QR SCANNER MODAL (EXACT FROM ACTIVITIES.BLADE.PHP) -->
+    <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg border-0 p-4 glass-modal-content">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3 border-secondary border-opacity-10">
+                    <div class="d-flex align-items-center gap-2 text-brand fw-bold">
+                        <i class="fa-solid fa-camera fa-lg"></i>
+                        <span style="font-size: 1.1rem;">Scan Attendance QR Code</span>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div id="reader" class="mb-3"></div>
+
+                <form id="qrScanForm" onsubmit="submitQrToken(event)">
+                    <input type="text" id="qrTokenInput" class="form-control rounded-pill text-center mb-3 d-none bg-light" placeholder="Paste or scan QR token code..." required style="font-size: 0.85rem;">
+                    <button type="submit" id="btnSubmitScan" class="btn custom-btn-filled rounded-pill py-2 w-100 mb-2 shadow-sm">
+                        Verify Attendance
+                    </button>
+                </form>
+
+                <button type="button" class="btn btn-outline-dark rounded-pill py-2 w-100 fw-bold shadow-sm bg-light" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SMART ATTENDANCE VERIFICATION FEEDBACK MODAL (EXACT FROM ACTIVITIES.BLADE.PHP) -->
+    <div class="modal fade" id="attendanceFeedbackModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content rounded-4 border-0 p-4 text-center glass-modal-content">
+                <div id="feedbackIconContainer" class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                    <i id="feedbackIcon" class="fa-solid fa-3x"></i>
+                </div>
+                <h5 id="feedbackTitle" class="fw-bold mb-2"></h5>
+                <p id="feedbackMessage" class="text-dark small mb-4 fw-medium"></p>
+                <button type="button" onclick="window.location.reload()" class="btn custom-btn-filled rounded-pill w-100 py-2 shadow-sm">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- INSTAGRAM-STYLE LIGHTBOX MODAL POPUP -->
     <div class="modal fade" id="slideshowModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -490,6 +595,92 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentBatchPhotos = [];
+        let html5QrCode = null;
+
+        // EXACT QR SCANNER JS FROM ACTIVITIES.BLADE.PHP
+        function openQRScanner() {
+            const modalElement = document.getElementById('qrScannerModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+
+            if (html5QrCode) {
+                html5QrCode.clear();
+            }
+
+            html5QrCode = new Html5Qrcode("reader");
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    document.getElementById('qrTokenInput').value = decodedText;
+                    if (html5QrCode.isScanning) {
+                        html5QrCode.stop().then(() => {
+                            const qrModal = bootstrap.Modal.getInstance(document.getElementById('qrScannerModal'));
+                            if (qrModal) qrModal.hide();
+                            document.getElementById('qrScanForm').dispatchEvent(new Event('submit'));
+                        });
+                    }
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                alert("Camera permission denied or camera device not detected.");
+            });
+        }
+
+        document.getElementById('qrScannerModal').addEventListener('hidden.bs.modal', function () {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop();
+            }
+        });
+
+        function submitQrToken(e) {
+            e.preventDefault();
+            const token = document.getElementById('qrTokenInput').value;
+
+            fetch('{{ route('activities.process-qr') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ token: token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const iconContainer = document.getElementById('feedbackIconContainer');
+                const icon = document.getElementById('feedbackIcon');
+                const title = document.getElementById('feedbackTitle');
+                const msg = document.getElementById('feedbackMessage');
+
+                if (data.success) {
+                    if (data.state === 'late') {
+                        iconContainer.style.backgroundColor = 'rgba(255, 193, 7, 0.15)';
+                        icon.className = 'fa-solid fa-clock text-warning';
+                        title.className = 'fw-bold mb-2 text-warning';
+                        title.innerText = 'Attendance Marked Late';
+                    } else {
+                        iconContainer.style.backgroundColor = 'rgba(25, 135, 84, 0.15)';
+                        icon.className = 'fa-solid fa-circle-check text-success';
+                        title.className = 'fw-bold mb-2 text-success';
+                        title.innerText = 'Attendance Verified!';
+                    }
+                    msg.innerText = data.message;
+                } else {
+                    iconContainer.style.backgroundColor = 'rgba(220, 53, 69, 0.15)';
+                    icon.className = 'fa-solid fa-circle-xmark text-danger';
+                    title.className = 'fw-bold mb-2 text-danger';
+                    title.innerText = 'Check-In Failed';
+                    msg.innerText = data.message || 'Invalid or expired QR code.';
+                }
+
+                const feedbackModal = new bootstrap.Modal(document.getElementById('attendanceFeedbackModal'));
+                feedbackModal.show();
+            })
+            .catch(() => {
+                alert('An error occurred while verifying your attendance.');
+            });
+        }
 
         function openFeedbackModal() {
             const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));

@@ -159,10 +159,28 @@
             @forelse($notifications as $notif)
                 @php
                     $data = $notif->data ?? [];
-                    $icon =$data['icon'] ?? 'fa-regular fa-bell';
                     $title =$data['title'] ?? 'System Notification';
                     $message =$data['message'] ?? '';
-                    $actionUrl =$data['action_url'] ?? '#';
+                    $icon =$data['icon'] ?? 'fa-regular fa-bell';
+
+                    // Support both 'action_url' and 'url'
+                    $rawUrl = $data['action_url'] ?? $data['url'] ?? '#';
+
+                    // Dynamic fallback route resolver if rawUrl is '#' or empty
+                    if ($rawUrl === '#' || empty($rawUrl)) {
+                        if (isset($data['activity_id'])) {
+                            $rawUrl = Route::has('activities.show') ? route('activities.show', $data['activity_id']) : route('activities');
+                        } elseif (isset($data['proposal_id'])) {
+                            $rawUrl = Route::has('proposals.show') ? route('proposals.show', $data['proposal_id']) : route('proposals');
+                        } elseif (str_contains(strtolower($title), 'completed') || str_contains(strtolower($title), 'certificate') || str_contains(strtolower($message), 'certificate')) {$rawUrl = route('certificates');
+                        } elseif (str_contains(strtolower($title), 'activity') || str_contains(strtolower($title), 'registration')) {$rawUrl = route('activities');
+                        } elseif (str_contains(strtolower($title), 'announcement')) {$rawUrl = route('announcements');
+                        } else {
+                            $rawUrl = Route::has('notifications') ? route('notifications') : '#';
+                        }
+                    }
+
+                    $actionUrl =$rawUrl;
                     $actionText =$data['action_text'] ?? 'View Details';
                 @endphp
                 <div class="card p-3 notification-card border-start border-4 border-warning" data-notif-card>

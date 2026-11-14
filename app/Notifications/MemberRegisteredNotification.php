@@ -27,12 +27,16 @@ class MemberRegisteredNotification extends Notification
 
     public function toArray($notifiable)
     {
-        return [
-            'type'        => 'member_registered',
-            'title'       => 'New Registration',
-            'message'     => "{$this->member->name} registered for \"{$this->activity->title}\".",
-            'activity_id' => $this->activity->id,
-            'url'         => route('admin.activities.show', $this->activity->id),
-        ];
+        $targetUrl = route('admin.activities.show', $this->activity->id);
+    return [
+        'type'        => 'member_registered',
+        'title'       => 'New Registration',
+        'message'     => "{$this->member->name} registered for \"{$this->activity->title}\".",
+        'icon'        => 'fa-solid fa-user-plus',
+        'activity_id' => $this->activity->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'View Activity',
+    ];
     }
 }

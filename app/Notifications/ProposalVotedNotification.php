@@ -27,12 +27,16 @@ class ProposalVotedNotification extends Notification
 
     public function toArray($notifiable)
     {
-        return [
-            'type'        => 'proposal_voted',
-            'title'       => 'New Vote Cast',
-            'message'     => "Someone voted on your proposal \"{$this->proposal->title}\". Check private feedback!",
-            'proposal_id' => $this->proposal->id,
-            'url'         => route('proposals.show', $this->proposal->id),
-        ];
+        $targetUrl = route('proposals.show', $this->proposal->id);
+    return [
+        'type'        => 'proposal_voted',
+        'title'       => 'New Vote Cast',
+        'message'     => "Someone voted on your proposal \"{$this->proposal->title}\". Check private feedback!",
+        'icon'        => 'fa-regular fa-thumbs-up',
+        'proposal_id' => $this->proposal->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'View Feedback',
+    ];
     }
 }

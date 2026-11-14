@@ -28,8 +28,11 @@ class ActivityCompletedNotification extends Notification
             'type'        => 'activity_completed',
             'title'       => 'Activity Completed',
             'message'     => "The activity \"{$this->activity->title}\" has ended. Leave feedback or access your certificate!",
+            'icon'        => 'fa-solid fa-ribbon',
             'activity_id' => $this->activity->id,
-            'url'         => route('activities.show', $this->activity->id),
+            'url'         => route('certificates'),
+            'action_url'  => route('certificates'),
+            'action_text' => 'View Certificate',
         ];
     }
 }

@@ -27,14 +27,18 @@ class RegistrationConfirmedNotification extends Notification
     public function toArray($notifiable)
     {
         $isJoin = $this->action === 'joined';
-        return [
-            'type'        => 'registration_' . $this->action,
-            'title'       => $isJoin ? 'Registration Confirmed' : 'Registration Cancelled',
-            'message'     => $isJoin
-                ? "You have successfully registered for \"{$this->activity->title}\"."
-                : "Your registration for \"{$this->activity->title}\" has been cancelled.",
-            'activity_id' => $this->activity->id,
-            'url'         => route('activities.show', $this->activity->id),
-        ];
+    $targetUrl = route('activities.show', $this->activity->id);
+    return [
+        'type'        => 'registration_' . $this->action,
+        'title'       => $isJoin ? 'Registration Confirmed' : 'Registration Cancelled',
+        'message'     => $isJoin
+            ? "You have successfully registered for \"{$this->activity->title}\"."
+            : "Your registration for \"{$this->activity->title}\" has been cancelled.",
+        'icon'        => $isJoin ? 'fa-regular fa-circle-check' : 'fa-regular fa-circle-xmark',
+        'activity_id' => $this->activity->id,
+        'url'         => $targetUrl,
+        'action_url'  => $targetUrl,
+        'action_text' => 'View Activity',
+    ];
     }
 }
