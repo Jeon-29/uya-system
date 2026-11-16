@@ -127,7 +127,9 @@ class AuthController extends Controller
     public function register(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'middle_initial' => ['nullable', 'string', 'max:2', 'alpha'],
+            'last_name' => ['required', 'string', 'max:100'],
             'age' => ['required', 'integer', 'min:1', 'max:120'],
             'email' => ['required', 'email', 'unique:users,email'],
             'gender' => ['required', 'string', 'in:Male,Female,Prefer not to say'],
@@ -179,7 +181,7 @@ class AuthController extends Controller
         if (! $user) {
             return redirect()->route('login')
                 ->with('active_form', 'form-register')
-                ->withErrors(['name' => 'Your verification session expired. Please register again.'], self::BAG_REGISTER);
+                ->withErrors(['first_name' => 'Your verification session expired. Please register again.'], self::BAG_REGISTER);
         }
 
         // Check if user is currently locked out from OTP guesses

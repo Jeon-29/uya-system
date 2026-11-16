@@ -6,12 +6,16 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
+    'first_name',
+    'middle_initial',
+    'last_name',
     'name',
     'age',
     'email',
@@ -29,6 +33,55 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Automatically keep the legacy `name` column synchronized whenever
+     * `first_name`, `middle_initial`, or `last_name` is created or updated.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if ($user->isDirty(['first_name', 'middle_initial', 'last_name']) || blank($user->name)) {
+                $first = trim((string) $user->first_name);
+                $middle = trim((string) $user->middle_initial, " \t\n\r\0\x0B.");
+                $last = trim((string) $user->last_name);
+
+                if ($first !== '' || $last !== '') {
+                    $user->middle_initial = $middle !== '' ? strtoupper($middle) : null;
+
+                    $parts = array_filter([
+                        $first,
+                        $user->middle_initial ? $user->middle_initial . '.' : null,
+                        $last,
+                    ]);
+
+                    $user->name = implode(' ', $parts);
+                }
+            }
+        });
+    }
+
+    /**
+     * Get the user's formatted full name ($user->full_name).
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(function () {
+            $first = trim((string) $this->first_name);
+            $middle = trim((string) $this->middle_initial, " \t\n\r\0\x0B.");
+            $last = trim((string) $this->last_name);
+
+            if ($first !== '' || $last !== '') {
+                return implode(' ', array_filter([
+                    $first,
+                    $middle !== '' ? strtoupper($middle) . '.' : null,
+                    $last,
+                ]));
+            }
+
+            return $this->name;
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

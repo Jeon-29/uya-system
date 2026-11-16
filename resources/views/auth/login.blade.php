@@ -375,16 +375,37 @@
                 <form method="POST" action="{{ route('register') }}" novalidate>
                     @csrf
                     <div class="row g-2 mb-2">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" value="{{ old('name') }}"
-                                class="form-control @error('name', 'register') is-invalid @enderror"
-                                placeholder="Enter your full name">
-                            @error('name', 'register')
+                        <div class="col-12 col-sm-5">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" value="{{ old('first_name') }}"
+                                class="form-control @error('first_name', 'register') is-invalid @enderror"
+                                placeholder="First name" required>
+                            @error('first_name', 'register')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-4 col-sm-2">
+                            <label class="form-label">M.I. <span class="text-muted fw-normal">(Opt.)</span></label>
+                            <input type="text" name="middle_initial" id="register-mi" value="{{ old('middle_initial') }}"
+                                maxlength="2"
+                                class="form-control text-center text-uppercase @error('middle_initial', 'register') is-invalid @enderror"
+                                placeholder="M.I.">
+                            @error('middle_initial', 'register')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-8 col-sm-5">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" value="{{ old('last_name') }}"
+                                class="form-control @error('last_name', 'register') is-invalid @enderror"
+                                placeholder="Last name" required>
+                            @error('last_name', 'register')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">Age</label>
                             <input type="number" name="age" value="{{ old('age') }}" min="1" max="120"
                                 class="form-control @error('age', 'register') is-invalid @enderror"
@@ -393,9 +414,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-8">
                             <label class="form-label">Email Address</label>
                             <input type="email" name="email" value="{{ old('email') }}"
                                 class="form-control @error('email', 'register') is-invalid @enderror"
@@ -405,6 +424,8 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                    </div>
+                    <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
                             <label class="form-label">Gender</label>
                             <select name="gender" class="form-select @error('gender', 'register') is-invalid @enderror">
@@ -416,8 +437,6 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>
-                    <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
                             <label class="form-label">Contact Number</label>
                             <input type="text" name="contact_number" id="register-contact"
@@ -428,35 +447,37 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Address</label>
-                            <input type="text" name="address" value="{{ old('address') }}"
-                                class="form-control @error('address', 'register') is-invalid @enderror"
-                                placeholder="Enter Address">
-                            @error('address', 'register')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" name="password"
-                                class="form-control @error('password', 'register') is-invalid @enderror"
-                                placeholder="Min 8 characters" id="register-password">
-                            <i class="fa-regular fa-eye password-toggle"></i>
-                        </div>
-                        <div id="register-strength-meter" class="mt-1 small"></div>
-                        @error('password', 'register')
+                        <label class="form-label">Address</label>
+                        <input type="text" name="address" value="{{ old('address') }}"
+                            class="form-control @error('address', 'register') is-invalid @enderror"
+                            placeholder="Enter Address">
+                        @error('address', 'register')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Confirm Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" name="password_confirmation" class="form-control"
-                                placeholder="Re-enter Password">
-                            <i class="fa-regular fa-eye password-toggle"></i>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" name="password"
+                                    class="form-control @error('password', 'register') is-invalid @enderror"
+                                    placeholder="Min 8 characters" id="register-password">
+                                <i class="fa-regular fa-eye password-toggle"></i>
+                            </div>
+                            <div id="register-strength-meter" class="mt-1 small"></div>
+                            @error('password', 'register')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Confirm Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" name="password_confirmation" class="form-control"
+                                    placeholder="Re-enter Password">
+                                <i class="fa-regular fa-eye password-toggle"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -685,11 +706,10 @@
             const agreePrivacyBtn = document.getElementById('agreePrivacyBtn');
             const declinePrivacyBtn = document.getElementById('declinePrivacyBtn');
 
-            // Toggle Modal when user interacts with checkbox
             if (privacyCheck) {
                 privacyCheck.addEventListener('click', function(e) {
                     if (privacyCheck.checked) {
-                        e.preventDefault(); // Uncheck until agreed in modal
+                        e.preventDefault();
                         privacyCheck.checked = false;
                         dataPrivacyModal.show();
                     } else {
@@ -698,7 +718,6 @@
                 });
             }
 
-            // Also open modal if clicking the text link
             if (triggerPrivacyModal) {
                 triggerPrivacyModal.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -706,7 +725,6 @@
                 });
             }
 
-            // "I Agree" button handler
             if (agreePrivacyBtn) {
                 agreePrivacyBtn.addEventListener('click', function() {
                     privacyCheck.checked = true;
@@ -715,7 +733,6 @@
                 });
             }
 
-            // "Decline" button handler
             if (declinePrivacyBtn) {
                 declinePrivacyBtn.addEventListener('click', function() {
                     privacyCheck.checked = false;
@@ -724,7 +741,6 @@
                 });
             }
 
-            // Privacy Banner local storage check
             if (!localStorage.getItem('privacy_acknowledged')) {
                 document.getElementById('privacyBanner').style.display = 'block';
             }
@@ -733,13 +749,20 @@
                 document.getElementById('privacyBanner').style.display = 'none';
             });
 
-            // Status toast: fade out and remove after 3 seconds
             const statusToast = document.getElementById('statusToast');
             if (statusToast) {
                 setTimeout(() => {
                     statusToast.classList.add('hide-toast');
                     setTimeout(() => statusToast.remove(), 500);
                 }, 3000);
+            }
+
+            // Middle initial: letters only, uppercase
+            const miInput = document.getElementById('register-mi');
+            if (miInput) {
+                miInput.addEventListener('input', () => {
+                    miInput.value = miInput.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2);
+                });
             }
 
             // Contact number: digits only
