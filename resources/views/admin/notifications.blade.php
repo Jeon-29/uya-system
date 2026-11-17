@@ -65,6 +65,44 @@
     .notif-action-btn .fa-arrow-right {
         transition: transform 0.15s ease;
     }
+
+    /* Dark theme Bootstrap 5 pagination */
+    .notif-pagination-wrap nav {
+        width: 100%;
+    }
+    .notif-pagination-wrap .small.text-muted {
+        color: var(--admin-text-subtle) !important;
+    }
+    .notif-pagination-wrap .pagination {
+        margin-bottom: 0;
+        gap: 4px;
+    }
+    .notif-pagination-wrap .page-link {
+        background-color: var(--admin-card-bg);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text-main);
+        border-radius: 8px !important;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+    .notif-pagination-wrap .page-link:hover {
+        background-color: rgba(129, 140, 248, 0.15);
+        border-color: rgba(129, 140, 248, 0.4);
+        color: #ffffff;
+    }
+    .notif-pagination-wrap .page-item.active .page-link {
+        background-color: var(--admin-accent-purple);
+        border-color: var(--admin-accent-purple);
+        color: #ffffff;
+    }
+    .notif-pagination-wrap .page-item.disabled .page-link {
+        background-color: rgba(255, 255, 255, 0.03);
+        border-color: var(--admin-border);
+        color: var(--admin-text-muted);
+        opacity: 0.5;
+    }
 </style>
 @endpush
 
@@ -141,8 +179,8 @@
 
         <!-- Pagination -->
         @if($notifications->hasPages())
-            <div class="d-flex justify-content-center mt-4">
-                {{ $notifications->links() }}
+            <div class="notif-pagination-wrap mt-4">
+                {{ $notifications->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
