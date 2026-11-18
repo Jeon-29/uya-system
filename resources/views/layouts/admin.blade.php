@@ -249,6 +249,7 @@
         $authName = $authUser->name ?? 'User';
         $authRole = ucfirst($authUser->role ?? 'Officer');
         $isOfficer = ($authUser->role ?? '') === 'officer';
+        $isAdmin = strtolower($authUser->role ?? '') === 'admin';
     @endphp
 
     <!-- Mobile Sidebar Backdrop -->
@@ -313,12 +314,14 @@
                         <span>Calendar</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('admin.proposals.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.proposals*') ? 'active' : '' }}">
-                        <i class="fa-regular fa-lightbulb"></i>
-                        <span>Manage Proposals</span>
-                    </a>
-                </li>
+                @if($isAdmin)
+                    <li>
+                        <a href="{{ route('admin.proposals.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.proposals*') ? 'active' : '' }}">
+                            <i class="fa-regular fa-lightbulb"></i>
+                            <span>Manage Proposals</span>
+                        </a>
+                    </li>
+                @endif
                 <li>
                     <a href="{{ route('admin.announcements') }}" class="sidebar-nav-link {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
                         <i class="fa-solid fa-bullhorn"></i>
@@ -337,7 +340,7 @@
                         <span>Certificates</span>
                     </a>
                 </li>
-                @if(auth()->check() && auth()->user()->role === 'admin')
+                @if($isAdmin)
                     <li>
                         <a href="{{ route('admin.reports.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                             <i class="fa-solid fa-chart-line"></i>

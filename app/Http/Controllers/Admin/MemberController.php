@@ -13,6 +13,28 @@ use Illuminate\Validation\Rule;
 
 class MemberController extends Controller
 {
+    /**
+     * Roles the currently authenticated user is allowed to assign.
+     */
+    private function assignableRoles(): array
+    {
+        return strtolower(auth()->user()->role ?? '') === 'admin'
+            ? ['member', 'officer', 'admin']
+            : ['member', 'officer'];
+    }
+
+    /**
+     * Check if the authenticated user is allowed to manage the target user.
+     */
+    private function canManage(User $target): bool
+    {
+        if (strtolower($target->role ?? '') === 'admin' && strtolower(auth()->user()->role ?? '') !== 'admin') {
+            return false;
+        }
+
+        return true;
+    }
+
     public function index(Request $request)
     {
         $query = User::query();
@@ -71,7 +93,7 @@ class MemberController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'role'     => ['required', 'string', Rule::in(['admin', 'officer', 'member'])],
+            'role'     => ['required', 'string', Rule::in($this->assignableRoles())],
         ]);
 
         $newMember = User::create([
@@ -89,11 +111,15 @@ class MemberController extends Controller
 
     public function update(Request $request, User $member)
     {
+        if (! $this->canManage($member)) {
+            return redirect()->route('admin.members')->with('error', 'Officers cannot modify Administrator accounts.');
+        }
+
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($member->id)],
             'password' => ['nullable', 'string', 'min:8'],
-            'role'     => ['required', 'string', Rule::in(['admin', 'officer', 'member'])],
+            'role'     => ['required', 'string', Rule::in($this->assignableRoles())],
         ]);
 
         $data = [
@@ -119,6 +145,10 @@ class MemberController extends Controller
             return redirect()->route('admin.members')->with('error', 'You cannot change your own account status.');
         }
 
+        if (! $this->canManage($member)) {
+            return redirect()->route('admin.members')->with('error', 'Officers cannot modify Administrator accounts.');
+        }
+
         $member->email_verified_at = $member->email_verified_at ? null : now();
         $member->save();
 
@@ -133,6 +163,10 @@ class MemberController extends Controller
     {
         if (auth()->id() === $member->id) {
             return redirect()->route('admin.members')->with('error', 'You cannot delete your own account.');
+        }
+
+        if (! $this->canManage($member)) {
+            return redirect()->route('admin.members')->with('error', 'Officers cannot delete Administrator accounts.');
         }
 
         $memberName = $member->name;

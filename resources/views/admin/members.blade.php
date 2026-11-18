@@ -62,6 +62,8 @@
     .btn-action-icon { background: transparent; border: none; color: var(--admin-text-muted); padding: 4px 6px; transition: color 0.2s ease; }
     .btn-action-icon:hover { color: #ffffff; }
     .btn-action-icon.danger:hover { color: #fb7185; }
+    .btn-action-icon:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-action-icon:disabled:hover { color: var(--admin-text-muted); }
 
     .admin-input-group { background-color: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 12px; overflow: hidden; }
     .admin-input-group .form-control { background-color: transparent; border: none; color: #ffffff; font-size: 0.85rem; }
@@ -108,6 +110,16 @@
 @endpush
 
 @section('content')
+    @php
+        $isSuperAdmin = strtolower(auth()->user()->role ?? '') === 'admin';
+    @endphp
+
+    @if (session('error'))
+        <div class="alert alert-danger bg-danger bg-opacity-20 text-danger border-0 rounded-3 mb-3" style="font-size: 0.85rem;">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold mb-1 text-white">Manage Members</h4>
@@ -149,12 +161,16 @@
                 </thead>
                 <tbody>
                     @forelse($members as $member)
+                        @php
+                            $targetIsAdmin = strtolower($member->role ?? '') === 'admin';
+                            $lockedForOfficer = $targetIsAdmin && ! $isSuperAdmin;
+                        @endphp
                         <tr>
                             <td class="text-muted">#{{ $member->id }}</td>
                             <td class="fw-semibold text-white">{{ $member->name }}</td>
                             <td class="text-muted">{{ $member->email }}</td>
                             <td>
-                                @if(strtolower($member->role) === 'admin')
+                                @if($targetIsAdmin)
                                     <span class="badge badge-role-admin">Admin</span>
                                 @elseif(strtolower($member->role) === 'officer')
                                     <span class="badge badge-role-officer">Officer</span>
@@ -164,8 +180,9 @@
                             </td>
                             <td>
                                 @php $isActive = (bool)$member->email_verified_at; @endphp
-                                @if(auth()->id() === $member->id)
-                                    <span class="status-toggle-btn {{ $isActive ? 'active-status' : 'inactive-status' }} disabled" title="You cannot change your own status">
+                                @if(auth()->id() === $member->id || $lockedForOfficer)
+                                    <span class="status-toggle-btn {{ $isActive ? 'active-status' : 'inactive-status' }} disabled"
+                                          title="{{ $lockedForOfficer ? 'Officers cannot modify Administrator accounts' : 'You cannot change your own status' }}">
                                         <i class="fa-solid {{ $isActive ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-lg"></i>
                                         <span>{{ $isActive ? 'Active' : 'Inactive' }}</span>
                                     </span>
@@ -180,12 +197,21 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                <button class="btn-action-icon me-1" title="Edit" onclick="editMember({{ json_encode($member) }})">
-                                    <i class="fa-regular fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn-action-icon danger" title="Delete" onclick="confirmDelete('{{ route('admin.members.destroy', $member->id) }}')">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
+                                @if($lockedForOfficer)
+                                    <button class="btn-action-icon me-1" title="Officers cannot edit Administrator accounts" disabled>
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="btn-action-icon danger" title="Officers cannot delete Administrator accounts" disabled>
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                @else
+                                    <button class="btn-action-icon me-1" title="Edit" onclick="editMember({{ json_encode($member) }})">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="btn-action-icon danger" title="Delete" onclick="confirmDelete('{{ route('admin.members.destroy', $member->id) }}')">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -235,7 +261,7 @@
                             <label class="form-label">Password</label>
                             <input type="password" name="password" class="form-control" placeholder="Set initial password" required>
                             <div class="form-text text-muted" style="font-size: 0.72rem;">
-                                Used to create the member, officer, or admin login credentials.
+                                Used to create the member or officer login credentials.
                             </div>
                         </div>
 
@@ -244,7 +270,9 @@
                             <select name="role" class="form-select" required>
                                 <option value="member">Member</option>
                                 <option value="officer">Officer</option>
-                                <option value="admin">Admin</option>
+                                @if($isSuperAdmin)
+                                    <option value="admin">Admin</option>
+                                @endif
                             </select>
                         </div>
                     </div>
@@ -291,7 +319,9 @@
                             <select id="edit_role" name="role" class="form-select" required>
                                 <option value="member">Member</option>
                                 <option value="officer">Officer</option>
-                                <option value="admin">Admin</option>
+                                @if($isSuperAdmin)
+                                    <option value="admin">Admin</option>
+                                @endif
                             </select>
                         </div>
                     </div>
@@ -386,11 +416,6 @@
     let addEmailChecker = null;
     let editEmailChecker = null;
 
-    /**
-     * Live "email already used" check. Debounced, ignores stale responses,
-     * and disables the submit button while the typed email is taken.
-     * The server-side unique rules in MemberController still enforce this on submit.
-     */
     function createEmailChecker(input, submitBtn, getIgnoreId, getOriginalEmail) {
         const feedback = document.createElement('div');
         feedback.className = 'form-text';
@@ -467,7 +492,7 @@
                     if (!response.ok) throw new Error('Request failed');
 
                     const data = await response.json();
-                    if (thisRequest !== latest) return; // a newer keystroke superseded this check
+                    if (thisRequest !== latest) return;
 
                     if (data.available) {
                         show('available', data.message);
@@ -477,7 +502,6 @@
                         submitBtn.disabled = true;
                     }
                 } catch (error) {
-                    // If the check can't run, don't block the admin; the server still validates on submit.
                     if (thisRequest === latest) show(null);
                 }
             }, 400);
@@ -508,7 +532,12 @@
         document.getElementById('editMemberForm').action = '/admin/members/' + data.id;
         document.getElementById('edit_name').value = data.name;
         document.getElementById('edit_email').value = data.email;
-        document.getElementById('edit_role').value = data.role || 'member';
+
+        const roleSelect = document.getElementById('edit_role');
+        const targetRole = (data.role || 'member').toLowerCase();
+        roleSelect.value = Array.from(roleSelect.options).some(opt => opt.value === targetRole)
+            ? targetRole
+            : 'member';
 
         editMemberId = data.id;
         editOriginalEmail = (data.email || '').trim().toLowerCase();

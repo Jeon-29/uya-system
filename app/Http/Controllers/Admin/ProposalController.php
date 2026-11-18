@@ -18,6 +18,18 @@ use Illuminate\Support\Facades\Storage;
 
 class ProposalController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (strtolower(auth()->user()->role ?? '') !== 'admin') {
+                return redirect()->route('admin.dashboard')
+                    ->with('error', 'Access denied. Only Administrators can manage proposals.');
+            }
+
+            return $next($request);
+        });
+    }
+
     /**
      * Admin proposals dashboard filtered by status tabs.
      */
@@ -80,7 +92,7 @@ class ProposalController extends Controller
     }
 
     /**
-     * Display proposal detailed view for Officers/Admins.
+     * Display proposal detailed view for Admins.
      */
     public function show($id)
     {
@@ -132,8 +144,6 @@ class ProposalController extends Controller
             default       => null,
         };
 
-        // current_phase is included in the defaults so the first save on a fresh
-        // database (no campaign row yet) doesn't fail with "no default value".
         try {
             $campaign = ProposalCampaign::firstOrCreate(['is_active' => true], [
                 'title'                  => 'Current Campaign',
@@ -158,7 +168,6 @@ class ProposalController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Schedule save failed: ' . $e->getMessage());
 
-            // TEMPORARY DIAGNOSTIC: shows the real error on screen. Remove this line once fixed.
             return response('Schedule save failed: ' . $e->getMessage(), 500);
         }
 

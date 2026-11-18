@@ -166,19 +166,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/activities/{activity}/qr-payload', [ActivityQrController::class, 'generatePayload'])->name('activities.qr-payload');
 
-        // Admin Proposal Management
-        Route::get('/proposals', [AdminProposalController::class, 'index'])->name('proposals.index');
-        Route::get('/proposals/{id}', [AdminProposalController::class, 'show'])->name('proposals.show');
-        Route::post('/proposals/schedule', [AdminProposalController::class, 'updateSchedule'])->name('proposals.updateSchedule');
-        Route::patch('/proposals/{proposal}/toggle-document', [AdminProposalController::class, 'toggleDocumentValidation'])->name('proposals.toggleDocument');
-        Route::post('/proposals/{proposal}/request-revision', [AdminProposalController::class, 'requestRevision'])->name('proposals.requestRevision');
-        Route::patch('/proposals/{proposal}/approve-voting', [AdminProposalController::class, 'approveForVoting'])->name('proposals.approveVoting');
-        Route::patch('/proposals/{proposal}/reject', [AdminProposalController::class, 'reject'])->name('proposals.reject');
-        Route::patch('/proposals/{proposal}/archive', [AdminProposalController::class, 'archive'])->name('proposals.archive');
-        Route::patch('/proposals/{proposal}/restore', [AdminProposalController::class, 'restore'])->name('proposals.restore');
-        Route::post('/proposals/{proposal}/convert', [AdminProposalController::class, 'convertToActivity'])->name('proposals.convert');
-        Route::delete('/proposals/{proposal}', [AdminProposalController::class, 'destroy'])->name('proposals.destroy');
-
         // Admin Certificate Template Management
         Route::resource('certificates/templates', CertificateTemplateController::class, [
             'names' => [
@@ -197,6 +184,20 @@ Route::middleware('auth')->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::middleware(EnsureUserIsAdmin::class)->group(function () {
+            // Admin Proposal Management
+            Route::get('/proposals', [AdminProposalController::class, 'index'])->name('proposals.index');
+            Route::get('/proposals/{id}', [AdminProposalController::class, 'show'])->name('proposals.show');
+            Route::post('/proposals/schedule', [AdminProposalController::class, 'updateSchedule'])->name('proposals.updateSchedule');
+            Route::patch('/proposals/{proposal}/toggle-document', [AdminProposalController::class, 'toggleDocumentValidation'])->name('proposals.toggleDocument');
+            Route::post('/proposals/{proposal}/request-revision', [AdminProposalController::class, 'requestRevision'])->name('proposals.requestRevision');
+            Route::patch('/proposals/{proposal}/approve-voting', [AdminProposalController::class, 'approveForVoting'])->name('proposals.approveVoting');
+            Route::patch('/proposals/{proposal}/reject', [AdminProposalController::class, 'reject'])->name('proposals.reject');
+            Route::patch('/proposals/{proposal}/archive', [AdminProposalController::class, 'archive'])->name('proposals.archive');
+            Route::patch('/proposals/{proposal}/restore', [AdminProposalController::class, 'restore'])->name('proposals.restore');
+            Route::post('/proposals/{proposal}/convert', [AdminProposalController::class, 'convertToActivity'])->name('proposals.convert');
+            Route::delete('/proposals/{proposal}', [AdminProposalController::class, 'destroy'])->name('proposals.destroy');
+
+            // Reports
             Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
             Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
         });
